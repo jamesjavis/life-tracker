@@ -178,7 +178,7 @@ export default function LifeTracker() {
                 {streaks[0]?.history.map((done, i) => {
                   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
                   const heights = streaks.map(s => s.history[i] ? 100 : 0);
-                  const avgHeight = heights.reduce((a, b) => a + b, 0) / heights.length;
+                  const avgHeight = heights.reduce((a: number, b: number) => a + b, 0) / heights.length;
                   return (
                     <div key={i} className="flex flex-col items-center gap-2 flex-1">
                       <div className="w-full bg-slate-700 rounded-t-lg relative" style={{ height: '80px' }}>
