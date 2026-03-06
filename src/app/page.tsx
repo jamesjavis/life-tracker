@@ -12,18 +12,13 @@ type Streak = {
   streak: number;
   bestStreak: number;
   history: boolean[];
-};
-
-type BucketItem = {
-  id: string;
-  title: string;
-  category: string;
-  completed: boolean;
+  totalExercises?: number; // For tracking like Gym
 };
 
 type GymEntry = {
   id: string;
   date: string;
+  type: string; // "Push", "Pull", "Leg"
   exercises: { name: string; sets: number; reps: number; weight?: number }[];
 };
 
@@ -33,7 +28,6 @@ type Project = {
   description: string;
   status: "active" | "planning" | "paused" | "done";
   priority: "high" | "medium" | "low";
-  category: string;
   nextAction: string;
 };
 
@@ -48,71 +42,80 @@ const saveData = <T,>(key: string, data: T): void => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
-const initialStreaks: Streak[] = [
-  { id: "1", name: "Duolingo", icon: "🇪🇸", completedToday: false, streak: 12, bestStreak: 45, history: [true,true,true,true,true,true,true] },
-  { id: "2", name: "Yoga", icon: "🧘", completedToday: false, streak: 5, bestStreak: 30, history: [true,true,false,true,true,false,true] },
-  { id: "3", name: "Atemübung", icon: "🌬️", completedToday: false, streak: 8, bestStreak: 14, history: [true,true,true,true,true,true,true] },
-  { id: "4", name: "Meditation", icon: "🧠", completedToday: false, streak: 3, bestStreak: 21, history: [false,true,true,true,false,true,true] },
-  { id: "5", name: "Gym", icon: "💪", completedToday: false, streak: 6, bestStreak: 28, history: [true,false,true,true,true,false,true] },
-  { id: "6", name: "Smoothie", icon: "🥤", completedToday: true, streak: 15, bestStreak: 15, history: [true,true,true,true,true,true,true] },
-  { id: "7", name: "Creatin + Salz", icon: "🧂", completedToday: true, streak: 20, bestStreak: 20, history: [true,true,true,true,true,true,true] },
-  { id: "8", name: "Lesen (5 Seiten)", icon: "📖", completedToday: false, streak: 2, bestStreak: 10, history: [true,false,true,true,false,true,false] },
+// Patrick's actual data from Notion + his input
+const PATRICK_STREAKS: Streak[] = [
+  { id: "1", name: "Duolingo", icon: "🏃", completedToday: false, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
+  { id: "2", name: "Yoga", icon: "🧘", completedToday: true, streak: 130, bestStreak: 130, history: [true,true,true,true,true,true,true], totalExercises: 383 },
+  { id: "3", name: "Meditation", icon: "🧠", completedToday: false, streak: 6, bestStreak: 6, history: [true,true,true,true,true,true,false], totalExercises: 520 },
+  { id: "4", name: "Atemübung", icon: "🌬️", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
+  { id: "5", name: "Gym", icon: "💪", completedToday: false, streak: 0, bestStreak: 0, history: [true,true,true,true,true,true,true], totalExercises: 0 }, // Will add workout entries
+  { id: "6", name: "Smoothie", icon: "🥤", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
+  { id: "7", name: "Creatin + Salz", icon: "💊", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
+  { id: "8", name: "Lesen (5 Seiten)", icon: "📖", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
 ];
 
-const defaultProjects: Project[] = [
-  { id: "1", name: "Benefitsi", description: "FlutterFlow App - Partner-Programm", status: "active", priority: "high", category: "Business", nextAction: "Algolia-Optimierung" },
-  { id: "2", name: "eWorld Record", description: "Games auf Abstract blockchain", status: "planning", priority: "medium", category: "Gaming", nextAction: "Konzept erstellen" },
-  { id: "3", name: "Abstract Spiel", description: "Eigenes Spiel auf Abstract", status: "planning", priority: "medium", category: "Gaming", nextAction: "Game Design" },
-  { id: "4", name: "Preis Arbitrage", description: "Automatisiertes Trading", status: "planning", priority: "low", category: "Finance", nextAction: "Research" },
-  { id: "5", name: "Amigo Creator", description: "Creator Trading auf Amigo", status: "active", priority: "high", category: "Finance", nextAction: "Heute launchen!" },
+const DEFAULT_PROJECTS: Project[] = [
+  { id: "1", name: "Benefitsi", description: "FlutterFlow App - Partner-Programm", status: "active", priority: "high", nextAction: "Algolia-Optimierung" },
+  { id: "2", name: "eWorld Record", description: "Games auf Abstract blockchain", status: "planning", priority: "medium", nextAction: "Konzept erstellen" },
+  { id: "3", name: "Abstract Spiel", description: "Eigenes Spiel auf Abstract", status: "planning", priority: "medium", nextAction: "Game Design" },
+  { id: "4", name: "Preis Arbitrage", description: "Automatisiertes Trading", status: "planning", priority: "low", nextAction: "Research" },
+  { id: "5", name: "Amigo Creator", description: "Creator Trading auf Amigo", status: "active", priority: "high", nextAction: "HEUTE launchen!" },
 ];
 
 export default function LifeTracker() {
-  const [streaks, setStreaks] = useState<Streak[]>(initialStreaks);
-  const [bucketList, setBucketList] = useState<BucketItem[]>([]);
+  const [streaks, setStreaks] = useState<Streak[]>(PATRICK_STREAKS);
   const [gymEntries, setGymEntries] = useState<GymEntry[]>([]);
-  const [projects, setProjects] = useState<Project[]>(defaultProjects);
-  const [activeTab, setActiveTab] = useState<"overview" | "streaks" | "bucket" | "gym" | "projects">("overview");
+  const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
+  const [activeTab, setActiveTab] = useState<"overview" | "streaks" | "gym" | "projects">("overview");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Gym entry form
+  const [showGymForm, setShowGymForm] = useState(false);
+  const [gymType, setGymType] = useState<"Push" | "Pull" | "Leg">("Push");
+  const [exercises, setExercises] = useState([{ name: "", sets: 3, reps: 10, weight: 0 }]);
 
   useEffect(() => {
-    setStreaks(loadData("life-streaks-v4", initialStreaks));
-    setBucketList(loadData("life-bucket-v4", []));
-    setGymEntries(loadData("life-gym-v4", []));
-    setProjects(loadData("life-projects-v4", defaultProjects));
+    setStreaks(loadData("patrick-streaks", PATRICK_STREAKS));
+    setGymEntries(loadData("patrick-gym", []));
+    setProjects(loadData("patrick-projects", DEFAULT_PROJECTS));
     setIsLoaded(true);
   }, []);
 
   useEffect(() => {
     if (isLoaded) {
-      saveData("life-streaks-v4", streaks);
-      saveData("life-bucket-v4", bucketList);
-      saveData("life-gym-v4", gymEntries);
-      saveData("life-projects-v4", projects);
+      saveData("patrick-streaks", streaks);
+      saveData("patrick-gym", gymEntries);
+      saveData("patrick-projects", projects);
     }
-  }, [streaks, bucketList, gymEntries, projects, isLoaded]);
+  }, [streaks, gymEntries, projects, isLoaded]);
 
-  const totalStreakDays = streaks.reduce((sum, s) => sum + s.streak, 0);
   const completedToday = streaks.filter(s => s.completedToday).length;
-  const completionRate = Math.round((completedToday / streaks.length) * 100);
-  const longestStreak = Math.max(...streaks.map(s => s.bestStreak), 0);
+  const totalExercises = gymEntries.reduce((sum, e) => sum + e.exercises.length, 0);
 
   const toggleStreak = (id: string) => {
     setStreaks(prev => prev.map(s => {
       if (s.id === id) {
         const newCompletedToday = !s.completedToday;
         const newStreak = newCompletedToday ? s.streak + 1 : Math.max(0, s.streak - 1);
-        const newBest = Math.max(s.bestStreak, newStreak);
         const newHistory = [...s.history.slice(1), newCompletedToday];
-        return { ...s, completedToday: newCompletedToday, streak: newStreak, bestStreak: newBest, history: newHistory };
+        return { ...s, completedToday: newCompletedToday, streak: newStreak, history: newHistory };
       }
       return s;
     }));
   };
 
-  const activeProjects = projects.filter(p => p.status === "active").length;
-  const highPriorityProjects = projects.filter(p => p.priority === "high").length;
+  const addGymEntry = () => {
+    const entry: GymEntry = {
+      id: Date.now().toString(),
+      date: new Date().toISOString().split('T')[0],
+      type: gymType,
+      exercises: exercises.filter(e => e.name.trim())
+    };
+    setGymEntries(prev => [entry, ...prev]);
+    setShowGymForm(false);
+    setExercises([{ name: "", sets: 3, reps: 10, weight: 0 }]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4 md:p-8">
@@ -125,6 +128,10 @@ export default function LifeTracker() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
                 Life Tracker
               </h1>
+              <div className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 rounded-full">
+                <Flame className="h-5 w-5 text-orange-400" />
+                <span className="font-bold text-orange-400">{Math.max(...streaks.map(s => s.streak))}</span>
+              </div>
               <button 
                 onClick={() => setIsAdmin(!isAdmin)}
                 className={cn(
@@ -144,16 +151,15 @@ export default function LifeTracker() {
             {[
               { key: "overview", icon: "🏠", color: "bg-blue-500", label: "Overview" },
               { key: "streaks", icon: "🔥", color: "bg-orange-500", label: "Streaks" },
-              { key: "projects", icon: "🚀", color: "bg-purple-500", label: "Projects" },
               { key: "gym", icon: "💪", color: "bg-red-500", label: "Gym" },
-              { key: "bucket", icon: "🎯", color: "bg-amber-500", label: "Goals" },
+              { key: "projects", icon: "🚀", color: "bg-purple-500", label: "Projects" },
             ].map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-bold transition-all transform hover:scale-105",
-                  activeTab === tab.key ? `${tab.color} text-white shadow-lg` : "bg-slate-700/50 text-slate-300 hover:bg-slate-600"
+                  "px-4 py-2 rounded-xl text-sm font-bold transition-all",
+                  activeTab === tab.key ? `${tab.color} text-white` : "bg-slate-700/50 text-slate-300"
                 )}
               >
                 {tab.icon} {tab.label}
@@ -165,42 +171,59 @@ export default function LifeTracker() {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="space-y-6">
+            {/* Weekly Streak Chart */}
+            <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+              <h3 className="font-bold mb-4 flex items-center gap-2">📊 Weekly Consistency</h3>
+              <div className="flex justify-between items-end gap-2">
+                {streaks[0]?.history.map((done, i) => {
+                  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+                  const heights = streaks.map(s => s.history[i] ? 100 : 0);
+                  const avgHeight = heights.reduce((a, b) => a + b, 0) / heights.length;
+                  return (
+                    <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                      <div className="w-full bg-slate-700 rounded-t-lg relative" style={{ height: '80px' }}>
+                        <div 
+                          className={`absolute bottom-0 w-full rounded-t-lg transition-all ${done ? 'bg-gradient-to-t from-green-500 to-green-400' : 'bg-slate-600'}`}
+                          style={{ height: `${avgHeight}%` }}
+                        />
+                      </div>
+                      <span className={`text-xs ${done ? 'text-green-400' : 'text-slate-500'}`}>{dayLabels[i]}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-3 flex justify-between text-sm">
+                <span className="text-slate-400">Wochen-Score: {Math.round((completedToday / streaks.length) * 100)}%</span>
+                <span className="text-slate-400">{streaks.filter(s => s.history.every(d => d)).length} / {streaks.length} Habits perfekt</span>
+              </div>
+            </div>
+
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { icon: Flame, color: "from-orange-500 to-red-500", label: "Today's Progress", value: `${completedToday}/${streaks.length}`, sub: `${completionRate}%` },
-                { icon: Rocket, color: "from-purple-500 to-pink-500", label: "Active Projects", value: activeProjects, sub: "in progress" },
-                { icon: Trophy, color: "from-yellow-500 to-amber-500", label: "High Priority", value: highPriorityProjects, sub: "focus" },
-                { icon: DollarSign, color: "from-green-500 to-emerald-500", label: "Amigo", value: "TODAY!", sub: "launch" },
+                { icon: Flame, color: "from-orange-500 to-red-500", label: "Today", value: `${completedToday}/${streaks.length}`, sub: "done" },
+                { icon: Trophy, color: "from-purple-500 to-pink-500", label: "Best Streak", value: Math.max(...streaks.map(s => s.streak)), sub: "days" },
+                { icon: Dumbbell, color: "from-red-500 to-orange-500", label: "Workouts", value: gymEntries.length, sub: "logged" },
+                { icon: Brain, color: "from-green-500 to-emerald-500", label: "Yoga Übungen", value: 383, sub: "total" },
               ].map((stat, i) => (
                 <div key={i} className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                  <div className={cn(`bg-gradient-to-r ${stat.color} w-12 h-12 rounded-xl flex items-center justify-center mb-3 shadow-lg`)}>
+                  <div className={cn(`bg-gradient-to-r ${stat.color} w-12 h-12 rounded-xl flex items-center justify-center mb-3`)}>
                     <stat.icon className="h-6 w-6 text-white" />
                   </div>
                   <p className="text-2xl font-bold">{stat.value}</p>
                   <p className="text-sm text-slate-400">{stat.label}</p>
-                  <p className="text-xs text-slate-500">{stat.sub}</p>
                 </div>
               ))}
             </div>
 
             {/* Today's Focus */}
             <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/10 rounded-2xl p-6 border border-amber-500/30">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-amber-400" />
-                🚨 Today's Focus
-              </h3>
-              <div className="space-y-3">
-                {projects.filter(p => p.priority === "high").map(project => (
-                  <div key={project.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
-                    <div>
-                      <p className="font-bold">{project.name}</p>
-                      <p className="text-sm text-slate-400">{project.description}</p>
-                    </div>
-                    <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">
-                      {project.nextAction}
-                    </span>
-                  </div>
+              <h3 className="text-xl font-bold mb-4">🚨 Today's Priority</h3>
+              <div className="flex gap-2">
+                {projects.filter(p => p.priority === "high").map(p => (
+                  <span key={p.id} className="px-4 py-2 bg-red-500/20 text-red-400 rounded-xl font-bold">
+                    {p.name}: {p.nextAction}
+                  </span>
                 ))}
               </div>
             </div>
@@ -208,101 +231,34 @@ export default function LifeTracker() {
             {/* Quick Streaks */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                <h3 className="font-bold mb-3 flex items-center gap-2">
-                  <Flame className="h-5 w-5 text-orange-400" />
-                  Today's Streaks
-                </h3>
+                <h3 className="font-bold mb-3">🔥 Today's Streaks</h3>
                 <div className="space-y-2">
-                  {streaks.slice(0,4).map(s => (
+                  {streaks.slice(0,5).map(s => (
                     <div key={s.id} className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <span>{s.icon}</span> {s.name}
-                      </span>
-                      <button
-                        onClick={() => toggleStreak(s.id)}
-                        className={cn(
-                          "px-3 py-1 rounded-full text-sm",
-                          s.completedToday ? "bg-green-500 text-white" : "bg-slate-700 text-slate-400"
-                        )}
-                      >
-                        {s.completedToday ? "✓ Done" : "○ Do it"}
+                      <span className="flex items-center gap-2"><span>{s.icon}</span> {s.name}</span>
+                      <button onClick={() => toggleStreak(s.id)} className={cn("px-3 py-1 rounded-full text-sm", s.completedToday ? "bg-green-500 text-white" : "bg-slate-700")}>
+                        {s.completedToday ? "✓" : `${s.streak} days`}
                       </button>
                     </div>
                   ))}
                 </div>
               </div>
-
               <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                <h3 className="font-bold mb-3 flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-purple-400" />
-                  All Projects
-                </h3>
-                <div className="space-y-2">
-                  {projects.map(p => (
-                    <div key={p.id} className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        {p.status === "active" ? "🟢" : p.status === "planning" ? "🟡" : p.status === "done" ? "✅" : "⚪"}
-                        {p.name}
-                      </span>
-                      <span className={cn(
-                        "text-xs px-2 py-0.5 rounded",
-                        p.priority === "high" ? "bg-red-500/20 text-red-400" : 
-                        p.priority === "medium" ? "bg-yellow-500/20 text-yellow-400" : "bg-slate-600"
-                      )}>
-                        {p.priority}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <h3 className="font-bold mb-3">💪 Recent Workouts</h3>
+                {gymEntries.length === 0 ? (
+                  <p className="text-slate-400">Noch keine Workouts eingetragen</p>
+                ) : (
+                  <div className="space-y-2">
+                    {gymEntries.slice(0,3).map(e => (
+                      <div key={e.id} className="flex justify-between text-sm">
+                        <span>{e.date} - {e.type}</span>
+                        <span className="text-slate-400">{e.exercises.length} Übungen</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Projects Tab */}
-        {activeTab === "projects" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">All Projects</h2>
-              {isAdmin && <button className="px-4 py-2 bg-purple-500 rounded-xl font-bold">+ New Project</button>}
-            </div>
-            
-            {projects.map(project => (
-              <div key={project.id} className={cn(
-                "p-5 rounded-2xl border",
-                project.priority === "high" ? "bg-red-500/10 border-red-500/30" : 
-                project.priority === "medium" ? "bg-yellow-500/10 border-yellow-500/30" :
-                "bg-slate-800/50 border-slate-700/50"
-              )}>
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-xl font-bold">{project.name}</h3>
-                    <p className="text-slate-400">{project.description}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-sm",
-                      project.status === "active" ? "bg-green-500/20 text-green-400" :
-                      project.status === "planning" ? "bg-yellow-500/20 text-yellow-400" :
-                      project.status === "done" ? "bg-blue-500/20 text-blue-400" : "bg-slate-600"
-                    )}>
-                      {project.status}
-                    </span>
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-sm",
-                      project.priority === "high" ? "bg-red-500/20 text-red-400" :
-                      project.priority === "medium" ? "bg-yellow-500/20 text-yellow-400" : "bg-slate-600"
-                    )}>
-                      {project.priority}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-slate-500">Next:</span>
-                  <span className="text-amber-400 font-bold">{project.nextAction}</span>
-                </div>
-              </div>
-            ))}
           </div>
         )}
 
@@ -313,7 +269,7 @@ export default function LifeTracker() {
               <div
                 key={streak.id}
                 className={cn(
-                  "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer",
+                  "flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all",
                   streak.completedToday ? "bg-green-500/10 border-green-500/30" : "bg-slate-800/50 border-slate-700/50"
                 )}
                 onClick={() => toggleStreak(streak.id)}
@@ -322,19 +278,15 @@ export default function LifeTracker() {
                   <span className="text-3xl">{streak.icon}</span>
                   <div>
                     <p className="font-bold text-lg">{streak.name}</p>
-                    <div className="flex gap-1 mt-1">
-                      {streak.history.map((done, i) => (
-                        <div key={i} className={cn("w-6 h-6 rounded flex items-center justify-center", done ? "bg-green-500/30" : "bg-slate-700")}>
-                          {done && <Check className="h-3 w-3" />}
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-xs text-slate-400">
+                      {streak.totalExercises ? `${streak.totalExercises} total` : ''}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className={cn("text-3xl font-bold", streak.completedToday ? "text-green-400" : "text-slate-400")}>{streak.streak}</p>
-                    <p className="text-xs text-slate-500">best: {streak.bestStreak}</p>
+                    <p className="text-xs text-slate-500">days</p>
                   </div>
                   {streak.completedToday && <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"><Check className="h-6 w-6" /></div>}
                 </div>
@@ -343,29 +295,140 @@ export default function LifeTracker() {
           </div>
         )}
 
-        {/* Bucket Tab */}
-        {activeTab === "bucket" && (
-          <div className="text-center py-12">
-            <p className="text-slate-400">Bucket List coming soon...</p>
+        {/* Gym Tab */}
+        {activeTab === "gym" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">💪 Gym Workouts</h2>
+              {isAdmin && (
+                <button 
+                  onClick={() => setShowGymForm(!showGymForm)}
+                  className="px-4 py-2 bg-red-500 rounded-xl font-bold"
+                >
+                  + Workout
+                </button>
+              )}
+            </div>
+
+            {showGymForm && (
+              <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+                <h3 className="font-bold mb-4">Neues Workout eintragen</h3>
+                <div className="mb-4">
+                  <label className="text-sm text-slate-400">Trainingsart</label>
+                  <div className="flex gap-2 mt-2">
+                    {(["Push", "Pull", "Leg"] as const).map(t => (
+                      <button
+                        key={t}
+                        onClick={() => setGymType(t)}
+                        className={cn("px-4 py-2 rounded-xl", gymType === t ? "bg-red-500" : "bg-slate-700")}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  {exercises.map((ex, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input
+                        placeholder="Übung"
+                        className="flex-1 bg-slate-700 rounded-lg px-3 py-2"
+                        value={ex.name}
+                        onChange={(e) => {
+                          const newEx = [...exercises];
+                          newEx[i].name = e.target.value;
+                          setExercises(newEx);
+                        }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Sätze"
+                        className="w-16 bg-slate-700 rounded-lg px-2 py-2"
+                        value={ex.sets}
+                        onChange={(e) => {
+                          const newEx = [...exercises];
+                          newEx[i].sets = parseInt(e.target.value) || 0;
+                          setExercises(newEx);
+                        }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Wdh"
+                        className="w-16 bg-slate-700 rounded-lg px-2 py-2"
+                        value={ex.reps}
+                        onChange={(e) => {
+                          const newEx = [...exercises];
+                          newEx[i].reps = parseInt(e.target.value) || 0;
+                          setExercises(newEx);
+                        }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="KG"
+                        className="w-20 bg-slate-700 rounded-lg px-2 py-2"
+                        value={ex.weight || ''}
+                        onChange={(e) => {
+                          const newEx = [...exercises];
+                          newEx[i].weight = parseInt(e.target.value) || 0;
+                          setExercises(newEx);
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <button onClick={() => setExercises([...exercises, { name: "", sets: 3, reps: 10, weight: 0 }])} className="text-sm text-slate-400">+ Übung hinzufügen</button>
+                </div>
+                <button onClick={addGymEntry} className="w-full py-3 bg-green-500 rounded-xl font-bold">Speichern</button>
+              </div>
+            )}
+
+            {/* Workout History */}
+            <div className="space-y-3">
+              {gymEntries.length === 0 ? (
+                <p className="text-center text-slate-400 py-8">Noch keine Workouts eingetragen</p>
+              ) : (
+                gymEntries.map(entry => (
+                  <div key={entry.id} className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-bold">{entry.date}</span>
+                      <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full">{entry.type} Day</span>
+                    </div>
+                    <div className="space-y-1">
+                      {entry.exercises.map((ex, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span>{ex.name}</span>
+                          <span className="text-slate-400">{ex.sets}x{ex.reps} {ex.weight ? `@ ${ex.weight}kg` : ''}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
 
-        {/* Gym Tab */}
-        {activeTab === "gym" && (
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              { title: "Push Day", color: "from-red-500 to-orange-500", exercises: ["Bankdrücken", "Schrägbank", "Schulterdrücken", "Trizeps"] },
-              { title: "Pull Day", color: "from-blue-500 to-cyan-500", exercises: ["Klimmzüge", "Rudern", "Latzug", "Bizeps"] },
-              { title: "Leg Day", color: "from-green-500 to-emerald-500", exercises: ["Kniebeugen", "Beinpresse", "Beinbizeps", "Waden"] },
-            ].map((day, i) => (
-              <div key={i} className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                <div className={cn("w-10 h-10 rounded-xl bg-gradient-to-r shadow-lg mb-3 flex items-center justify-center", day.color)}>
-                  <Dumbbell className="h-5 w-5 text-white" />
+        {/* Projects Tab */}
+        {activeTab === "projects" && (
+          <div className="space-y-4">
+            {projects.map(project => (
+              <div key={project.id} className={cn(
+                "p-5 rounded-2xl border",
+                project.priority === "high" ? "bg-red-500/10 border-red-500/30" : 
+                project.priority === "medium" ? "bg-yellow-500/10 border-yellow-500/30" : "bg-slate-800/50 border-slate-700/50"
+              )}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-lg">{project.name}</h3>
+                    <p className="text-slate-400">{project.description}</p>
+                  </div>
+                  <span className={cn(
+                    "px-3 py-1 rounded-full text-sm",
+                    project.status === "active" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+                  )}>
+                    {project.status}
+                  </span>
                 </div>
-                <h3 className="font-bold text-lg mb-2">{day.title}</h3>
-                <ul className="space-y-1">
-                  {day.exercises.map((ex, j) => <li key={j} className="text-slate-300 text-sm">• {ex}</li>)}
-                </ul>
+                <p className="mt-2 text-amber-400 text-sm">→ {project.nextAction}</p>
               </div>
             ))}
           </div>
