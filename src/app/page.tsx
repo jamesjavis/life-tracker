@@ -177,7 +177,7 @@ export default function LifeTracker() {
                 <h3 className="font-bold text-lg flex items-center gap-2">☀️ Morning Brief</h3>
                 <span className="text-xs text-amber-400/70">{new Date().toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-orange-400">{Math.max(...streaks.map(s => s.streak))}</div>
                   <div className="text-xs text-slate-400 mt-1">Current Streak</div>
@@ -199,6 +199,23 @@ export default function LifeTracker() {
                   )}
                   <div className="text-xs text-slate-400 mt-1">Top Priority</div>
                 </div>
+              </div>
+              {/* Quick Toggle Row */}
+              <div className="flex gap-2 flex-wrap">
+                <span className="text-xs text-slate-400 w-full mb-1">⚡ Quick Done:</span>
+                {streaks.filter(s => !s.completedToday).slice(0, 4).map(s => (
+                  <button
+                    key={s.id}
+                    onClick={() => toggleStreak(s.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-slate-700/50 hover:bg-green-500/30 text-slate-300 hover:text-green-400 rounded-lg text-sm transition-all"
+                  >
+                    <span>{s.icon}</span>
+                    <span>{s.name}</span>
+                  </button>
+                ))}
+                {streaks.filter(s => !s.completedToday).length === 0 && (
+                  <span className="text-sm text-green-400">🎉 All habits done!</span>
+                )}
               </div>
             </div>
 
