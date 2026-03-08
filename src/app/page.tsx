@@ -171,6 +171,37 @@ export default function LifeTracker() {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="space-y-6">
+            {/* Morning Brief - Compact Top Card */}
+            <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-red-500/10 rounded-2xl p-5 border border-amber-500/30">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">☀️ Morning Brief</h3>
+                <span className="text-xs text-amber-400/70">{new Date().toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-orange-400">{Math.max(...streaks.map(s => s.streak))}</div>
+                  <div className="text-xs text-slate-400 mt-1">Current Streak</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-green-400">{Math.round((completedToday / streaks.length) * 100)}%</div>
+                  <div className="text-xs text-slate-400 mt-1">Weekly</div>
+                </div>
+                <div className="text-center">
+                  {projects.filter(p => p.priority === "high")[0] ? (
+                    <button 
+                      onClick={() => setActiveTab("projects")}
+                      className="text-sm bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-2 rounded-xl transition-all"
+                    >
+                      {projects.filter(p => p.priority === "high")[0]?.name}
+                    </button>
+                  ) : (
+                    <div className="text-2xl">🎯</div>
+                  )}
+                  <div className="text-xs text-slate-400 mt-1">Top Priority</div>
+                </div>
+              </div>
+            </div>
+
             {/* Weekly Streak Chart */}
             <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
               <h3 className="font-bold mb-4 flex items-center gap-2">📊 Weekly Consistency</h3>
