@@ -55,11 +55,11 @@ const PATRICK_STREAKS: Streak[] = [
 ];
 
 const DEFAULT_PROJECTS: Project[] = [
-  { id: "1", name: "Benefitsi", description: "FlutterFlow App - Partner-Programm", status: "active", priority: "high", nextAction: "Algolia-Optimierung" },
+  { id: "1", name: "Benefitsi", description: "FlutterFlow App - Partner-Programm", status: "active", priority: "high", nextAction: "Firebase Rules + API Key" },
   { id: "2", name: "eWorld Record", description: "Games auf Abstract blockchain", status: "planning", priority: "medium", nextAction: "Konzept erstellen" },
   { id: "3", name: "Abstract Spiel", description: "Eigenes Spiel auf Abstract", status: "planning", priority: "medium", nextAction: "Game Design" },
   { id: "4", name: "Preis Arbitrage", description: "Automatisiertes Trading", status: "planning", priority: "low", nextAction: "Research" },
-  { id: "5", name: "Amigo Creator", description: "Creator Trading auf Amigo", status: "active", priority: "high", nextAction: "HEUTE launchen!" },
+  { id: "5", name: "Life Tracker 2.0", description: "Next.js Habit Tracker", status: "active", priority: "high", nextAction: "Date-Refresh Fix deployen" },
 ];
 
 export default function LifeTracker() {
@@ -76,7 +76,18 @@ export default function LifeTracker() {
   const [exercises, setExercises] = useState([{ name: "", sets: 3, reps: 10, weight: 0 }]);
 
   useEffect(() => {
-    setStreaks(loadData("patrick-streaks", PATRICK_STREAKS));
+    const today = new Date().toISOString().split('T')[0];
+    const savedDate = localStorage.getItem("patrick-streak-date");
+    
+    let loadedStreaks = loadData("patrick-streaks", PATRICK_STREAKS);
+    
+    // Reset completedToday if it's a new day
+    if (savedDate !== today) {
+      loadedStreaks = loadedStreaks.map(s => ({ ...s, completedToday: false }));
+      localStorage.setItem("patrick-streak-date", today);
+    }
+    
+    setStreaks(loadedStreaks);
     setGymEntries(loadData("patrick-gym", []));
     setProjects(loadData("patrick-projects", DEFAULT_PROJECTS));
     setIsLoaded(true);
@@ -84,9 +95,11 @@ export default function LifeTracker() {
 
   useEffect(() => {
     if (isLoaded) {
+      const today = new Date().toISOString().split('T')[0];
       saveData("patrick-streaks", streaks);
       saveData("patrick-gym", gymEntries);
       saveData("patrick-projects", projects);
+      localStorage.setItem("patrick-streak-date", today);
     }
   }, [streaks, gymEntries, projects, isLoaded]);
 
