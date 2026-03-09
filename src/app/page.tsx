@@ -59,7 +59,7 @@ const DEFAULT_PROJECTS: Project[] = [
   { id: "2", name: "eWorld Record", description: "Games auf Abstract blockchain", status: "planning", priority: "medium", nextAction: "Konzept erstellen" },
   { id: "3", name: "Abstract Spiel", description: "Eigenes Spiel auf Abstract", status: "planning", priority: "medium", nextAction: "Game Design" },
   { id: "4", name: "Preis Arbitrage", description: "Automatisiertes Trading", status: "planning", priority: "low", nextAction: "Research" },
-  { id: "5", name: "Life Tracker 2.0", description: "Next.js Habit Tracker", status: "active", priority: "high", nextAction: "Date-Refresh Fix deployen" },
+  { id: "5", name: "Life Tracker 2.0", description: "Next.js Habit Tracker", status: "active", priority: "high", nextAction: "Date-Refresh Fix deployed ✅" },
 ];
 
 export default function LifeTracker() {
@@ -76,10 +76,10 @@ export default function LifeTracker() {
   const [exercises, setExercises] = useState([{ name: "", sets: 3, reps: 10, weight: 0 }]);
 
   useEffect(() => {
+    // Load initial data
+    let loadedStreaks = loadData("patrick-streaks", PATRICK_STREAKS);
     const today = new Date().toISOString().split('T')[0];
     const savedDate = localStorage.getItem("patrick-streak-date");
-    
-    let loadedStreaks = loadData("patrick-streaks", PATRICK_STREAKS);
     
     // Reset completedToday if it's a new day
     if (savedDate !== today) {
@@ -91,6 +91,16 @@ export default function LifeTracker() {
     setGymEntries(loadData("patrick-gym", []));
     setProjects(loadData("patrick-projects", DEFAULT_PROJECTS));
     setIsLoaded(true);
+    
+    // Check every minute for day changes (midnight reset while app is open)
+    const interval = setInterval(() => {
+      const now = new Date().toISOString().split('T')[0];
+      if (savedDate !== now) {
+        setStreaks(prev => prev.map(s => ({ ...s, completedToday: false })));
+        localStorage.setItem("patrick-streak-date", now);
+      }
+    }, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
