@@ -140,6 +140,41 @@ export default function LifeTracker() {
     setExercises([{ name: "", sets: 3, reps: 10, weight: 0 }]);
   };
 
+  // Data Export/Import functions
+  const exportData = () => {
+    const data = {
+      streaks,
+      gymEntries,
+      projects,
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `life-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (data.streaks) setStreaks(data.streaks);
+        if (data.gymEntries) setGymEntries(data.gymEntries);
+        if (data.projects) setProjects(data.projects);
+        alert("✅ Daten erfolgreich importiert!");
+      } catch {
+        alert("❌ Fehler beim Importieren der Daten");
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -502,6 +537,33 @@ export default function LifeTracker() {
                 <p className="mt-2 text-amber-400 text-sm">→ {project.nextAction}</p>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Admin Tab - Data Management */}
+        {activeTab === "overview" && isAdmin && (
+          <div className="mt-8 bg-slate-800/50 rounded-2xl p-6 border border-green-500/30">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">🔧 Admin: Datenverwaltung</h3>
+            <div className="flex gap-4 flex-wrap">
+              <button 
+                onClick={exportData}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-xl font-bold flex items-center gap-2"
+              >
+                📥 Export Backup
+              </button>
+              <label className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold flex items-center gap-2 cursor-pointer">
+                📤 Import Backup
+                <input 
+                  type="file" 
+                  accept=".json" 
+                  onChange={importData} 
+                  className="hidden" 
+                />
+              </label>
+            </div>
+            <p className="text-xs text-slate-400 mt-3">
+              Exportiert alle Streaks, Workouts und Projekte als JSON. Import überschreibt bestehende Daten.
+            </p>
           </div>
         )}
 
