@@ -48,7 +48,7 @@ const PATRICK_STREAKS: Streak[] = [
   { id: "2", name: "Yoga", icon: "🧘", completedToday: true, streak: 130, bestStreak: 130, history: [true,true,true,true,true,true,true], totalExercises: 383 },
   { id: "3", name: "Meditation", icon: "🧠", completedToday: false, streak: 6, bestStreak: 6, history: [true,true,true,true,true,true,false], totalExercises: 520 },
   { id: "4", name: "Atemübung", icon: "🌬️", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
-  { id: "5", name: "Gym", icon: "💪", completedToday: false, streak: 0, bestStreak: 0, history: [true,true,true,true,true,true,true], totalExercises: 0 }, // Will add workout entries
+  { id: "5", name: "Gym", icon: "💪", completedToday: false, streak: 3, bestStreak: 3, history: [true,true,true,true,true,true,false], totalExercises: 0 }, // Will add workout entries
   { id: "6", name: "Smoothie", icon: "🥤", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
   { id: "7", name: "Creatin + Salz", icon: "💊", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
   { id: "8", name: "Lesen (5 Seiten)", icon: "📖", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
