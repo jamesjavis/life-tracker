@@ -1,572 +1,429 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Flame, Target, Dumbbell, TrendingUp, Check, Trophy, Zap, Star, Calendar, Activity, Brain, Plus, Save, Briefcase, Rocket, DollarSign, Globe, Users } from "lucide-react";
+import { useState } from "react";
+import { 
+  Rocket, DollarSign, TrendingUp, Target, Zap, Globe, 
+  Briefcase, Wallet, ChevronRight, ExternalLink, 
+  Activity, Calendar, Award, Gift
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Streak = {
-  id: string;
-  name: string;
-  icon: string;
-  completedToday: boolean;
-  streak: number;
-  bestStreak: number;
-  history: boolean[];
-  totalExercises?: number; // For tracking like Gym
+// Patrick's Financial Data (from memory)
+const FINANCES = {
+  savings: 2000,
+  crypto: 10000,
+  monthlyCosts: 1000,
+  funding: { status: "pending", amount: 12000, expected: "May/June 2026" }
 };
 
-type GymEntry = {
-  id: string;
-  date: string;
-  type: string; // "Push", "Pull", "Leg"
-  exercises: { name: string; sets: number; reps: number; weight?: number }[];
-};
-
-type Project = {
-  id: string;
-  name: string;
-  description: string;
-  status: "active" | "planning" | "paused" | "done";
-  priority: "high" | "medium" | "low";
-  nextAction: string;
-};
-
-const loadData = <T,>(key: string, fallback: T): T => {
-  if (typeof window === "undefined") return fallback;
-  const saved = localStorage.getItem(key);
-  return saved ? JSON.parse(saved) : fallback;
-};
-
-const saveData = <T,>(key: string, data: T): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(key, JSON.stringify(data));
-};
-
-// Patrick's actual data from Notion + his input
-const PATRICK_STREAKS: Streak[] = [
-  { id: "1", name: "Duolingo", icon: "🏃", completedToday: false, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
-  { id: "2", name: "Yoga", icon: "🧘", completedToday: true, streak: 130, bestStreak: 130, history: [true,true,true,true,true,true,true], totalExercises: 383 },
-  { id: "3", name: "Meditation", icon: "🧠", completedToday: false, streak: 6, bestStreak: 6, history: [true,true,true,true,true,true,false], totalExercises: 520 },
-  { id: "4", name: "Atemübung", icon: "🌬️", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
-  { id: "5", name: "Gym", icon: "💪", completedToday: false, streak: 3, bestStreak: 3, history: [true,true,true,true,true,true,false], totalExercises: 0 }, // Will add workout entries
-  { id: "6", name: "Smoothie", icon: "🥤", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
-  { id: "7", name: "Creatin + Salz", icon: "💊", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
-  { id: "8", name: "Lesen (5 Seiten)", icon: "📖", completedToday: true, streak: 147, bestStreak: 147, history: [true,true,true,true,true,true,true], totalExercises: 0 },
+// Patrick's Active Projects
+const PROJECTS = [
+  { 
+    id: "1", 
+    name: "Benefitsi", 
+    description: "Rewards & Loyalty App für lokale Geschäfte",
+    status: "active", 
+    priority: "high", 
+    link: "https://benefitsi-dashboard.vercel.app",
+    progress: 75,
+    nextAction: "Firebase Rules + Partner Onboarding"
+  },
+  { 
+    id: "2", 
+    name: "Amigo Creator", 
+    description: "Trading Bot Integration",
+    status: "active", 
+    priority: "high", 
+    link: null,
+    progress: 60,
+    nextAction: "Launch abwarten"
+  },
+  { 
+    id: "3", 
+    name: "eWorld Record", 
+    description: "Abstract Gaming Plattform",
+    status: "planning", 
+    priority: "medium", 
+    link: null,
+    progress: 20,
+    nextAction: "Konzept erstellen"
+  },
+  { 
+    id: "4", 
+    name: "Abstract Spiel", 
+    description: "Eigenes Spiel auf Abstract Blockchain",
+    status: "planning", 
+    priority: "low", 
+    link: null,
+    progress: 10,
+    nextAction: "Game Design"
+  },
 ];
 
-const DEFAULT_PROJECTS: Project[] = [
-  { id: "1", name: "Benefitsi", description: "FlutterFlow App - Partner-Programm", status: "active", priority: "high", nextAction: "Firebase Rules + API Key" },
-  { id: "2", name: "eWorld Record", description: "Games auf Abstract blockchain", status: "planning", priority: "medium", nextAction: "Konzept erstellen" },
-  { id: "3", name: "Abstract Spiel", description: "Eigenes Spiel auf Abstract", status: "planning", priority: "medium", nextAction: "Game Design" },
-  { id: "4", name: "Preis Arbitrage", description: "Automatisiertes Trading", status: "planning", priority: "low", nextAction: "Research" },
-  { id: "5", name: "Life Tracker 2.0", description: "Next.js Habit Tracker", status: "active", priority: "high", nextAction: "Date-Refresh Fix deployed ✅" },
+// Key Metrics / KPIs
+const KPIs = [
+  { label: "Sparquote", value: "67%", target: "80%", icon: TrendingUp, color: "from-green-500 to-emerald-500" },
+  { label: "Daily Progress", value: "87%", target: "100%", icon: Activity, color: "from-blue-500 to-cyan-500" },
+  { label: "Funding Chance", value: "TBD", target: "Mai/Jun", icon: Target, color: "from-purple-500 to-pink-500" },
+  { label: "Net Worth", value: "€12K", target: "€50K", icon: Wallet, color: "from-amber-500 to-orange-500" },
 ];
 
-export default function LifeTracker() {
-  const [streaks, setStreaks] = useState<Streak[]>(PATRICK_STREAKS);
-  const [gymEntries, setGymEntries] = useState<GymEntry[]>([]);
-  const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
-  const [activeTab, setActiveTab] = useState<"overview" | "streaks" | "gym" | "projects">("overview");
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  // Gym entry form
-  const [showGymForm, setShowGymForm] = useState(false);
-  const [gymType, setGymType] = useState<"Push" | "Pull" | "Leg">("Push");
-  const [exercises, setExercises] = useState([{ name: "", sets: 3, reps: 10, weight: 0 }]);
-
-  useEffect(() => {
-    // Load initial data
-    let loadedStreaks = loadData("patrick-streaks", PATRICK_STREAKS);
-    const today = new Date().toISOString().split('T')[0];
-    const savedDate = localStorage.getItem("patrick-streak-date");
-    
-    // Reset completedToday if it's a new day
-    if (savedDate !== today) {
-      loadedStreaks = loadedStreaks.map(s => ({ ...s, completedToday: false }));
-      localStorage.setItem("patrick-streak-date", today);
-    }
-    
-    setStreaks(loadedStreaks);
-    setGymEntries(loadData("patrick-gym", []));
-    setProjects(loadData("patrick-projects", DEFAULT_PROJECTS));
-    setIsLoaded(true);
-    
-    // Check every minute for day changes (midnight reset while app is open)
-    const interval = setInterval(() => {
-      const now = new Date().toISOString().split('T')[0];
-      if (savedDate !== now) {
-        setStreaks(prev => prev.map(s => ({ ...s, completedToday: false })));
-        localStorage.setItem("patrick-streak-date", now);
-      }
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
-      const today = new Date().toISOString().split('T')[0];
-      saveData("patrick-streaks", streaks);
-      saveData("patrick-gym", gymEntries);
-      saveData("patrick-projects", projects);
-      localStorage.setItem("patrick-streak-date", today);
-    }
-  }, [streaks, gymEntries, projects, isLoaded]);
-
-  const completedToday = streaks.filter(s => s.completedToday).length;
-  const totalExercises = gymEntries.reduce((sum, e) => sum + e.exercises.length, 0);
-
-  const toggleStreak = (id: string) => {
-    setStreaks(prev => prev.map(s => {
-      if (s.id === id) {
-        const newCompletedToday = !s.completedToday;
-        const newStreak = newCompletedToday ? s.streak + 1 : Math.max(0, s.streak - 1);
-        const newHistory = [...s.history.slice(1), newCompletedToday];
-        return { ...s, completedToday: newCompletedToday, streak: newStreak, history: newHistory };
-      }
-      return s;
-    }));
-  };
-
-  const addGymEntry = () => {
-    const entry: GymEntry = {
-      id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
-      type: gymType,
-      exercises: exercises.filter(e => e.name.trim())
-    };
-    setGymEntries(prev => [entry, ...prev]);
-    setShowGymForm(false);
-    setExercises([{ name: "", sets: 3, reps: 10, weight: 0 }]);
-  };
-
-  // Data Export/Import functions
-  const exportData = () => {
-    const data = {
-      streaks,
-      gymEntries,
-      projects,
-      exportedAt: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `life-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        if (data.streaks) setStreaks(data.streaks);
-        if (data.gymEntries) setGymEntries(data.gymEntries);
-        if (data.projects) setProjects(data.projects);
-        alert("✅ Daten erfolgreich importiert!");
-      } catch {
-        alert("❌ Fehler beim Importieren der Daten");
-      }
-    };
-    reader.readAsText(file);
-  };
+export default function MissionControl() {
+  const [activeTab, setActiveTab] = useState<"overview" | "projects" | "finances">("overview");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-gradient-to-br from-purple-600/20 via-transparent to-transparent rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-gradient-to-br from-blue-600/20 via-transparent to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute top-[40%] right-[20%] w-[30%] h-[30%] bg-gradient-to-br from-pink-600/10 via-transparent to-transparent rounded-full blur-2xl animate-pulse" style={{ animationDelay: "2s" }} />
+      </div>
+
+      {/* Grid Pattern Overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+        backgroundSize: '60px 60px'
+      }} />
+
+      <div className="relative z-10 max-w-7xl mx-auto p-6 md:p-8">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <header className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
-                Life Tracker
-              </h1>
-              <div className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 rounded-full">
-                <Flame className="h-5 w-5 text-orange-400" />
-                <span className="font-bold text-orange-400">{Math.max(...streaks.map(s => s.streak))}</span>
+            <div className="flex items-center gap-4 mb-2">
+              <div className="relative">
+                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+                  Mission Control
+                </h1>
+                <div className="absolute -top-1 -right-6 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+                <div className="absolute -top-1 -right-6 w-2 h-2 bg-green-500 rounded-full" />
               </div>
-              <button 
-                onClick={() => setIsAdmin(!isAdmin)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-bold transition-all",
-                  isAdmin ? "bg-green-500 text-white" : "bg-slate-700 text-slate-400"
-                )}
-              >
-                {isAdmin ? "🔧 Admin" : "👤"}
-              </button>
+              <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-white/60 backdrop-blur-sm">
+                Patrick Rieder
+              </span>
             </div>
-            <p className="text-slate-400 mt-1 flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+            <p className="text-white/50 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
               {new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+
+          {/* Navigation Tabs */}
+          <nav className="flex gap-2 p-1 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
             {[
-              { key: "overview", icon: "🏠", color: "bg-blue-500", label: "Overview" },
-              { key: "streaks", icon: "🔥", color: "bg-orange-500", label: "Streaks" },
-              { key: "gym", icon: "💪", color: "bg-red-500", label: "Gym" },
-              { key: "projects", icon: "🚀", color: "bg-purple-500", label: "Projects" },
+              { key: "overview", label: "Overview", icon: Activity },
+              { key: "projects", label: "Projects", icon: Rocket },
+              { key: "finances", label: "Finances", icon: DollarSign },
             ].map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                  activeTab === tab.key ? `${tab.color} text-white` : "bg-slate-700/50 text-slate-300"
+                  "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  activeTab === tab.key 
+                    ? "bg-white/10 text-white shadow-lg shadow-white/5" 
+                    : "text-white/50 hover:text-white/80"
                 )}
               >
-                {tab.icon} {tab.label}
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
               </button>
             ))}
-          </div>
-        </div>
+          </nav>
+        </header>
 
         {/* Overview Tab */}
         {activeTab === "overview" && (
-          <div className="space-y-6">
-            {/* Morning Brief - Compact Top Card */}
-            <div className="bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-red-500/10 rounded-2xl p-5 border border-amber-500/30">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-lg flex items-center gap-2">☀️ Morning Brief</h3>
-                <span className="text-xs text-amber-400/70">{new Date().toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-orange-400">{Math.max(...streaks.map(s => s.streak))}</div>
-                  <div className="text-xs text-slate-400 mt-1">Current Streak</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-green-400">{Math.round((completedToday / streaks.length) * 100)}%</div>
-                  <div className="text-xs text-slate-400 mt-1">Weekly</div>
-                </div>
-                <div className="text-center">
-                  {projects.filter(p => p.priority === "high")[0] ? (
-                    <button 
-                      onClick={() => setActiveTab("projects")}
-                      className="text-sm bg-red-500/30 hover:bg-red-500/50 text-red-300 px-3 py-2 rounded-xl transition-all"
-                    >
-                      {projects.filter(p => p.priority === "high")[0]?.name}
-                    </button>
-                  ) : (
-                    <div className="text-2xl">🎯</div>
-                  )}
-                  <div className="text-xs text-slate-400 mt-1">Top Priority</div>
-                </div>
-              </div>
-              {/* Quick Toggle Row */}
-              <div className="flex gap-2 flex-wrap">
-                <span className="text-xs text-slate-400 w-full mb-1">⚡ Quick Done:</span>
-                {streaks.filter(s => !s.completedToday).slice(0, 4).map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => toggleStreak(s.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-slate-700/50 hover:bg-green-500/30 text-slate-300 hover:text-green-400 rounded-lg text-sm transition-all"
-                  >
-                    <span>{s.icon}</span>
-                    <span>{s.name}</span>
-                  </button>
-                ))}
-                {streaks.filter(s => !s.completedToday).length === 0 && (
-                  <span className="text-sm text-green-400">🎉 All habits done!</span>
-                )}
-              </div>
-            </div>
-
-            {/* Weekly Streak Chart */}
-            <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-              <h3 className="font-bold mb-4 flex items-center gap-2">📊 Weekly Consistency</h3>
-              <div className="flex justify-between items-end gap-2">
-                {streaks[0]?.history.map((done, i) => {
-                  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                  const heights = streaks.map(s => s.history[i] ? 100 : 0);
-                  const avgHeight = heights.reduce((a: number, b: number) => a + b, 0) / heights.length;
-                  return (
-                    <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                      <div className="w-full bg-slate-700 rounded-t-lg relative" style={{ height: '80px' }}>
-                        <div 
-                          className={`absolute bottom-0 w-full rounded-t-lg transition-all ${done ? 'bg-gradient-to-t from-green-500 to-green-400' : 'bg-slate-600'}`}
-                          style={{ height: `${avgHeight}%` }}
-                        />
-                      </div>
-                      <span className={`text-xs ${done ? 'text-green-400' : 'text-slate-500'}`}>{dayLabels[i]}</span>
+          <div className="space-y-8">
+            {/* Quick Status Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {KPIs.map((kpi, i) => (
+                <div 
+                  key={i}
+                  className="relative group p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:translate-y-[-2px]"
+                >
+                  <div className={cn(`absolute inset-0 bg-gradient-to-br ${kpi.color} opacity-10 rounded-2xl blur-xl group-hover:opacity-20 transition-opacity`)} />
+                  <div className="relative">
+                    <div className={cn(`inline-flex p-2 bg-gradient-to-br ${kpi.color} rounded-xl mb-4`)}>
+                      <kpi.icon className="w-5 h-5 text-white" />
                     </div>
-                  );
-                })}
-              </div>
-              <div className="mt-3 flex justify-between text-sm">
-                <span className="text-slate-400">Wochen-Score: {Math.round((completedToday / streaks.length) * 100)}%</span>
-                <span className="text-slate-400">{streaks.filter(s => s.history.every(d => d)).length} / {streaks.length} Habits perfekt</span>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { icon: Flame, color: "from-orange-500 to-red-500", label: "Today", value: `${completedToday}/${streaks.length}`, sub: "done" },
-                { icon: Trophy, color: "from-purple-500 to-pink-500", label: "Best Streak", value: Math.max(...streaks.map(s => s.streak)), sub: "days" },
-                { icon: Dumbbell, color: "from-red-500 to-orange-500", label: "Workouts", value: gymEntries.length, sub: "logged" },
-                { icon: Brain, color: "from-green-500 to-emerald-500", label: "Yoga Übungen", value: 383, sub: "total" },
-              ].map((stat, i) => (
-                <div key={i} className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                  <div className={cn(`bg-gradient-to-r ${stat.color} w-12 h-12 rounded-xl flex items-center justify-center mb-3`)}>
-                    <stat.icon className="h-6 w-6 text-white" />
+                    <p className="text-3xl font-bold mb-1">{kpi.value}</p>
+                    <p className="text-sm text-white/50">{kpi.label}</p>
+                    <p className="text-xs text-white/30 mt-1">Target: {kpi.target}</p>
                   </div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-slate-400">{stat.label}</p>
                 </div>
               ))}
             </div>
 
-            {/* Today's Focus */}
-            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/10 rounded-2xl p-6 border border-amber-500/30">
-              <h3 className="text-xl font-bold mb-4">🚨 Today's Priority</h3>
-              <div className="flex gap-2">
-                {projects.filter(p => p.priority === "high").map(p => (
-                  <span key={p.id} className="px-4 py-2 bg-red-500/20 text-red-400 rounded-xl font-bold">
-                    {p.name}: {p.nextAction}
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* High Priority Project */}
+              <div className="lg:col-span-2 p-6 bg-gradient-to-br from-purple-500/10 via-white/5 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-white/10">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-500/20 rounded-xl">
+                      <Zap className="w-5 h-5 text-red-400" />
+                    </div>
+                    <h2 className="text-xl font-bold">Top Priority</h2>
+                  </div>
+                  <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">
+                    HIGH
                   </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Streaks */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                <h3 className="font-bold mb-3">🔥 Today's Streaks</h3>
-                <div className="space-y-2">
-                  {streaks.slice(0,5).map(s => (
-                    <div key={s.id} className="flex items-center justify-between">
-                      <span className="flex items-center gap-2"><span>{s.icon}</span> {s.name}</span>
-                      <button onClick={() => toggleStreak(s.id)} className={cn("px-3 py-1 rounded-full text-sm", s.completedToday ? "bg-green-500 text-white" : "bg-slate-700")}>
-                        {s.completedToday ? "✓" : `${s.streak} days`}
-                      </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {PROJECTS.filter(p => p.priority === "high").map(project => (
+                    <div key={project.id} className="p-5 bg-white/5 rounded-2xl border border-white/10">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold flex items-center gap-2">
+                            {project.name}
+                            {project.link && (
+                              <a 
+                                href={project.link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="p-1 bg-white/10 rounded hover:bg-white/20 transition-colors"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5 text-white/60" />
+                              </a>
+                            )}
+                          </h3>
+                          <p className="text-sm text-white/50">{project.description}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div className="mb-3">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-white/50">Progress</span>
+                          <span className="text-white/70">{project.progress}%</span>
+                        </div>
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-500"
+                            style={{ width: `${project.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm">
+                        <span className="text-white/40">Next:</span>{" "}
+                        <span className="text-white/80">{project.nextAction}</span>
+                      </p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                <h3 className="font-bold mb-3">💪 Recent Workouts</h3>
-                {gymEntries.length === 0 ? (
-                  <p className="text-slate-400">Noch keine Workouts eingetragen</p>
-                ) : (
-                  <div className="space-y-2">
-                    {gymEntries.slice(0,3).map(e => (
-                      <div key={e.id} className="flex justify-between text-sm">
-                        <span>{e.date} - {e.type}</span>
-                        <span className="text-slate-400">{e.exercises.length} Übungen</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Streaks Tab */}
-        {activeTab === "streaks" && (
-          <div className="space-y-3">
-            {streaks.map(streak => (
-              <div
-                key={streak.id}
-                className={cn(
-                  "flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all",
-                  streak.completedToday ? "bg-green-500/10 border-green-500/30" : "bg-slate-800/50 border-slate-700/50"
-                )}
-                onClick={() => toggleStreak(streak.id)}
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl">{streak.icon}</span>
-                  <div>
-                    <p className="font-bold text-lg">{streak.name}</p>
-                    <p className="text-xs text-slate-400">
-                      {streak.totalExercises ? `${streak.totalExercises} total` : ''}
+              {/* Quick Links */}
+              <div className="p-6 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-white/60" />
+                  Quick Links
+                </h2>
+                <div className="space-y-3">
+                  <a 
+                    href="https://benefitsi-dashboard.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Gift className="w-5 h-5 text-pink-400" />
+                      <span>Benefitsi Dashboard</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-white/70 transition-colors" />
+                  </a>
+                  
+                  <a 
+                    href="https://benefitsi-dashboard.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 rounded-xl border border-pink-500/20 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Award className="w-5 h-5 text-pink-400" />
+                      <span className="font-medium">Benefitsi Partner Portal</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-pink-400/60" />
+                  </a>
+
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Briefcase className="w-5 h-5 text-amber-400" />
+                      <span className="font-medium">Funding Status</span>
+                    </div>
+                    <p className="text-sm text-white/50">
+                      €12.000/mo Grant<br />
+                      <span className="text-amber-400">Antwort: {FINANCES.funding.expected}</span>
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className={cn("text-3xl font-bold", streak.completedToday ? "text-green-400" : "text-slate-400")}>{streak.streak}</p>
-                    <p className="text-xs text-slate-500">days</p>
-                  </div>
-                  {streak.completedToday && <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"><Check className="h-6 w-6" /></div>}
-                </div>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Gym Tab */}
-        {activeTab === "gym" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">💪 Gym Workouts</h2>
-              {isAdmin && (
-                <button 
-                  onClick={() => setShowGymForm(!showGymForm)}
-                  className="px-4 py-2 bg-red-500 rounded-xl font-bold"
-                >
-                  + Workout
-                </button>
-              )}
-            </div>
-
-            {showGymForm && (
-              <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
-                <h3 className="font-bold mb-4">Neues Workout eintragen</h3>
-                <div className="mb-4">
-                  <label className="text-sm text-slate-400">Trainingsart</label>
-                  <div className="flex gap-2 mt-2">
-                    {(["Push", "Pull", "Leg"] as const).map(t => (
-                      <button
-                        key={t}
-                        onClick={() => setGymType(t)}
-                        className={cn("px-4 py-2 rounded-xl", gymType === t ? "bg-red-500" : "bg-slate-700")}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  {exercises.map((ex, i) => (
-                    <div key={i} className="flex gap-2">
-                      <input
-                        placeholder="Übung"
-                        className="flex-1 bg-slate-700 rounded-lg px-3 py-2"
-                        value={ex.name}
-                        onChange={(e) => {
-                          const newEx = [...exercises];
-                          newEx[i].name = e.target.value;
-                          setExercises(newEx);
-                        }}
-                      />
-                      <input
-                        type="number"
-                        placeholder="Sätze"
-                        className="w-16 bg-slate-700 rounded-lg px-2 py-2"
-                        value={ex.sets}
-                        onChange={(e) => {
-                          const newEx = [...exercises];
-                          newEx[i].sets = parseInt(e.target.value) || 0;
-                          setExercises(newEx);
-                        }}
-                      />
-                      <input
-                        type="number"
-                        placeholder="Wdh"
-                        className="w-16 bg-slate-700 rounded-lg px-2 py-2"
-                        value={ex.reps}
-                        onChange={(e) => {
-                          const newEx = [...exercises];
-                          newEx[i].reps = parseInt(e.target.value) || 0;
-                          setExercises(newEx);
-                        }}
-                      />
-                      <input
-                        type="number"
-                        placeholder="KG"
-                        className="w-20 bg-slate-700 rounded-lg px-2 py-2"
-                        value={ex.weight || ''}
-                        onChange={(e) => {
-                          const newEx = [...exercises];
-                          newEx[i].weight = parseInt(e.target.value) || 0;
-                          setExercises(newEx);
-                        }}
-                      />
-                    </div>
-                  ))}
-                  <button onClick={() => setExercises([...exercises, { name: "", sets: 3, reps: 10, weight: 0 }])} className="text-sm text-slate-400">+ Übung hinzufügen</button>
-                </div>
-                <button onClick={addGymEntry} className="w-full py-3 bg-green-500 rounded-xl font-bold">Speichern</button>
-              </div>
-            )}
-
-            {/* Workout History */}
-            <div className="space-y-3">
-              {gymEntries.length === 0 ? (
-                <p className="text-center text-slate-400 py-8">Noch keine Workouts eingetragen</p>
-              ) : (
-                gymEntries.map(entry => (
-                  <div key={entry.id} className="bg-slate-800/50 rounded-2xl p-5 border border-slate-700/50">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-bold">{entry.date}</span>
-                      <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full">{entry.type} Day</span>
-                    </div>
-                    <div className="space-y-1">
-                      {entry.exercises.map((ex, i) => (
-                        <div key={i} className="flex justify-between text-sm">
-                          <span>{ex.name}</span>
-                          <span className="text-slate-400">{ex.sets}x{ex.reps} {ex.weight ? `@ ${ex.weight}kg` : ''}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))
-              )}
             </div>
           </div>
         )}
 
         {/* Projects Tab */}
         {activeTab === "projects" && (
-          <div className="space-y-4">
-            {projects.map(project => (
-              <div key={project.id} className={cn(
-                "p-5 rounded-2xl border",
-                project.priority === "high" ? "bg-red-500/10 border-red-500/30" : 
-                project.priority === "medium" ? "bg-yellow-500/10 border-yellow-500/30" : "bg-slate-800/50 border-slate-700/50"
-              )}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-lg">{project.name}</h3>
-                    <p className="text-slate-400">{project.description}</p>
-                  </div>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-sm",
-                    project.status === "active" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
-                  )}>
-                    {project.status}
-                  </span>
-                </div>
-                <p className="mt-2 text-amber-400 text-sm">→ {project.nextAction}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Admin Tab - Data Management */}
-        {activeTab === "overview" && isAdmin && (
-          <div className="mt-8 bg-slate-800/50 rounded-2xl p-6 border border-green-500/30">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">🔧 Admin: Datenverwaltung</h3>
-            <div className="flex gap-4 flex-wrap">
-              <button 
-                onClick={exportData}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-xl font-bold flex items-center gap-2"
-              >
-                📥 Export Backup
-              </button>
-              <label className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold flex items-center gap-2 cursor-pointer">
-                📤 Import Backup
-                <input 
-                  type="file" 
-                  accept=".json" 
-                  onChange={importData} 
-                  className="hidden" 
-                />
-              </label>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">All Projects</h2>
+              <span className="px-3 py-1 bg-white/10 rounded-full text-sm text-white/60">
+                {PROJECTS.length} Projects
+              </span>
             </div>
-            <p className="text-xs text-slate-400 mt-3">
-              Exportiert alle Streaks, Workouts und Projekte als JSON. Import überschreibt bestehende Daten.
-            </p>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {PROJECTS.map(project => (
+                <div 
+                  key={project.id}
+                  className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
+                        {project.name}
+                        {project.link && (
+                          <a 
+                            href={project.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="p-1 bg-white/10 rounded hover:bg-white/20 transition-colors"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-white/60" />
+                          </a>
+                        )}
+                      </h3>
+                      <p className="text-sm text-white/50">{project.description}</p>
+                    </div>
+                    <div className={cn(
+                      "px-3 py-1 rounded-full text-xs font-medium",
+                      project.priority === "high" ? "bg-red-500/20 text-red-400" :
+                      project.priority === "medium" ? "bg-amber-500/20 text-amber-400" :
+                      "bg-slate-500/20 text-slate-400"
+                    )}>
+                      {project.priority.toUpperCase()}
+                    </div>
+                  </div>
+
+                  {/* Progress */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-white/50">Progress</span>
+                      <span className="font-medium">{project.progress}%</span>
+                    </div>
+                    <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+                        style={{ width: `${project.progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex items-center gap-4">
+                    <span className={cn(
+                      "px-3 py-1 rounded-full text-xs font-medium",
+                      project.status === "active" ? "bg-green-500/20 text-green-400" :
+                      project.status === "planning" ? "bg-blue-500/20 text-blue-400" :
+                      "bg-slate-500/20 text-slate-400"
+                    )}>
+                      {project.status.toUpperCase()}
+                    </span>
+                    <span className="text-sm text-white/40">
+                      Next: {project.nextAction}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Finances Tab */}
+        {activeTab === "finances" && (
+          <div className="space-y-8">
+            <h2 className="text-2xl font-bold">Financial Overview</h2>
+
+            {/* Main Numbers */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="p-8 bg-gradient-to-br from-green-500/20 to-emerald-500/10 backdrop-blur-xl rounded-3xl border border-green-500/20">
+                <p className="text-sm text-white/50 mb-2">Savings</p>
+                <p className="text-5xl font-bold text-green-400">
+                  €{FINANCES.savings.toLocaleString()}
+                </p>
+              </div>
+              
+              <div className="p-8 bg-gradient-to-br from-amber-500/20 to-orange-500/10 backdrop-blur-xl rounded-3xl border border-amber-500/20">
+                <p className="text-sm text-white/50 mb-2">Crypto / Bitcoin</p>
+                <p className="text-5xl font-bold text-amber-400">
+                  €{FINANCES.crypto.toLocaleString()}
+                </p>
+              </div>
+              
+              <div className="p-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 backdrop-blur-xl rounded-3xl border border-blue-500/20">
+                <p className="text-sm text-white/50 mb-2">Monthly Costs</p>
+                <p className="text-5xl font-bold text-blue-400">
+                  €{FINANCES.monthlyCosts.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {/* Funding Status */}
+            <div className="p-8 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-xl rounded-3xl border border-purple-500/20">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-purple-500/30 rounded-2xl">
+                  <Zap className="w-6 h-6 text-purple-300" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Pending Funding</h3>
+                  <p className="text-white/50">Grant Application</p>
+                </div>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-white/50 mb-1">Potential Monthly Grant</p>
+                  <p className="text-4xl font-bold text-green-400">
+                    €{FINANCES.funding.amount.toLocaleString()}/mo
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-white/50 mb-1">Expected Response</p>
+                  <p className="text-3xl font-bold text-purple-300">
+                    {FINANCES.funding.expected}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Net Worth */}
+            <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-white/50 mb-2">Total Net Worth</p>
+                  <p className="text-6xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    €{(FINANCES.savings + FINANCES.crypto).toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-white/50">Runway</p>
+                  <p className="text-3xl font-bold text-white">
+                    ~{Math.round((FINANCES.savings + FINANCES.crypto) / FINANCES.monthlyCosts)} months
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t border-white/10 text-center text-white/30 text-sm">
+          <p>Mission Control • Patrick Rieder • {new Date().getFullYear()}</p>
+        </footer>
       </div>
     </div>
   );
