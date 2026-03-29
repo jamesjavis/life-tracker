@@ -78,6 +78,9 @@ const HABITS = [
   { id: "gym", label: "Gym", emoji: "💪" },
   { id: "lesen", label: "Lesen", emoji: "📚" },
   { id: "creatin", label: "Creatin", emoji: "💊" },
+  { id: "pushups", label: "Push-ups", emoji: "💨" },
+  { id: "atem", label: "Atemübung", emoji: "🌬️" },
+  { id: "smoothie", label: "Smoothie", emoji: "🥤" },
 ];
 
 // === Bucket List ===
@@ -97,6 +100,11 @@ export default function MissionControl() {
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
   const [newBucketText, setNewBucketText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+  const [workoutType, setWorkoutType] = useState("strength");
+  const [workoutDuration, setWorkoutDuration] = useState(60);
+  const [workoutIntensity, setWorkoutIntensity] = useState("medium");
+  const [workoutNotes, setWorkoutNotes] = useState("");
 
   // Load data on mount
   useEffect(() => {
@@ -156,13 +164,25 @@ export default function MissionControl() {
   }
 
   async function logGym() {
+    // Open workout modal instead of immediately logging
+    setShowWorkoutModal(true);
+  }
+
+  async function confirmGymLog() {
     const today = new Date().toISOString().split("T")[0];
     if (gymLogs.includes(today)) return;
+
+    const workout = {
+      type: workoutType,
+      duration: workoutDuration,
+      intensity: workoutIntensity,
+      notes: workoutNotes
+    };
 
     const res = await fetch("/api/gym", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: today }),
+      body: JSON.stringify({ date: today, workout }),
     });
 
     if (res.ok) {
@@ -170,6 +190,12 @@ export default function MissionControl() {
       setGymLogs(prev => [...prev, today].sort());
       setGymStreak(data.streak);
     }
+    setShowWorkoutModal(false);
+    // Reset form
+    setWorkoutType("strength");
+    setWorkoutDuration(60);
+    setWorkoutIntensity("medium");
+    setWorkoutNotes("");
   }
 
   async function toggleBucketItem(id: string) {
@@ -769,6 +795,106 @@ export default function MissionControl() {
                     ~{Math.round((FINANCES.savings + FINANCES.crypto) / FINANCES.monthlyCosts)} months
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Workout Modal */}
+        {showWorkoutModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-md p-8 bg-[#111] rounded-3xl border border-white/20 shadow-2xl">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <div className="p-2 bg-orange-500/20 rounded-xl">
+                  <Dumbbell className="w-5 h-5 text-orange-400" />
+                </div>
+                Workout Details
+              </h3>
+
+              {/* Workout Type */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Workout Type</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["strength", "cardio", "mixed"].map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setWorkoutType(type)}
+                      className={cn(
+                        "p-3 rounded-xl text-sm font-medium capitalize transition-all",
+                        workoutType === type
+                          ? "bg-orange-500/30 border border-orange-500/50 text-orange-300"
+                          : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                      )}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Duration: {workoutDuration} min</label>
+                <input
+                  type="range"
+                  min="15"
+                  max="120"
+                  step="5"
+                  value={workoutDuration}
+                  onChange={e => setWorkoutDuration(Number(e.target.value))}
+                  className="w-full accent-orange-500"
+                />
+              </div>
+
+              {/* Intensity */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Intensity</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["light", "medium", "intense"].map(intensity => (
+                    <button
+                      key={intensity}
+                      onClick={() => setWorkoutIntensity(intensity)}
+                      className={cn(
+                        "p-3 rounded-xl text-sm font-medium capitalize transition-all",
+                        workoutIntensity === intensity
+                          ? intensity === "light" ? "bg-green-500/30 border border-green-500/50 text-green-300" :
+                            intensity === "medium" ? "bg-amber-500/30 border border-amber-500/50 text-amber-300" :
+                            "bg-red-500/30 border border-red-500/50 text-red-300"
+                          : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                      )}
+                    >
+                      {intensity}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="mb-6">
+                <label className="block text-sm text-white/50 mb-2">Notes (optional)</label>
+                <textarea
+                  value={workoutNotes}
+                  onChange={e => setWorkoutNotes(e.target.value)}
+                  placeholder="e.g. PR on deadlift, felt great..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowWorkoutModal(false)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 font-medium transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmGymLog}
+                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-xl font-bold text-white transition-all"
+                >
+                  Log Session
+                </button>
               </div>
             </div>
           </div>
