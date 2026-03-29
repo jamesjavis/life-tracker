@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { 
-  Rocket, DollarSign, TrendingUp, Target, Zap, Globe, 
-  Briefcase, Wallet, ChevronRight, ExternalLink, 
-  Activity, Calendar, Award, Gift
+import { useState, useEffect } from "react";
+import {
+  Rocket, DollarSign, TrendingUp, Target, Zap, Globe,
+  Briefcase, Wallet, ChevronRight, ExternalLink,
+  Activity, Calendar, Award, Gift, CheckCircle2, Circle,
+  Dumbbell, Flame, Star, TrendingDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Patrick's Financial Data (from memory)
+// === Financial Data ===
 const FINANCES = {
   savings: 2000,
   crypto: 10000,
@@ -16,51 +17,51 @@ const FINANCES = {
   funding: { status: "pending", amount: 12000, expected: "May/June 2026" }
 };
 
-// Patrick's Active Projects
+// === Projects ===
 const PROJECTS = [
-  { 
-    id: "1", 
-    name: "Benefitsi", 
+  {
+    id: "1",
+    name: "Benefitsi",
     description: "Rewards & Loyalty App für lokale Geschäfte",
-    status: "active", 
-    priority: "high", 
+    status: "active",
+    priority: "high",
     link: "https://benefitsi-dashboard.vercel.app",
     progress: 75,
     nextAction: "Firebase Rules + Partner Onboarding"
   },
-  { 
-    id: "2", 
-    name: "Amigo Creator", 
+  {
+    id: "2",
+    name: "Amigo Creator",
     description: "Trading Bot Integration",
-    status: "active", 
-    priority: "high", 
+    status: "active",
+    priority: "high",
     link: null,
     progress: 60,
     nextAction: "Launch abwarten"
   },
-  { 
-    id: "3", 
-    name: "eWorld Record", 
+  {
+    id: "3",
+    name: "eWorld Record",
     description: "Abstract Gaming Plattform",
-    status: "planning", 
-    priority: "medium", 
+    status: "planning",
+    priority: "medium",
     link: null,
     progress: 20,
     nextAction: "Konzept erstellen"
   },
-  { 
-    id: "4", 
-    name: "Abstract Spiel", 
+  {
+    id: "4",
+    name: "Abstract Spiel",
     description: "Eigenes Spiel auf Abstract Blockchain",
-    status: "planning", 
-    priority: "low", 
+    status: "planning",
+    priority: "low",
     link: null,
     progress: 10,
     nextAction: "Game Design"
   },
 ];
 
-// Key Metrics / KPIs
+// === KPIs ===
 const KPIs = [
   { label: "Sparquote", value: "67%", target: "80%", icon: TrendingUp, color: "from-green-500 to-emerald-500" },
   { label: "Daily Progress", value: "87%", target: "100%", icon: Activity, color: "from-blue-500 to-cyan-500" },
@@ -68,8 +69,102 @@ const KPIs = [
   { label: "Net Worth", value: "€12K", target: "€50K", icon: Wallet, color: "from-amber-500 to-orange-500" },
 ];
 
+// === Habits ===
+const HABITS = [
+  { id: "duolingo", label: "Duolingo", emoji: "🇪🇸" },
+  { id: "yoga", label: "Yoga", emoji: "🧘" },
+  { id: "meditation", label: "Meditation", emoji: "🧘‍♂️" },
+  { id: "gym", label: "Gym", emoji: "💪" },
+  { id: "lesen", label: "Lesen", emoji: "📚" },
+  { id: "creatin", label: "Creatin", emoji: "💊" },
+];
+
+// === Bucket List ===
+const BUCKET_LIST = [
+  { id: "1", text: "1M Euro Net Worth", target: "€1M", icon: "💰" },
+  { id: "2", text: "Funding received (€12K/mo)", target: "€12K/mo", icon: "🎯" },
+  { id: "3", text: "Successful app launch", target: "Launch", icon: "🚀" },
+  { id: "4", text: "Fitness goals achieved", target: "Fit", icon: "💪" },
+  { id: "5", text: "eWorld Record game live", target: "Game", icon: "🎮" },
+];
+
 export default function MissionControl() {
-  const [activeTab, setActiveTab] = useState<"overview" | "projects" | "finances">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "projects" | "finances" | "tracker">("overview");
+  const [habits, setHabits] = useState<Record<string, boolean>>({});
+  const [gymStreak, setGymStreak] = useState(0);
+  const [gymLogs, setGymLogs] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load data on mount
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  async function fetchData() {
+    try {
+      // Fetch habits
+      const habitsRes = await fetch("/api/habits");
+      if (habitsRes.ok) {
+        const habitsData = await habitsRes.json();
+        const today = new Date().toISOString().split("T")[0];
+        setHabits(habitsData.habits?.[today] || {});
+      }
+
+      // Fetch gym
+      const gymRes = await fetch("/api/gym");
+      if (gymRes.ok) {
+        const gymData = await gymRes.json();
+        setGymStreak(gymData.streak || 0);
+        setGymLogs(gymData.logs || []);
+      }
+    } catch (e) {
+      console.error("Failed to load data", e);
+    }
+    setLoading(false);
+  }
+
+  async function toggleHabit(habitId: string) {
+    const newValue = !habits[habitId];
+    const today = new Date().toISOString().split("T")[0];
+
+    const res = await fetch("/api/habits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ habitId, completed: newValue, date: today }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setHabits(prev => ({ ...prev, [habitId]: newValue }));
+
+      // Update daily progress
+      const progressEl = document.querySelector('[data-daily-progress]');
+      if (progressEl) {
+        progressEl.textContent = `${Math.round((data.completedCount / data.total) * 100)}%`;
+      }
+    }
+  }
+
+  async function logGym() {
+    const today = new Date().toISOString().split("T")[0];
+    if (gymLogs.includes(today)) return;
+
+    const res = await fetch("/api/gym", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: today }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setGymLogs(prev => [...prev, today].sort());
+      setGymStreak(data.streak);
+    }
+  }
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  const completedCount = Object.values(habits).filter(Boolean).length;
+  const completedPercentage = Math.round((completedCount / HABITS.length) * 100);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
@@ -87,7 +182,7 @@ export default function MissionControl() {
       }} />
 
       <div className="relative z-10 max-w-7xl mx-auto p-6 md:p-8">
-        
+
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
           <div>
@@ -113,6 +208,7 @@ export default function MissionControl() {
           <nav className="flex gap-2 p-1 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
             {[
               { key: "overview", label: "Overview", icon: Activity },
+              { key: "tracker", label: "Tracker", icon: Dumbbell },
               { key: "projects", label: "Projects", icon: Rocket },
               { key: "finances", label: "Finances", icon: DollarSign },
             ].map(tab => (
@@ -121,8 +217,8 @@ export default function MissionControl() {
                 onClick={() => setActiveTab(tab.key as any)}
                 className={cn(
                   "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all",
-                  activeTab === tab.key 
-                    ? "bg-white/10 text-white shadow-lg shadow-white/5" 
+                  activeTab === tab.key
+                    ? "bg-white/10 text-white shadow-lg shadow-white/5"
                     : "text-white/50 hover:text-white/80"
                 )}
               >
@@ -139,7 +235,7 @@ export default function MissionControl() {
             {/* Quick Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {KPIs.map((kpi, i) => (
-                <div 
+                <div
                   key={i}
                   className="relative group p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:translate-y-[-2px]"
                 >
@@ -171,7 +267,7 @@ export default function MissionControl() {
                     HIGH
                   </span>
                 </div>
-                
+
                 <div className="space-y-4">
                   {PROJECTS.filter(p => p.priority === "high").map(project => (
                     <div key={project.id} className="p-5 bg-white/5 rounded-2xl border border-white/10">
@@ -180,9 +276,9 @@ export default function MissionControl() {
                           <h3 className="text-lg font-bold flex items-center gap-2">
                             {project.name}
                             {project.link && (
-                              <a 
-                                href={project.link} 
-                                target="_blank" 
+                              <a
+                                href={project.link}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-1 bg-white/10 rounded hover:bg-white/20 transition-colors"
                               >
@@ -193,7 +289,7 @@ export default function MissionControl() {
                           <p className="text-sm text-white/50">{project.description}</p>
                         </div>
                       </div>
-                      
+
                       {/* Progress Bar */}
                       <div className="mb-3">
                         <div className="flex justify-between text-xs mb-1">
@@ -201,13 +297,13 @@ export default function MissionControl() {
                           <span className="text-white/70">{project.progress}%</span>
                         </div>
                         <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-500"
                             style={{ width: `${project.progress}%` }}
                           />
                         </div>
                       </div>
-                      
+
                       <p className="text-sm">
                         <span className="text-white/40">Next:</span>{" "}
                         <span className="text-white/80">{project.nextAction}</span>
@@ -224,7 +320,7 @@ export default function MissionControl() {
                   Quick Links
                 </h2>
                 <div className="space-y-3">
-                  <a 
+                  <a
                     href="https://benefitsi-dashboard.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -236,8 +332,8 @@ export default function MissionControl() {
                     </div>
                     <ChevronRight className="w-4 h-4 text-white/40 group-hover:text-white/70 transition-colors" />
                   </a>
-                  
-                  <a 
+
+                  <a
                     href="https://benefitsi-dashboard.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -266,6 +362,177 @@ export default function MissionControl() {
           </div>
         )}
 
+        {/* Tracker Tab */}
+        {activeTab === "tracker" && (
+          <div className="space-y-8">
+            {/* Daily Habits */}
+            <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/20 rounded-xl">
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  </div>
+                  <h2 className="text-xl font-bold">Daily Habits</h2>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-green-400">{completedPercentage}%</p>
+                  <p className="text-xs text-white/50">{completedCount}/{HABITS.length} done</p>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="h-3 bg-white/10 rounded-full overflow-hidden mb-6">
+                <div
+                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${completedPercentage}%` }}
+                />
+              </div>
+
+              {/* Habits Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                {HABITS.map(habit => (
+                  <button
+                    key={habit.id}
+                    onClick={() => toggleHabit(habit.id)}
+                    className={cn(
+                      "p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-[0.98]",
+                      habits[habit.id]
+                        ? "bg-green-500/20 border-green-500/30"
+                        : "bg-white/5 border-white/10 hover:border-white/20"
+                    )}
+                  >
+                    <div className="text-3xl mb-2">{habit.emoji}</div>
+                    <div className="text-sm font-medium">{habit.label}</div>
+                    <div className="mt-2">
+                      {habits[habit.id] ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-400 mx-auto" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-white/30 mx-auto" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Gym Tracker */}
+            <div className="p-8 bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl rounded-3xl border border-orange-500/20">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-500/20 rounded-xl">
+                    <Flame className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <h2 className="text-xl font-bold">Gym Tracker</h2>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-4xl font-bold text-orange-400">{gymStreak}</p>
+                    <p className="text-xs text-white/50">day streak</p>
+                  </div>
+                  <div className="w-16 h-16 relative">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="32" cy="32" r="28"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="none"
+                        className="text-white/10"
+                      />
+                      <circle
+                        cx="32" cy="32" r="28"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 28}`}
+                        strokeDashoffset={`${2 * Math.PI * 28 * (1 - Math.min(gymStreak / 30, 1))}`}
+                        className="text-orange-500 transition-all duration-500"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Log Gym Button */}
+              <button
+                onClick={logGym}
+                disabled={gymLogs.includes(todayStr)}
+                className={cn(
+                  "w-full py-4 rounded-2xl font-bold text-lg transition-all",
+                  gymLogs.includes(todayStr)
+                    ? "bg-green-500/20 text-green-400 cursor-default"
+                    : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 active:scale-[0.98]"
+                )}
+              >
+                {gymLogs.includes(todayStr) ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-5 h-5" /> Trainiert heute ✓
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Dumbbell className="w-5 h-5" /> Gym Session loggen
+                  </span>
+                )}
+              </button>
+
+              {/* Recent Sessions */}
+              <div className="mt-6">
+                <p className="text-sm text-white/50 mb-3">Letzte Sessions</p>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {gymLogs.slice(-7).reverse().map((log, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "px-3 py-2 rounded-xl text-xs whitespace-nowrap",
+                        log === todayStr
+                          ? "bg-orange-500/30 text-orange-300"
+                          : "bg-white/5 text-white/50"
+                      )}
+                    >
+                      {new Date(log).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' })}
+                    </div>
+                  ))}
+                  {gymLogs.length === 0 && (
+                    <p className="text-sm text-white/30">Noch keine Sessions geloggt</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Bucket List */}
+            <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/20 rounded-xl">
+                    <Star className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <h2 className="text-xl font-bold">Bucket List</h2>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {BUCKET_LIST.map((item, i) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10"
+                  >
+                    <span className="text-2xl">{item.icon}</span>
+                    <div className="flex-1">
+                      <p className="font-medium">{item.text}</p>
+                      <p className="text-xs text-white/40">{item.target}</p>
+                    </div>
+                    {i < 2 && (
+                      <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
+                        IN PROGRESS
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Projects Tab */}
         {activeTab === "projects" && (
           <div className="space-y-6">
@@ -278,7 +545,7 @@ export default function MissionControl() {
 
             <div className="grid md:grid-cols-2 gap-4">
               {PROJECTS.map(project => (
-                <div 
+                <div
                   key={project.id}
                   className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all"
                 >
@@ -287,9 +554,9 @@ export default function MissionControl() {
                       <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
                         {project.name}
                         {project.link && (
-                          <a 
-                            href={project.link} 
-                            target="_blank" 
+                          <a
+                            href={project.link}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="p-1 bg-white/10 rounded hover:bg-white/20 transition-colors"
                           >
@@ -316,7 +583,7 @@ export default function MissionControl() {
                       <span className="font-medium">{project.progress}%</span>
                     </div>
                     <div className="h-3 bg-white/10 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
                         style={{ width: `${project.progress}%` }}
                       />
@@ -356,14 +623,14 @@ export default function MissionControl() {
                   €{FINANCES.savings.toLocaleString()}
                 </p>
               </div>
-              
+
               <div className="p-8 bg-gradient-to-br from-amber-500/20 to-orange-500/10 backdrop-blur-xl rounded-3xl border border-amber-500/20">
                 <p className="text-sm text-white/50 mb-2">Crypto / Bitcoin</p>
                 <p className="text-5xl font-bold text-amber-400">
                   €{FINANCES.crypto.toLocaleString()}
                 </p>
               </div>
-              
+
               <div className="p-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 backdrop-blur-xl rounded-3xl border border-blue-500/20">
                 <p className="text-sm text-white/50 mb-2">Monthly Costs</p>
                 <p className="text-5xl font-bold text-blue-400">
@@ -383,7 +650,7 @@ export default function MissionControl() {
                   <p className="text-white/50">Grant Application</p>
                 </div>
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-sm text-white/50 mb-1">Potential Monthly Grant</p>
