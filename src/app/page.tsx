@@ -8,6 +8,7 @@ import {
   Dumbbell, Flame, Star, TrendingDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Download } from "lucide-react";
 
 // === Financial Data ===
 const FINANCES = {
@@ -93,6 +94,8 @@ export default function MissionControl() {
   const [habits, setHabits] = useState<Record<string, boolean>>({});
   const [gymStreak, setGymStreak] = useState(0);
   const [gymLogs, setGymLogs] = useState<string[]>([]);
+  const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
+  const [newBucketText, setNewBucketText] = useState("");
   const [loading, setLoading] = useState(true);
 
   // Load data on mount
@@ -116,6 +119,13 @@ export default function MissionControl() {
         const gymData = await gymRes.json();
         setGymStreak(gymData.streak || 0);
         setGymLogs(gymData.logs || []);
+      }
+
+      // Fetch bucket list
+      const bucketRes = await fetch("/api/bucketlist");
+      if (bucketRes.ok) {
+        const bucketData = await bucketRes.json();
+        setBucketList(bucketData.items || BUCKET_LIST);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -159,6 +169,51 @@ export default function MissionControl() {
       const data = await res.json();
       setGymLogs(prev => [...prev, today].sort());
       setGymStreak(data.streak);
+    }
+  }
+
+  async function toggleBucketItem(id: string) {
+    const res = await fetch("/api/bucketlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action: "toggle" }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setBucketList(data.items || bucketList);
+    }
+  }
+
+  async function addBucketItem() {
+    if (!newBucketText.trim()) return;
+    const res = await fetch("/api/bucketlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "add", text: newBucketText.trim() }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setBucketList(data.items || bucketList);
+      setNewBucketText("");
+    }
+  }
+
+  async function downloadBackup() {
+    try {
+      const res = await fetch("/api/backup");
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `life-tracker-backup-${new Date().toISOString().split("T")[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      console.error("Backup failed", e);
     }
   }
 
@@ -508,23 +563,55 @@ export default function MissionControl() {
                   </div>
                   <h2 className="text-xl font-bold">Bucket List</h2>
                 </div>
+                <button
+                  onClick={downloadBackup}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/60 transition-all"
+                  title="Backup all data"
+                >
+                  <Download className="w-4 h-4" />
+                  Backup
+                </button>
+              </div>
+
+              {/* Add New Item */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newBucketText}
+                  onChange={(e) => setNewBucketText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addBucketItem()}
+                  placeholder="Neues Ziel hinzufügen..."
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30"
+                />
+                <button
+                  onClick={addBucketItem}
+                  className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl text-purple-400 font-medium transition-all"
+                >
+                  + Add
+                </button>
               </div>
 
               <div className="space-y-4">
-                {BUCKET_LIST.map((item, i) => (
+                {bucketList.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10"
+                    onClick={() => toggleBucketItem(item.id)}
+                    className={cn(
+                      "flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer hover:bg-white/10",
+                      item.completed
+                        ? "bg-green-500/10 border-green-500/20"
+                        : "bg-white/5 border-white/10"
+                    )}
                   >
                     <span className="text-2xl">{item.icon}</span>
                     <div className="flex-1">
-                      <p className="font-medium">{item.text}</p>
+                      <p className={cn("font-medium", item.completed && "line-through text-white/40")}>{item.text}</p>
                       <p className="text-xs text-white/40">{item.target}</p>
                     </div>
-                    {i < 2 && (
-                      <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs">
-                        IN PROGRESS
-                      </span>
+                    {item.completed ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-white/30" />
                     )}
                   </div>
                 ))}
