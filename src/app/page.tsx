@@ -1416,6 +1416,85 @@ export default function MissionControl() {
               </div>
             </div>
 
+            {/* Quick Add Transaction */}
+            <div className="p-8 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 backdrop-blur-xl rounded-3xl border border-indigo-500/20">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-indigo-500/20 rounded-xl">
+                  <DollarSign className="w-5 h-5 text-indigo-400" />
+                </div>
+                <h3 className="text-xl font-bold">Quick Transaction</h3>
+              </div>
+              <div className="flex gap-3">
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  id="quick-amount"
+                  placeholder="Betrag (€)"
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-lg font-bold placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
+                />
+                <select
+                  id="quick-type"
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/70 focus:outline-none focus:border-indigo-500/50"
+                >
+                  <option value="expense">− Expense</option>
+                  <option value="income">+ Income</option>
+                </select>
+                <select
+                  id="quick-category"
+                  className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/70 focus:outline-none focus:border-indigo-500/50"
+                >
+                  <option value="other">Other</option>
+                  <option value="food">Food</option>
+                  <option value="transport">Transport</option>
+                  <option value="utilities">Utilities</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="health">Health</option>
+                  <option value="savings">Savings</option>
+                  <option value="crypto">Crypto</option>
+                </select>
+              </div>
+              <input
+                type="text"
+                id="quick-description"
+                placeholder="Beschreibung (optional)"
+                className="mt-3 w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
+              />
+              <button
+                onClick={async () => {
+                  const amountEl = document.getElementById('quick-amount') as HTMLInputElement;
+                  const typeEl = document.getElementById('quick-type') as HTMLSelectElement;
+                  const categoryEl = document.getElementById('quick-category') as HTMLSelectElement;
+                  const descEl = document.getElementById('quick-description') as HTMLInputElement;
+                  
+                  const amount = parseFloat(amountEl.value);
+                  if (isNaN(amount) || amount <= 0) return;
+                  
+                  const res = await fetch("/api/finance", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      action: "addTransaction",
+                      type: typeEl.value,
+                      category: categoryEl.value,
+                      amount,
+                      description: descEl.value
+                    }),
+                  });
+                  
+                  if (res.ok) {
+                    const data = await res.json();
+                    setFinances(data.data);
+                    amountEl.value = '';
+                    descEl.value = '';
+                  }
+                }}
+                className="mt-3 w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl font-bold text-white transition-all"
+              >
+                + Add Transaction
+              </button>
+            </div>
+
             {/* Recent Transactions */}
             {finances.transactions && finances.transactions.length > 0 && (
               <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
