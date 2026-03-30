@@ -6,7 +6,7 @@ import {
   Briefcase, Wallet, ChevronRight, ExternalLink,
   Activity, Calendar, Award, Gift, CheckCircle2, Circle,
   Dumbbell, Flame, Star, TrendingDown, Cloud, CloudRain,
-  CloudSnow, Sun, CloudLightning, Wind, Droplets
+  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
@@ -120,6 +120,24 @@ export default function MissionControl() {
   const [weightValue, setWeightValue] = useState("");
   const [weightNotes, setWeightNotes] = useState("");
 
+  // Water tracking
+  const [waterData, setWaterData] = useState<{
+    dailyGoal: number;
+    todayGlasses: number;
+    todayProgress: number;
+    weeklyAvg: number;
+    streak: number;
+    recentEntries: any[];
+  }>({ dailyGoal: 8, todayGlasses: 0, todayProgress: 0, weeklyAvg: 0, streak: 0, recentEntries: [] });
+
+  // Sleep tracking
+  const [sleepEntries, setSleepEntries] = useState<any[]>([]);
+  const [sleepStats, setSleepStats] = useState({ avgDuration: 0, avgQuality: 0, streak: 0 });
+  const [showSleepModal, setShowSleepModal] = useState(false);
+  const [sleepHours, setSleepHours] = useState(7);
+  const [sleepQuality, setSleepQuality] = useState(5);
+  const [sleepNotes, setSleepNotes] = useState("");
+
   // Financial data
   const [finances, setFinances] = useState({
     savings: 2000,
@@ -216,6 +234,29 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load weight", e);
+      }
+
+      // Fetch water
+      try {
+        const waterRes = await fetch("/api/water");
+        if (waterRes.ok) {
+          const waterResult = await waterRes.json();
+          setWaterData(waterResult);
+        }
+      } catch (e) {
+        console.error("Failed to load water", e);
+      }
+
+      // Fetch sleep
+      try {
+        const sleepRes = await fetch("/api/sleep");
+        if (sleepRes.ok) {
+          const sleepData = await sleepRes.json();
+          setSleepEntries(sleepData.entries || []);
+          setSleepStats(sleepData.stats || { avgDuration: 0, avgQuality: 0, streak: 0 });
+        }
+      } catch (e) {
+        console.error("Failed to load sleep", e);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -352,6 +393,59 @@ export default function MissionControl() {
     setShowWeightModal(false);
     setWeightValue("");
     setWeightNotes("");
+  }
+
+  async function logSleep() {
+    setShowSleepModal(true);
+  }
+
+  async function confirmSleepLog() {
+    const today = new Date().toISOString().split("T")[0];
+    
+    const res = await fetch("/api/sleep", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "log",
+        date: today,
+        duration: sleepHours,
+        quality: sleepQuality,
+        notes: sleepNotes
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setSleepEntries(data.entries || []);
+      if (data.stats) {
+        setSleepStats(data.stats);
+      }
+    }
+    setShowSleepModal(false);
+    setSleepHours(7);
+    setSleepQuality(5);
+    setSleepNotes("");
+  }
+
+  async function addWater(delta: number) {
+    const action = delta > 0 ? "add" : "remove";
+    try {
+      const res = await fetch("/api/water", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWaterData(prev => ({
+          ...prev,
+          todayGlasses: data.glasses,
+          todayProgress: Math.round((data.glasses / data.dailyGoal) * 100)
+        }));
+      }
+    } catch (e) {
+      console.error("Failed to update water", e);
+    }
   }
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -897,6 +991,189 @@ export default function MissionControl() {
                 </div>
               )}
             </div>
+
+            {/* Sleep Tracker */}
+            <div className="p-8 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 backdrop-blur-xl rounded-3xl border border-indigo-500/20">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-500/20 rounded-xl">
+                    <Moon className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <h2 className="text-xl font-bold">Sleep Tracker</h2>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-4xl font-bold text-indigo-400">{sleepStats.avgDuration.toFixed(1)}h</p>
+                    <p className="text-xs text-white/50">Ø 7 Tage</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-purple-400">🔥 {sleepStats.streak}</p>
+                    <p className="text-xs text-white/50">Tage ≥7h</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats Row */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div className="p-4 bg-white/5 rounded-2xl text-center">
+                  <p className="text-xs text-white/40 mb-1">Ø Qualität</p>
+                  <p className="text-xl font-bold text-indigo-400">{sleepStats.avgQuality.toFixed(1)}/10</p>
+                </div>
+                <div className="p-4 bg-white/5 rounded-2xl text-center">
+                  <p className="text-xs text-white/40 mb-1">Letzte Nacht</p>
+                  <p className="text-xl font-bold text-white/80">
+                    {sleepEntries[0] ? `${sleepEntries[0].duration}h` : "—"}
+                  </p>
+                </div>
+                <div className="p-4 bg-white/5 rounded-2xl text-center">
+                  <p className="text-xs text-white/40 mb-1">Einträge</p>
+                  <p className="text-xl font-bold text-white/80">{sleepEntries.length}</p>
+                </div>
+              </div>
+
+              {/* Last 7 Days Mini Chart */}
+              {sleepEntries.length > 0 && (
+                <div className="mb-6 p-4 bg-white/5 rounded-2xl">
+                  <p className="text-xs text-white/40 mb-3">Letzte 7 Nächte</p>
+                  <div className="flex items-end gap-1 h-16">
+                    {sleepEntries.slice(0, 7).reverse().map((entry, i) => {
+                      const hours = entry.duration || 0;
+                      const height = (hours / 10) * 100;
+                      const colorClass = hours >= 7 ? "bg-green-500/60 hover:bg-green-400" : "bg-amber-500/60 hover:bg-amber-400";
+                      return (
+                        <div key={i} className="flex-1 group relative">
+                          <div
+                            className={cn("rounded-t transition-colors", colorClass)}
+                            style={{ height: `${Math.max(height, 10)}%` }}
+                          />
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-white/40 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {hours}h
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Log Sleep Button */}
+              <button
+                onClick={logSleep}
+                className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl font-bold text-white transition-all active:scale-[0.98]"
+              >
+                Schlaf loggen
+              </button>
+
+              {/* Recent Entries */}
+              {sleepEntries.length > 0 && (
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                  {sleepEntries.slice(0, 7).map((entry, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "px-3 py-2 rounded-xl text-xs whitespace-nowrap",
+                        entry.date === todayStr
+                          ? "bg-indigo-500/30 text-indigo-300"
+                          : "bg-white/5 text-white/50"
+                      )}
+                    >
+                      {new Date(entry.date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' })}
+                      <span className="ml-1 font-bold">{entry.duration}h</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Water Tracker */}
+        {activeTab === "tracker" && (
+          <div className="p-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-cyan-500/20">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-cyan-500/20 rounded-xl">
+                  <Droplets className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h2 className="text-xl font-bold">Water Tracker</h2>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-4xl font-bold text-cyan-400">{waterData.todayGlasses}/{waterData.dailyGoal}</p>
+                  <p className="text-xs text-white/50">Glasses today</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-blue-400">🔥 {waterData.streak}</p>
+                  <p className="text-xs text-white/50">Tage streak</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              <div className="p-4 bg-white/5 rounded-2xl text-center">
+                <p className="text-xs text-white/40 mb-1">Ø 7 Tage</p>
+                <p className="text-xl font-bold text-cyan-400">{waterData.weeklyAvg} Gläser</p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl text-center">
+                <p className="text-xs text-white/40 mb-1">Today's Progress</p>
+                <p className="text-xl font-bold text-white/80">{waterData.todayProgress}%</p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl text-center">
+                <p className="text-xs text-white/40 mb-1">Goal</p>
+                <p className="text-xl font-bold text-white/80">{waterData.dailyGoal} Gläser</p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="h-4 bg-white/10 rounded-full overflow-hidden mb-6">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(waterData.todayProgress, 100)}%` }}
+              />
+            </div>
+
+            {/* Add/Remove Buttons */}
+            <div className="flex gap-3 mb-6">
+              <button
+                onClick={() => addWater(-1)}
+                disabled={waterData.todayGlasses <= 0}
+                className="flex-1 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl font-medium text-white/70 disabled:opacity-30 transition-all"
+              >
+                − Remove
+              </button>
+              <button
+                onClick={() => addWater(1)}
+                className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 rounded-xl font-bold text-white transition-all active:scale-[0.98]"
+              >
+                + Add Glass
+              </button>
+            </div>
+
+            {/* Last 7 Days Mini Chart */}
+            {waterData.recentEntries && waterData.recentEntries.length > 0 && (
+              <div className="mb-4 p-4 bg-white/5 rounded-2xl">
+                <p className="text-xs text-white/40 mb-3">Letzte 7 Tage</p>
+                <div className="flex items-end gap-1 h-16">
+                  {waterData.recentEntries.map((entry: any, i: number) => {
+                    const glasses = entry.glasses || 0;
+                    const height = (glasses / waterData.dailyGoal) * 100;
+                    const hitGoal = glasses >= waterData.dailyGoal;
+                    return (
+                      <div key={i} className="flex-1 group relative">
+                        <div
+                          className={cn("rounded-t transition-colors", hitGoal ? "bg-cyan-500/60 hover:bg-cyan-400" : "bg-white/30 hover:bg-white/50")}
+                          style={{ height: `${Math.max(height, 10)}%` }}
+                        />
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-white/40 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                          {glasses}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
