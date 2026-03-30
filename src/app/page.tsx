@@ -157,6 +157,18 @@ export default function MissionControl() {
     savingsGoals: []
   });
 
+  // Mood/Energy tracking
+  const [moodData, setMoodData] = useState<{
+    energy: number;
+    mood: number;
+    note: string;
+  }>({ energy: 5, mood: 5, note: "" });
+  const [moodStats, setMoodStats] = useState({ avgEnergy: 0, avgMood: 0, energyStreak: 0, moodStreak: 0 });
+  const [showMoodModal, setShowMoodModal] = useState(false);
+  const [moodEnergy, setMoodEnergy] = useState(5);
+  const [moodValue, setMoodValue] = useState(5);
+  const [moodNote, setMoodNote] = useState("");
+
   // Weather data - Annweiler, Germany
   const [weather, setWeather] = useState<{ temp: number; feels: number; condition: string; humidity: number; wind: number; icon: string } | null>(null);
   const [forecast, setForecast] = useState<Array<{ date: string; min: number; max: number; condition: string; icon: string }>>([]);
@@ -276,6 +288,20 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load nutrition", e);
+      }
+
+      // Fetch mood
+      try {
+        const moodRes = await fetch("/api/mood");
+        if (moodRes.ok) {
+          const moodResult = await moodRes.json();
+          setMoodStats(moodResult.stats || { avgEnergy: 0, avgMood: 0, energyStreak: 0, moodStreak: 0 });
+          if (moodResult.today) {
+            setMoodData({ energy: moodResult.today.energy, mood: moodResult.today.mood, note: moodResult.today.note || "" });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load mood", e);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -484,6 +510,40 @@ export default function MissionControl() {
     } catch (e) {
       console.error("Failed to update water", e);
     }
+  }
+
+  async function logMood() {
+    setShowMoodModal(true);
+  }
+
+  async function confirmMoodLog() {
+    const today = new Date().toISOString().split("T")[0];
+    
+    const res = await fetch("/api/mood", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "log",
+        date: today,
+        energy: moodEnergy,
+        mood: moodValue,
+        note: moodNote
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.stats) {
+        setMoodStats(data.stats);
+      }
+      if (data.entry) {
+        setMoodData({ energy: data.entry.energy, mood: data.entry.mood, note: data.entry.note || "" });
+      }
+    }
+    setShowMoodModal(false);
+    setMoodEnergy(5);
+    setMoodValue(5);
+    setMoodNote("");
   }
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -1124,6 +1184,56 @@ export default function MissionControl() {
             </div>
           </div>
         )}
+
+        {/* Mood & Energy Tracker */}
+        <div className="p-8 bg-gradient-to-br from-rose-500/10 to-pink-500/10 backdrop-blur-xl rounded-3xl border border-rose-500/20">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-rose-500/20 rounded-xl">
+                <span className="text-xl">💭</span>
+              </div>
+              <h2 className="text-xl font-bold">Mood & Energy</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-4xl font-bold text-rose-400">{moodData.energy}/10</p>
+                <p className="text-xs text-white/50">Energy</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-pink-400">{moodData.mood}/10</p>
+                <p className="text-xs text-white/50">Mood</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 bg-white/5 rounded-2xl text-center">
+              <p className="text-xs text-white/40 mb-1">Ø Energy (7 Tage)</p>
+              <p className="text-xl font-bold text-rose-400">{moodStats.avgEnergy.toFixed(1)}</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-2xl text-center">
+              <p className="text-xs text-white/40 mb-1">Ø Mood (7 Tage)</p>
+              <p className="text-xl font-bold text-pink-400">{moodStats.avgMood.toFixed(1)}</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-2xl text-center">
+              <p className="text-xs text-white/40 mb-1">Energy Streak</p>
+              <p className="text-xl font-bold text-rose-400">🔥 {moodStats.energyStreak}</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-2xl text-center">
+              <p className="text-xs text-white/40 mb-1">Mood Streak</p>
+              <p className="text-xl font-bold text-pink-400">🔥 {moodStats.moodStreak}</p>
+            </div>
+          </div>
+
+          {/* Log Mood Button */}
+          <button
+            onClick={logMood}
+            className="w-full py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 rounded-xl font-bold text-white transition-all active:scale-[0.98]"
+          >
+            Stimmung & Energy loggen
+          </button>
+        </div>
 
         {/* Water Tracker */}
         {activeTab === "tracker" && (
@@ -1809,6 +1919,84 @@ export default function MissionControl() {
                 <button
                   onClick={confirmWeightLog}
                   className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-xl font-bold text-white transition-all"
+                >
+                  Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mood Modal */}
+        {showMoodModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-md p-8 bg-[#111] rounded-3xl border border-white/20 shadow-2xl">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <div className="p-2 bg-rose-500/20 rounded-xl">
+                  <span className="text-xl">💭</span>
+                </div>
+                Stimmung & Energy
+              </h3>
+
+              {/* Energy Slider */}
+              <div className="mb-6">
+                <label className="block text-sm text-white/50 mb-2">Energy Level: {moodEnergy}/10</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={moodEnergy}
+                  onChange={e => setMoodEnergy(Number(e.target.value))}
+                  className="w-full accent-rose-500"
+                />
+                <div className="flex justify-between text-xs text-white/30 mt-1">
+                  <span>Erschöpft</span>
+                  <span>Volle Power</span>
+                </div>
+              </div>
+
+              {/* Mood Slider */}
+              <div className="mb-6">
+                <label className="block text-sm text-white/50 mb-2">Stimmung: {moodValue}/10</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={moodValue}
+                  onChange={e => setMoodValue(Number(e.target.value))}
+                  className="w-full accent-pink-500"
+                />
+                <div className="flex justify-between text-xs text-white/30 mt-1">
+                  <span>Schlecht</span>
+                  <span>Super</span>
+                </div>
+              </div>
+
+              {/* Note */}
+              <div className="mb-6">
+                <label className="block text-sm text-white/50 mb-2">Notiz (optional)</label>
+                <textarea
+                  value={moodNote}
+                  onChange={e => setMoodNote(e.target.value)}
+                  placeholder="Was beeinflusst deine Stimmung heute?"
+                  rows={2}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowMoodModal(false)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 font-medium transition-all"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={confirmMoodLog}
+                  className="flex-1 py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 rounded-xl font-bold text-white transition-all"
                 >
                   Speichern
                 </button>
