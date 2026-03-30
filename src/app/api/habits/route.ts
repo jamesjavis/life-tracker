@@ -27,6 +27,9 @@ const HABIT_DEFAULTS = [
   { id: "gym", label: "Gym", emoji: "💪" },
   { id: "lesen", label: "Lesen", emoji: "📚" },
   { id: "creatin", label: "Creatin", emoji: "💊" },
+  { id: "pushups", label: "Push-ups", emoji: "💨" },
+  { id: "atem", label: "Atemübung", emoji: "🌬️" },
+  { id: "smoothie", label: "Smoothie", emoji: "🥤" },
 ];
 
 // GET /api/habits - Get habits data
