@@ -106,6 +106,8 @@ export default function MissionControl() {
   const [workoutDuration, setWorkoutDuration] = useState(60);
   const [workoutIntensity, setWorkoutIntensity] = useState("medium");
   const [workoutNotes, setWorkoutNotes] = useState("");
+  const [workoutHistory, setWorkoutHistory] = useState<Record<string, { type: string; duration: number; intensity: string; notes?: string }>>({});
+  const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
 
   // Load data on mount
   useEffect(() => {
@@ -128,6 +130,7 @@ export default function MissionControl() {
         const gymData = await gymRes.json();
         setGymStreak(gymData.streak || 0);
         setGymLogs(gymData.logs || []);
+        setWorkoutHistory(gymData.workouts || {});
       }
 
       // Fetch bucket list
@@ -201,6 +204,11 @@ export default function MissionControl() {
       const data = await res.json();
       setGymLogs(prev => [...prev, today].sort());
       setGymStreak(data.streak);
+      // Also update local workout history
+      setWorkoutHistory(prev => ({
+        ...prev,
+        [today]: { type: workoutType, duration: workoutDuration, intensity: workoutIntensity, notes: workoutNotes }
+      }));
     }
     setShowWorkoutModal(false);
     // Reset form
@@ -593,19 +601,36 @@ export default function MissionControl() {
               <div className="mt-6">
                 <p className="text-sm text-white/50 mb-3">Letzte Sessions</p>
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  {gymLogs.slice(-7).reverse().map((log, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "px-3 py-2 rounded-xl text-xs whitespace-nowrap",
-                        log === todayStr
-                          ? "bg-orange-500/30 text-orange-300"
-                          : "bg-white/5 text-white/50"
-                      )}
-                    >
-                      {new Date(log).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' })}
-                    </div>
-                  ))}
+                  {gymLogs.slice(-7).reverse().map((log, i) => {
+                    const workout = workoutHistory[log];
+                    const isExpanded = expandedWorkout === log;
+                    return (
+                      <div key={i} className="flex flex-col gap-1">
+                        <button
+                          onClick={() => workout && setExpandedWorkout(isExpanded ? null : log)}
+                          className={cn(
+                            "px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all",
+                            log === todayStr
+                              ? "bg-orange-500/30 text-orange-300"
+                              : "bg-white/5 text-white/50 hover:bg-white/10",
+                            workout && "cursor-pointer"
+                          )}
+                          disabled={!workout}
+                          title={workout ? "Klick für Details" : "Keine Details"}
+                        >
+                          {new Date(log).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' })}
+                          {workout && <span className="ml-1 opacity-60">›</span>}
+                        </button>
+                        {isExpanded && workout && (
+                          <div className="bg-white/10 border border-white/20 rounded-xl p-3 text-xs whitespace-normal w-48">
+                            <div className="font-medium text-white/80 capitalize mb-1">{workout.type}</div>
+                            <div className="text-white/50">{workout.duration} min · {workout.intensity}</div>
+                            {workout.notes && <div className="text-white/40 mt-1 italic">"{workout.notes}"</div>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                   {gymLogs.length === 0 && (
                     <p className="text-sm text-white/30">Noch keine Sessions geloggt</p>
                   )}
