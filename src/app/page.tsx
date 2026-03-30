@@ -11,7 +11,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
 
-// === Financial Data ===
+// === Financial Data (loaded from API) ===
+// FINANCES is now loaded dynamically from /api/finance
 const FINANCES = {
   savings: 2000,
   crypto: 10000,
@@ -110,6 +111,25 @@ export default function MissionControl() {
   const [workoutHistory, setWorkoutHistory] = useState<Record<string, { type: string; duration: number; intensity: string; notes?: string }>>({});
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
 
+  // Weight tracking
+  const [weightEntries, setWeightEntries] = useState<any[]>([]);
+  const [weightGoal, setWeightGoal] = useState(75.0);
+  const [weightTrend, setWeightTrend] = useState(0);
+  const [weightBMI, setWeightBMI] = useState<number | null>(null);
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [weightValue, setWeightValue] = useState("");
+  const [weightNotes, setWeightNotes] = useState("");
+
+  // Financial data
+  const [finances, setFinances] = useState({
+    savings: 2000,
+    crypto: 10000,
+    monthlyCosts: 1000,
+    funding: { status: "pending", amount: 12000, expected: "May/June 2026" },
+    transactions: [],
+    savingsGoals: []
+  });
+
   // Weather data - Annweiler, Germany
   const [weather, setWeather] = useState<{ temp: number; feels: number; condition: string; humidity: number; wind: number; icon: string } | null>(null);
   const [forecast, setForecast] = useState<Array<{ date: string; min: number; max: number; condition: string; icon: string }>>([]);
@@ -171,6 +191,31 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load streaks", e);
+      }
+
+      // Fetch finances
+      try {
+        const financeRes = await fetch("/api/finance");
+        if (financeRes.ok) {
+          const financeData = await financeRes.json();
+          setFinances(financeData);
+        }
+      } catch (e) {
+        console.error("Failed to load finances", e);
+      }
+
+      // Fetch weight
+      try {
+        const weightRes = await fetch("/api/weight");
+        if (weightRes.ok) {
+          const weightData = await weightRes.json();
+          setWeightEntries(weightData.entries || []);
+          setWeightGoal(weightData.goal || 75.0);
+          setWeightTrend(weightData.trend || 0);
+          setWeightBMI(weightData.bmi || null);
+        }
+      } catch (e) {
+        console.error("Failed to load weight", e);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -283,6 +328,30 @@ export default function MissionControl() {
     } catch (e) {
       console.error("Backup failed", e);
     }
+  }
+
+  async function logWeight() {
+    setShowWeightModal(true);
+  }
+
+  async function confirmWeightLog() {
+    const weight = parseFloat(weightValue);
+    if (isNaN(weight) || weight < 30 || weight > 200) return;
+
+    const res = await fetch("/api/weight", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "log", weight, notes: weightNotes }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setWeightEntries(data.entries || []);
+      setWeightTrend(data.trend || 0);
+    }
+    setShowWeightModal(false);
+    setWeightValue("");
+    setWeightNotes("");
   }
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -712,72 +781,190 @@ export default function MissionControl() {
               </div>
             </div>
 
-            {/* Bucket List */}
-            <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+            {/* Weight Tracker */}
+            <div className="p-8 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-3xl border border-blue-500/20">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/20 rounded-xl">
-                    <Star className="w-5 h-5 text-purple-400" />
+                  <div className="p-2 bg-blue-500/20 rounded-xl">
+                    <TrendingDown className="w-5 h-5 text-blue-400" />
                   </div>
-                  <h2 className="text-xl font-bold">Bucket List</h2>
+                  <h2 className="text-xl font-bold">Weight Tracker</h2>
                 </div>
-                <button
-                  onClick={downloadBackup}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/60 transition-all"
-                  title="Backup all data"
-                >
-                  <Download className="w-4 h-4" />
-                  Backup
-                </button>
-              </div>
-
-              {/* Add New Item */}
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={newBucketText}
-                  onChange={(e) => setNewBucketText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addBucketItem()}
-                  placeholder="Neues Ziel hinzufügen..."
-                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30"
-                />
-                <button
-                  onClick={addBucketItem}
-                  className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl text-purple-400 font-medium transition-all"
-                >
-                  + Add
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {bucketList.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => toggleBucketItem(item.id)}
-                    className={cn(
-                      "flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer hover:bg-white/10",
-                      item.completed
-                        ? "bg-green-500/10 border-green-500/20"
-                        : "bg-white/5 border-white/10"
-                    )}
-                  >
-                    <span className="text-2xl">{item.icon}</span>
-                    <div className="flex-1">
-                      <p className={cn("font-medium", item.completed && "line-through text-white/40")}>{item.text}</p>
-                      <p className="text-xs text-white/40">{item.target}</p>
+                <div className="flex items-center gap-4">
+                  {weightEntries.length > 0 && (
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-blue-400">
+                        {weightEntries[weightEntries.length - 1]?.weight} kg
+                      </p>
+                      {weightTrend !== 0 && (
+                        <p className={cn("text-xs font-medium", weightTrend < 0 ? "text-green-400" : "text-red-400")}>
+                          {weightTrend > 0 ? "↑" : "↓"} {Math.abs(weightTrend).toFixed(1)} kg (7 Tage)
+                        </p>
+                      )}
                     </div>
-                    {item.completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-400" />
-                    ) : (
-                      <Circle className="w-5 h-5 text-white/30" />
-                    )}
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
+
+              {/* Stats Row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 bg-white/5 rounded-2xl text-center">
+                  <p className="text-xs text-white/40 mb-1">Ziel</p>
+                  <p className="text-xl font-bold text-white/80">{weightGoal} kg</p>
+                </div>
+                {weightEntries.length > 0 && (
+                  <>
+                    <div className="p-4 bg-white/5 rounded-2xl text-center">
+                      <p className="text-xs text-white/40 mb-1">Letzte Messung</p>
+                      <p className="text-xl font-bold text-white/80">
+                        {weightEntries[weightEntries.length - 1]?.date?.slice(5)}
+                      </p>
+                    </div>
+                    {weightBMI !== null && (
+                      <div className="p-4 bg-white/5 rounded-2xl text-center">
+                        <p className="text-xs text-white/40 mb-1">BMI</p>
+                        <p className={cn("text-xl font-bold", weightBMI < 25 ? "text-green-400" : "text-amber-400")}>
+                          {weightBMI}
+                        </p>
+                      </div>
+                    )}
+                    <div className="p-4 bg-white/5 rounded-2xl text-center">
+                      <p className="text-xs text-white/40 mb-1">Diff. zum Ziel</p>
+                      <p className={cn("text-xl font-bold", 
+                        (weightEntries[weightEntries.length - 1]?.weight - weightGoal) <= 0 
+                          ? "text-green-400" 
+                          : "text-red-400"
+                      )}>
+                        {weightEntries.length > 0 ? `+${(weightEntries[weightEntries.length - 1]?.weight - weightGoal).toFixed(1)}` : "—"}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Mini Chart */}
+              {weightEntries.length >= 2 && (
+                <div className="mb-6 p-4 bg-white/5 rounded-2xl">
+                  <p className="text-xs text-white/40 mb-3">Letzte 14 Tage</p>
+                  <div className="flex items-end gap-1 h-16">
+                    {weightEntries.slice(-14).map((entry, i) => {
+                      const weights = weightEntries.slice(-14).map(e => e.weight);
+                      const minW = Math.min(...weights);
+                      const maxW = Math.max(...weights);
+                      const range = maxW - minW || 1;
+                      const height = ((entry.weight - minW) / range) * 100;
+                      return (
+                        <div key={i} className="flex-1 group relative">
+                          <div
+                            className="bg-blue-500/60 hover:bg-blue-400 rounded-t transition-colors"
+                            style={{ height: `${Math.max(height, 10)}%` }}
+                          />
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-white/40 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {entry.weight}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Log Weight Button */}
+              <button
+                onClick={logWeight}
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-xl font-bold text-white transition-all active:scale-[0.98]"
+              >
+                Gewicht loggen
+              </button>
+
+              {/* Recent Entries */}
+              {weightEntries.length > 0 && (
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                  {weightEntries.slice(-7).reverse().map((entry, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "px-3 py-2 rounded-xl text-xs whitespace-nowrap",
+                        entry.date === todayStr
+                          ? "bg-blue-500/30 text-blue-300"
+                          : "bg-white/5 text-white/50"
+                      )}
+                    >
+                      {new Date(entry.date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric' })}
+                      <span className="ml-1 font-bold">{entry.weight}kg</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
 
+        {/* Bucket List */}
+        {activeTab === "tracker" && (
+        <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-500/20 rounded-xl">
+                <Star className="w-5 h-5 text-purple-400" />
+              </div>
+              <h2 className="text-xl font-bold">Bucket List</h2>
+            </div>
+            <button
+              onClick={downloadBackup}
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-white/60 transition-all"
+              title="Backup all data"
+            >
+              <Download className="w-4 h-4" />
+              Backup
+            </button>
+          </div>
+
+          {/* Add New Item */}
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              value={newBucketText}
+              onChange={(e) => setNewBucketText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addBucketItem()}
+              placeholder="Neues Ziel hinzufügen..."
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30"
+            />
+            <button
+              onClick={addBucketItem}
+              className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl text-purple-400 font-medium transition-all"
+            >
+              + Add
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {bucketList.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => toggleBucketItem(item.id)}
+                className={cn(
+                  "flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer hover:bg-white/10",
+                  item.completed
+                    ? "bg-green-500/10 border-green-500/20"
+                    : "bg-white/5 border-white/10"
+                )}
+              >
+                <span className="text-2xl">{item.icon}</span>
+                <div className="flex-1">
+                  <p className={cn("font-medium", item.completed && "line-through text-white/40")}>{item.text}</p>
+                  <p className="text-xs text-white/40">{item.target}</p>
+                </div>
+                {item.completed ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                ) : (
+                  <Circle className="w-5 h-5 text-white/30" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        )}
         {/* Projects Tab */}
         {activeTab === "projects" && (
           <div className="space-y-6">
@@ -865,21 +1052,43 @@ export default function MissionControl() {
               <div className="p-8 bg-gradient-to-br from-green-500/20 to-emerald-500/10 backdrop-blur-xl rounded-3xl border border-green-500/20">
                 <p className="text-sm text-white/50 mb-2">Savings</p>
                 <p className="text-5xl font-bold text-green-400">
-                  €{FINANCES.savings.toLocaleString()}
+                  €{finances.savings.toLocaleString()}
                 </p>
+                {/* Savings Goal Progress */}
+                {finances.savingsGoals && finances.savingsGoals.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {finances.savingsGoals.map((goal: any) => {
+                      const progress = Math.min((goal.current / goal.target) * 100, 100);
+                      return (
+                        <div key={goal.id} className="bg-white/5 rounded-xl p-3">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-white/50">{goal.name}</span>
+                            <span className="text-white/70">€{goal.current.toLocaleString()} / €{goal.target.toLocaleString()}</span>
+                          </div>
+                          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="p-8 bg-gradient-to-br from-amber-500/20 to-orange-500/10 backdrop-blur-xl rounded-3xl border border-amber-500/20">
                 <p className="text-sm text-white/50 mb-2">Crypto / Bitcoin</p>
                 <p className="text-5xl font-bold text-amber-400">
-                  €{FINANCES.crypto.toLocaleString()}
+                  €{finances.crypto.toLocaleString()}
                 </p>
               </div>
 
               <div className="p-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/10 backdrop-blur-xl rounded-3xl border border-blue-500/20">
                 <p className="text-sm text-white/50 mb-2">Monthly Costs</p>
                 <p className="text-5xl font-bold text-blue-400">
-                  €{FINANCES.monthlyCosts.toLocaleString()}
+                  €{finances.monthlyCosts.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -900,13 +1109,13 @@ export default function MissionControl() {
                 <div>
                   <p className="text-sm text-white/50 mb-1">Potential Monthly Grant</p>
                   <p className="text-4xl font-bold text-green-400">
-                    €{FINANCES.funding.amount.toLocaleString()}/mo
+                    €{finances.funding?.amount?.toLocaleString() || 12000}/mo
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-white/50 mb-1">Expected Response</p>
                   <p className="text-3xl font-bold text-purple-300">
-                    {FINANCES.funding.expected}
+                    {finances.funding?.expected || "May/June 2026"}
                   </p>
                 </div>
               </div>
@@ -918,17 +1127,44 @@ export default function MissionControl() {
                 <div>
                   <p className="text-sm text-white/50 mb-2">Total Net Worth</p>
                   <p className="text-6xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    €{(FINANCES.savings + FINANCES.crypto).toLocaleString()}
+                    €{(finances.savings + finances.crypto).toLocaleString()}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-white/50">Runway</p>
                   <p className="text-3xl font-bold text-white">
-                    ~{Math.round((FINANCES.savings + FINANCES.crypto) / FINANCES.monthlyCosts)} months
+                    ~{Math.round((finances.savings + finances.crypto) / finances.monthlyCosts)} months
                   </p>
                 </div>
               </div>
             </div>
+
+            {/* Recent Transactions */}
+            {finances.transactions && finances.transactions.length > 0 && (
+              <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+                <h3 className="text-lg font-bold mb-4">Recent Transactions</h3>
+                <div className="space-y-3">
+                  {finances.transactions.slice(-5).reverse().map((tx: any) => (
+                    <div key={tx.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className={tx.type === "income" ? "text-green-400" : "text-red-400"}>
+                          {tx.type === "income" ? "+" : "−"}
+                        </div>
+                        <div>
+                          <p className="font-medium">{tx.description || tx.category}</p>
+                          <p className="text-xs text-white/40">
+                            {new Date(tx.date).toLocaleDateString('de-DE')} • {tx.category}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={tx.type === "income" ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                        {tx.type === "income" ? "+" : "−"}€{tx.amount.toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1026,6 +1262,64 @@ export default function MissionControl() {
                   className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-xl font-bold text-white transition-all"
                 >
                   Log Session
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Weight Modal */}
+        {showWeightModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-md p-8 bg-[#111] rounded-3xl border border-white/20 shadow-2xl">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-xl">
+                  <TrendingDown className="w-5 h-5 text-blue-400" />
+                </div>
+                Gewicht loggen
+              </h3>
+
+              {/* Weight Input */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Gewicht (kg)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="30"
+                  max="200"
+                  value={weightValue}
+                  onChange={(e) => setWeightValue(e.target.value)}
+                  placeholder="z.B. 82.5"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-2xl font-bold placeholder-white/30 focus:outline-none focus:border-blue-500/50 text-center"
+                  autoFocus
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="mb-6">
+                <label className="block text-sm text-white/50 mb-2">Notiz (optional)</label>
+                <textarea
+                  value={weightNotes}
+                  onChange={(e) => setWeightNotes(e.target.value)}
+                  placeholder="z.B. nach Workout, morgens nüchtern..."
+                  rows={2}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowWeightModal(false)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 font-medium transition-all"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={confirmWeightLog}
+                  className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-xl font-bold text-white transition-all"
+                >
+                  Speichern
                 </button>
               </div>
             </div>
