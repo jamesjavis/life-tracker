@@ -130,6 +130,15 @@ export default function MissionControl() {
     recentEntries: any[];
   }>({ dailyGoal: 8, todayGlasses: 0, todayProgress: 0, weeklyAvg: 0, streak: 0, recentEntries: [] });
 
+  // Nutrition tracking
+  const [nutritionData, setNutritionData] = useState<{
+    dailyGoals: { protein: number; carbs: number; calories: number; fat?: number };
+    todayMeals: any[];
+    dailyNutrition: { protein: number; carbs: number; fat: number; calories: number };
+    weeklyAvg: { calories: number; protein: number };
+  }>({ dailyGoals: { protein: 150, carbs: 250, calories: 2200, fat: 80 }, todayMeals: [], dailyNutrition: { protein: 0, carbs: 0, fat: 0, calories: 0 }, weeklyAvg: { calories: 0, protein: 0 } });
+  const [newMeal, setNewMeal] = useState({ name: "", calories: "", protein: "", carbs: "" });
+
   // Sleep tracking
   const [sleepEntries, setSleepEntries] = useState<any[]>([]);
   const [sleepStats, setSleepStats] = useState({ avgDuration: 0, avgQuality: 0, streak: 0 });
@@ -258,10 +267,39 @@ export default function MissionControl() {
       } catch (e) {
         console.error("Failed to load sleep", e);
       }
+      // Fetch nutrition
+      try {
+        const nutritionRes = await fetch("/api/meals");
+        if (nutritionRes.ok) {
+          const nutritionResult = await nutritionRes.json();
+          setNutritionData(nutritionResult);
+        }
+      } catch (e) {
+        console.error("Failed to load nutrition", e);
+      }
     } catch (e) {
       console.error("Failed to load data", e);
     }
     setLoading(false);
+  }
+
+  async function addMeal() {
+    if (!newMeal.name || !newMeal.calories) return;
+    try {
+      const res = await fetch("/api/meals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add",
+          meal: { name: newMeal.name, calories: Number(newMeal.calories), protein: Number(newMeal.protein) || 0, carbs: Number(newMeal.carbs) || 0 }
+        })
+      });
+      if (res.ok) {
+        setNewMeal({ name: "", calories: "", protein: "", carbs: "" });
+        const refreshed = await fetch("/api/meals");
+        if (refreshed.ok) setNutritionData(await refreshed.json());
+      }
+    } catch (e) { console.error("Failed to add meal", e); }
   }
 
   async function toggleHabit(habitId: string) {
@@ -1172,6 +1210,103 @@ export default function MissionControl() {
                     );
                   })}
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Nutrition Tracker */}
+        {activeTab === "tracker" && (
+          <div className="p-8 bg-gradient-to-br from-orange-500/10 to-yellow-500/10 backdrop-blur-xl rounded-3xl border border-orange-500/20">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-500/20 rounded-xl">
+                  <span className="text-2xl">🍽️</span>
+                </div>
+                <h2 className="text-xl font-bold">Nutrition Tracker</h2>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-sm font-bold text-orange-400">{nutritionData.dailyNutrition.calories}</p>
+                  <p className="text-xs text-white/40">kcal heute</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Progress */}
+            <div className="grid grid-cols-4 gap-3 mb-6">
+              {[
+                { label: "Calories", value: nutritionData.dailyNutrition.calories, goal: nutritionData.dailyGoals.calories, color: "orange" },
+                { label: "Protein", value: nutritionData.dailyNutrition.protein, goal: nutritionData.dailyGoals.protein, color: "red" },
+                { label: "Carbs", value: nutritionData.dailyNutrition.carbs, goal: nutritionData.dailyGoals.carbs, color: "yellow" },
+                { label: "Fat", value: nutritionData.dailyNutrition.fat, goal: nutritionData.dailyGoals.fat || 80, color: "gray" },
+              ].map(item => {
+                const pct = item.goal > 0 ? Math.round((item.value / item.goal) * 100) : 0;
+                const colorMap: Record<string, string> = { orange: "from-orange-500 to-red-500", red: "from-red-500 to-pink-500", yellow: "from-yellow-500 to-amber-500", gray: "from-gray-500 to-gray-600" };
+                return (
+                  <div key={item.label} className="p-3 bg-white/5 rounded-xl text-center">
+                    <p className="text-xs text-white/40 mb-1">{item.label}</p>
+                    <p className={`text-lg font-bold text-${item.color}-400`}>{item.value}/{item.goal}g</p>
+                    <div className="mt-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className={cn("h-full rounded-full", colorMap[item.color].replace("from-", "bg-").replace(" to-", ""))} style={{ width: `${Math.min(pct, 100)}%`, background: `linear-gradient(90deg, var(--tw-gradient-stops))` }} />
+                    </div>
+                    <p className="text-xs text-white/30 mt-0.5">{pct}%</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick Add Form */}
+            <div className="p-4 bg-white/5 rounded-2xl mb-4">
+              <p className="text-sm font-medium text-white/60 mb-3">Quick Add Meal</p>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Meal name (e.g. Oatmeal)"
+                  className="flex-1 px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 outline-none focus:border-orange-500/50"
+                  value={newMeal.name}
+                  onChange={e => setNewMeal({ ...newMeal, name: e.target.value })}
+                />
+                <input
+                  type="number"
+                  placeholder="kcal"
+                  className="w-20 px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 outline-none focus:border-orange-500/50"
+                  value={newMeal.calories}
+                  onChange={e => setNewMeal({ ...newMeal, calories: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 mb-2">
+                <input type="number" placeholder="Protein (g)" className="flex-1 px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 outline-none focus:border-orange-500/50" value={newMeal.protein} onChange={e => setNewMeal({ ...newMeal, protein: e.target.value })} />
+                <input type="number" placeholder="Carbs (g)" className="flex-1 px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 outline-none focus:border-orange-500/50" value={newMeal.carbs} onChange={e => setNewMeal({ ...newMeal, carbs: e.target.value })} />
+              </div>
+              <button
+                onClick={addMeal}
+                className="w-full py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 rounded-xl font-bold text-white text-sm transition-all active:scale-[0.98]"
+              >
+                + Add Meal
+              </button>
+            </div>
+
+            {/* Today's Meals */}
+            {nutritionData.todayMeals && nutritionData.todayMeals.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-white/40 mb-2">Today's Meals</p>
+                {nutritionData.todayMeals.map((m: any) => (
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div>
+                      <p className="text-sm font-medium text-white/80">{m.name}</p>
+                      <p className="text-xs text-white/40">{m.calories} kcal · {m.protein}g P · {m.carbs}g C</p>
+                    </div>
+                    <span className="text-xs text-white/30">{m.time ? new Date(m.time).toLocaleTimeString("de", { hour: "2-digit", minute: "2-digit" }) : ""}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Weekly Avg */}
+            {nutritionData.weeklyAvg && (nutritionData.weeklyAvg.calories > 0 || nutritionData.weeklyAvg.protein > 0) && (
+              <div className="mt-4 p-3 bg-white/5 rounded-xl text-center">
+                <p className="text-xs text-white/40">Ø 7 Tage: {nutritionData.weeklyAvg.calories} kcal, {nutritionData.weeklyAvg.protein}g Protein</p>
               </div>
             )}
           </div>
