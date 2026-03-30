@@ -2,79 +2,112 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const DATA_FILE = path.join(process.cwd(), "data", "streaks.json");
+const DATA_FILE = path.join(process.cwd(), "data", "habits.json");
+const STREAKS_FILE = path.join(process.cwd(), "data", "streaks.json");
 
-function ensureDataDir() {
-  const dir = path.dirname(DATA_FILE);
+function ensureDir(filepath: string) {
+  const dir = path.dirname(filepath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-function readData() {
-  ensureDataDir();
-  if (!fs.existsSync(DATA_FILE)) {
-    return { streaks: {} };
-  }
+function readHabits() {
+  ensureDir(DATA_FILE);
+  if (!fs.existsSync(DATA_FILE)) return { habits: {} };
   return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
 }
 
-function writeData(data: any) {
-  ensureDataDir();
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+function writeStreaks(data: any) {
+  ensureDir(STREAKS_FILE);
+  fs.writeFileSync(STREAKS_FILE, JSON.stringify(data, null, 2));
+}
+
+function readStreaks() {
+  ensureDir(STREAKS_FILE);
+  if (!fs.existsSync(STREAKS_FILE)) return {};
+  return JSON.parse(fs.readFileSync(STREAKS_FILE, "utf-8"));
+}
+
+function calculateStreak(habitId: string, habitsData: Record<string, Record<string, boolean>>): { current: number; longest: number; last7: boolean[] } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const last7: boolean[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    last7.push(Boolean(habitsData[dateStr]?.[habitId]));
+  }
+
+  // Calculate current streak (consecutive days ending today or yesterday)
+  let current = 0;
+  let checkDate = new Date(today);
+
+  // Start from today and go backwards
+  while (true) {
+    const dateStr = checkDate.toISOString().split("T")[0];
+    if (habitsData[dateStr]?.[habitId]) {
+      current++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // If no streak today, check if yesterday started a streak
+  const todayStr = today.toISOString().split("T")[0];
+  if (!habitsData[todayStr]?.[habitId] && current === 0) {
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    let yCheck = new Date(yesterday);
+    while (true) {
+      const dateStr = yCheck.toISOString().split("T")[0];
+      if (habitsData[dateStr]?.[habitId]) {
+        current++;
+        yCheck.setDate(yCheck.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  // Calculate longest streak ever
+  const allDates = Object.keys(habitsData).sort();
+  let longest = 0;
+  let tempStreak = 0;
+
+  for (const dateStr of allDates) {
+    if (habitsData[dateStr]?.[habitId]) {
+      tempStreak++;
+      if (tempStreak > longest) longest = tempStreak;
+    } else {
+      tempStreak = 0;
+    }
+  }
+
+  return { current, longest, last7 };
 }
 
 // GET /api/streaks - Get all streaks
 export async function GET() {
-  const data = readData();
-  return NextResponse.json(data);
-}
+  const habitsData = readHabits();
+  const habitsStreaks = readStreaks();
 
-// POST /api/streaks - Update a streak
-export async function POST(req: Request) {
-  const { streakId, date } = await req.json();
-  const data = readData();
-  const dateStr = date || new Date().toISOString().split("T")[0];
+  const HABIT_IDS = ["duolingo", "yoga", "meditation", "gym", "lesen", "creatin", "pushups", "atem", "smoothie"];
 
-  if (!data.streaks[streakId]) {
-    data.streaks[streakId] = { logs: [], currentStreak: 0, bestStreak: 0 };
-  }
+  const result: Record<string, any> = {};
 
-  if (!data.streaks[streakId].logs.includes(dateStr)) {
-    data.streaks[streakId].logs.push(dateStr);
-    data.streaks[streakId].logs.sort();
-    data.streaks[streakId].currentStreak = calculateStreak(data.streaks[streakId].logs);
-    if (data.streaks[streakId].currentStreak > data.streaks[streakId].bestStreak) {
-      data.streaks[streakId].bestStreak = data.streaks[streakId].currentStreak;
+  for (const habitId of HABIT_IDS) {
+    const streak = calculateStreak(habitId, habitsData.habits || {});
+    result[habitId] = streak;
+
+    // Persist longest if improved
+    if (streak.longest > (habitsStreaks[habitId]?.longest || 0)) {
+      habitsStreaks[habitId] = { ...habitsStreaks[habitId], longest: streak.longest };
     }
   }
 
-  writeData(data);
-  return NextResponse.json({
-    success: true,
-    streak: data.streaks[streakId]
-  });
-}
+  writeStreaks(habitsStreaks);
 
-function calculateStreak(logs: string[]): number {
-  if (!logs.length) return 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const todayStr = today.toISOString().split("T")[0];
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-  if (!logs.includes(todayStr) && !logs.includes(yesterdayStr)) {
-    return 0;
-  }
-
-  let streak = 0;
-  let currentDate = new Date(today);
-
-  while (logs.includes(currentDate.toISOString().split("T")[0])) {
-    streak++;
-    currentDate.setDate(currentDate.getDate() - 1);
-  }
-
-  return streak;
+  return NextResponse.json({ streaks: result });
 }

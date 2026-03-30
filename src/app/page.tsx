@@ -98,6 +98,7 @@ export default function MissionControl() {
   const [gymStreak, setGymStreak] = useState(0);
   const [gymLogs, setGymLogs] = useState<string[]>([]);
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
+  const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
   const [newBucketText, setNewBucketText] = useState("");
   const [loading, setLoading] = useState(true);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
@@ -134,6 +135,17 @@ export default function MissionControl() {
       if (bucketRes.ok) {
         const bucketData = await bucketRes.json();
         setBucketList(bucketData.items || BUCKET_LIST);
+      }
+
+      // Fetch habit streaks
+      try {
+        const streaksRes = await fetch("/api/streaks");
+        if (streaksRes.ok) {
+          const streaksData = await streaksRes.json();
+          setHabitStreaks(streaksData.streaks || {});
+        }
+      } catch (e) {
+        console.error("Failed to load streaks", e);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -471,28 +483,49 @@ export default function MissionControl() {
 
               {/* Habits Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                {HABITS.map(habit => (
-                  <button
-                    key={habit.id}
-                    onClick={() => toggleHabit(habit.id)}
-                    className={cn(
-                      "p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-[0.98]",
-                      habits[habit.id]
-                        ? "bg-green-500/20 border-green-500/30"
-                        : "bg-white/5 border-white/10 hover:border-white/20"
-                    )}
-                  >
-                    <div className="text-3xl mb-2">{habit.emoji}</div>
-                    <div className="text-sm font-medium">{habit.label}</div>
-                    <div className="mt-2">
-                      {habits[habit.id] ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-400 mx-auto" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-white/30 mx-auto" />
+                {HABITS.map(habit => {
+                  const streak = habitStreaks[habit.id];
+                  return (
+                    <button
+                      key={habit.id}
+                      onClick={() => toggleHabit(habit.id)}
+                      className={cn(
+                        "p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-[0.98]",
+                        habits[habit.id]
+                          ? "bg-green-500/20 border-green-500/30"
+                          : "bg-white/5 border-white/10 hover:border-white/20"
                       )}
-                    </div>
-                  </button>
-                ))}
+                    >
+                      <div className="text-3xl mb-1">{habit.emoji}</div>
+                      <div className="text-sm font-medium">{habit.label}</div>
+                      <div className="mt-2 flex items-center justify-center gap-1">
+                        {habits[habit.id] ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-400" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-white/30" />
+                        )}
+                        {streak && streak.current > 0 && (
+                          <span className="text-xs text-orange-400 font-medium ml-1">
+                            🔥{streak.current}
+                          </span>
+                        )}
+                      </div>
+                      {streak && streak.last7 && (
+                        <div className="mt-2 flex justify-center gap-0.5">
+                          {streak.last7.map((done, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "w-1.5 h-1.5 rounded-full",
+                                done ? "bg-green-400" : "bg-white/20"
+                              )}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
