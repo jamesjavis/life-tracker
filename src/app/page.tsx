@@ -5,7 +5,8 @@ import {
   Rocket, DollarSign, TrendingUp, Target, Zap, Globe,
   Briefcase, Wallet, ChevronRight, ExternalLink,
   Activity, Calendar, Award, Gift, CheckCircle2, Circle,
-  Dumbbell, Flame, Star, TrendingDown
+  Dumbbell, Flame, Star, TrendingDown, Cloud, CloudRain,
+  CloudSnow, Sun, CloudLightning, Wind, Droplets
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
@@ -108,6 +109,27 @@ export default function MissionControl() {
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [workoutHistory, setWorkoutHistory] = useState<Record<string, { type: string; duration: number; intensity: string; notes?: string }>>({});
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
+
+  // Weather data - Annweiler, Germany
+  const [weather, setWeather] = useState<{ temp: number; feels: number; condition: string; humidity: number; wind: number; icon: string } | null>(null);
+  const [forecast, setForecast] = useState<Array<{ date: string; min: number; max: number; condition: string; icon: string }>>([]);
+
+  // Load weather on mount
+  useEffect(() => {
+    async function loadWeather() {
+      try {
+        const res = await fetch("/api/weather");
+        if (res.ok) {
+          const data = await res.json();
+          setWeather(data.current);
+          setForecast(data.forecast || []);
+        }
+      } catch (e) {
+        console.error("Weather load failed", e);
+      }
+    }
+    loadWeather();
+  }, []);
 
   // Load data on mount
   useEffect(() => {
@@ -352,6 +374,58 @@ export default function MissionControl() {
                 </div>
               ))}
             </div>
+
+            {/* Weather Widget */}
+            {weather && (
+              <div className="p-6 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-white/10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-cyan-500/20 rounded-xl">
+                      <Droplets className="w-5 h-5 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold">Wetter Annweiler</h3>
+                      <p className="text-xs text-white/40">3-Tage-Vorschau</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Current */}
+                  <div className="p-4 bg-white/5 rounded-2xl text-center md:col-span-1">
+                    <p className="text-xs text-white/40 mb-1">Jetzt</p>
+                    <div className="text-4xl mb-2">
+                      {weather.icon === "CloudRain" && <CloudRain className="w-8 h-8 text-cyan-400 mx-auto" />}
+                      {weather.icon === "CloudSnow" && <CloudSnow className="w-8 h-8 text-blue-300 mx-auto" />}
+                      {weather.icon === "Sun" && <Sun className="w-8 h-8 text-amber-400 mx-auto" />}
+                      {weather.icon === "Cloud" && <Cloud className="w-8 h-8 text-white/60 mx-auto" />}
+                      {weather.icon === "CloudLightning" && <CloudLightning className="w-8 h-8 text-yellow-400 mx-auto" />}
+                      {weather.icon === "Wind" && <Wind className="w-8 h-8 text-white/60 mx-auto" />}
+                    </div>
+                    <p className="text-3xl font-bold">{weather.temp}°C</p>
+                    <p className="text-xs text-white/50">gefühlt {weather.feels}°C</p>
+                    <p className="text-xs text-white/40 mt-1">{weather.condition}</p>
+                  </div>
+                  {/* Forecast days */}
+                  {forecast.map((day, i) => {
+                    const date = new Date(day.date);
+                    const dayName = date.toLocaleDateString('de-DE', { weekday: 'short' });
+                    return (
+                      <div key={i} className="p-4 bg-white/5 rounded-2xl text-center">
+                        <p className="text-xs text-white/40 mb-2">{dayName}</p>
+                        <div className="mb-2">
+                          {day.icon === "CloudRain" && <CloudRain className="w-6 h-6 text-cyan-400 mx-auto" />}
+                          {day.icon === "CloudSnow" && <CloudSnow className="w-6 h-6 text-blue-300 mx-auto" />}
+                          {day.icon === "Sun" && <Sun className="w-6 h-6 text-amber-400 mx-auto" />}
+                          {day.icon === "Cloud" && <Cloud className="w-6 h-6 text-white/60 mx-auto" />}
+                        </div>
+                        <p className="text-lg font-bold">{day.max}° / {day.min}°</p>
+                        <p className="text-xs text-white/40 mt-1">{day.condition}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-6">
