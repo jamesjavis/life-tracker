@@ -169,6 +169,29 @@ export default function MissionControl() {
   const [moodValue, setMoodValue] = useState(5);
   const [moodNote, setMoodNote] = useState("");
 
+  // Wellness tracking (meditation + screen time)
+  const [wellnessData, setWellnessData] = useState<{
+    meditation: {
+      entries: any[];
+      today: any;
+      stats: { avgMinutes: number; avgSessions: number; streak: number; totalMinutes: number; totalSessions: number };
+      goals: { minutes: number; sessions: number };
+    };
+    screenTime: {
+      todayMinutes: number;
+      dailyLimit: number;
+      todayProgress: number;
+      stats: { avgDaily: number; streak: number; overLimitDays: number };
+    };
+  }>({
+    meditation: { entries: [], today: null, stats: { avgMinutes: 0, avgSessions: 0, streak: 0, totalMinutes: 0, totalSessions: 0 }, goals: { minutes: 15, sessions: 1 } },
+    screenTime: { todayMinutes: 0, dailyLimit: 120, todayProgress: 0, stats: { avgDaily: 0, streak: 0, overLimitDays: 0 } }
+  });
+  const [showWellnessModal, setShowWellnessModal] = useState(false);
+  const [wellnessMinutes, setWellnessMinutes] = useState(15);
+  const [wellnessType, setWellnessType] = useState("mindfulness");
+  const [wellnessNote, setWellnessNote] = useState("");
+
   // Weather data - Annweiler, Germany
   const [weather, setWeather] = useState<{ temp: number; feels: number; condition: string; humidity: number; wind: number; icon: string } | null>(null);
   const [forecast, setForecast] = useState<Array<{ date: string; min: number; max: number; condition: string; icon: string }>>([]);
@@ -302,6 +325,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load mood", e);
+      }
+
+      // Fetch wellness
+      try {
+        const wellnessRes = await fetch("/api/wellness");
+        if (wellnessRes.ok) {
+          const wellnessResult = await wellnessRes.json();
+          setWellnessData(wellnessResult);
+        }
+      } catch (e) {
+        console.error("Failed to load wellness", e);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -544,6 +578,32 @@ export default function MissionControl() {
     setMoodEnergy(5);
     setMoodValue(5);
     setMoodNote("");
+  }
+
+  async function logWellness() {
+    setShowWellnessModal(true);
+  }
+
+  async function confirmWellnessLog() {
+    const res = await fetch("/api/wellness", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "logMeditation",
+        minutes: wellnessMinutes,
+        type: wellnessType,
+        note: wellnessNote
+      }),
+    });
+
+    if (res.ok) {
+      const refreshed = await fetch("/api/wellness");
+      if (refreshed.ok) setWellnessData(await refreshed.json());
+    }
+    setShowWellnessModal(false);
+    setWellnessMinutes(15);
+    setWellnessType("mindfulness");
+    setWellnessNote("");
   }
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -1186,6 +1246,7 @@ export default function MissionControl() {
         )}
 
         {/* Mood & Energy Tracker */}
+        {activeTab === "tracker" && (
         <div className="p-8 bg-gradient-to-br from-rose-500/10 to-pink-500/10 backdrop-blur-xl rounded-3xl border border-rose-500/20">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -1234,6 +1295,139 @@ export default function MissionControl() {
             Stimmung & Energy loggen
           </button>
         </div>
+        )}
+
+        {/* Wellness Tracker (Meditation + Screen Time) */}
+        {activeTab === "tracker" && (
+        <div className="p-8 bg-gradient-to-br from-violet-500/10 to-indigo-500/10 backdrop-blur-xl rounded-3xl border border-violet-500/20">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-violet-500/20 rounded-xl">
+                <span className="text-2xl">🧘</span>
+              </div>
+              <h2 className="text-xl font-bold">Wellness</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-4xl font-bold text-violet-400">{wellnessData.meditation.stats.streak}</p>
+                <p className="text-xs text-white/50">Meditation Streak 🔥</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-indigo-400">{wellnessData.screenTime.todayMinutes}/{wellnessData.screenTime.dailyLimit} min</p>
+                <p className="text-xs text-white/50">Screen Time heute</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Meditation */}
+            <div className="p-5 bg-white/5 rounded-2xl">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xl">🧘</span>
+                <h3 className="font-bold">Meditation</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-violet-400">{wellnessData.meditation.stats.avgMinutes} min</p>
+                  <p className="text-xs text-white/40">Ø 7 Tage</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-violet-400">{wellnessData.meditation.stats.totalMinutes}</p>
+                  <p className="text-xs text-white/40">Total Min.</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-white/50">Heute</span>
+                  <span className="text-white/70">{wellnessData.meditation.today ? `${wellnessData.meditation.today.minutes} min` : "0 min"}</span>
+                </div>
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all" style={{ width: `${Math.min(((wellnessData.meditation.today?.minutes || 0) / (wellnessData.meditation.goals?.minutes || 15)) * 100, 100)}%` }} />
+                </div>
+              </div>
+              <button onClick={logWellness} className="w-full py-2.5 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 rounded-xl font-bold text-white text-sm transition-all active:scale-[0.98]">
+                + Meditation loggen
+              </button>
+            </div>
+
+            {/* Screen Time */}
+            <div className="p-5 bg-white/5 rounded-2xl">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-xl">📱</span>
+                <h3 className="font-bold">Screen Time</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-indigo-400">{wellnessData.screenTime.stats.avgDaily} min</p>
+                  <p className="text-xs text-white/40">Ø 7 Tage</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-indigo-400">🔥 {wellnessData.screenTime.stats.streak}</p>
+                  <p className="text-xs text-white/40">Tage im Limit</p>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-white/50">Heute</span>
+                  <span className="text-white/70">
+                    {wellnessData.screenTime.todayProgress > 100
+                      ? <span className="text-red-400">+{wellnessData.screenTime.todayMinutes - wellnessData.screenTime.dailyLimit} min über Limit</span>
+                      : `${wellnessData.screenTime.todayMinutes} min`
+                    }
+                  </span>
+                </div>
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className={cn("h-full rounded-full transition-all", wellnessData.screenTime.todayProgress > 100 ? "bg-red-500" : "bg-gradient-to-r from-indigo-500 to-violet-500")} style={{ width: `${Math.min(wellnessData.screenTime.todayProgress, 100)}%` }} />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Minuten eintragen"
+                  className="flex-1 px-3 py-2 bg-white/10 border border-white/10 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
+                  onKeyDown={async (e) => {
+                    if (e.key === "Enter") {
+                      const val = parseInt((e.target as HTMLInputElement).value);
+                      if (!isNaN(val) && val > 0) {
+                        await fetch("/api/wellness", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "setScreenMinutes", minutes: val }) });
+                        const refreshed = await fetch("/api/wellness");
+                        if (refreshed.ok) setWellnessData(await refreshed.json());
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
+                />
+                <button onClick={() => {
+                  const input = document.querySelector('input[placeholder="Minuten eintragen"]') as HTMLInputElement;
+                  if (input) input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+                }} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 rounded-xl font-bold text-white text-sm transition-all">
+                  Log
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {wellnessData.meditation.entries?.length > 0 && (
+            <div className="p-4 bg-white/5 rounded-2xl">
+              <p className="text-xs text-white/40 mb-3">Meditation (letzte 7 Tage)</p>
+              <div className="flex items-end gap-1 h-12">
+                {wellnessData.meditation.entries?.slice(-7).reverse().map((entry: any, i: number) => {
+                  const minutes = entry.minutes || 0;
+                  const goal = wellnessData.meditation.goals?.minutes || 15;
+                  const height = (minutes / (goal * 1.5)) * 100;
+                  return (
+                    <div key={i} className="flex-1 group relative">
+                      <div className={cn("rounded-t transition-colors", minutes >= goal ? "bg-violet-500/60 hover:bg-violet-400" : "bg-white/30 hover:bg-white/50")} style={{ height: `${Math.max(height, 10)}%` }} />
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-white/40 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{minutes}m</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+        )}
 
         {/* Water Tracker */}
         {activeTab === "tracker" && (
@@ -1997,6 +2191,87 @@ export default function MissionControl() {
                 <button
                   onClick={confirmMoodLog}
                   className="flex-1 py-3 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 rounded-xl font-bold text-white transition-all"
+                >
+                  Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Wellness Modal */}
+        {showWellnessModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-md p-8 bg-[#111] rounded-3xl border border-violet-500/30 shadow-2xl">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <div className="p-2 bg-violet-500/20 rounded-xl">
+                  <span className="text-xl">🧘</span>
+                </div>
+                Meditation loggen
+              </h3>
+
+              {/* Duration */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Dauer: {wellnessMinutes} Minuten</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="60"
+                  step="1"
+                  value={wellnessMinutes}
+                  onChange={e => setWellnessMinutes(Number(e.target.value))}
+                  className="w-full accent-violet-500"
+                />
+                <div className="flex justify-between text-xs text-white/30 mt-1">
+                  <span>1 Min</span>
+                  <span>60 Min</span>
+                </div>
+              </div>
+
+              {/* Type */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Art</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["mindfulness", "breathing", "body-scan"].map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setWellnessType(type)}
+                      className={cn(
+                        "p-3 rounded-xl text-sm font-medium capitalize transition-all",
+                        wellnessType === type
+                          ? "bg-violet-500/30 border border-violet-500/50 text-violet-300"
+                          : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                      )}
+                    >
+                      {type.replace("-", " ")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Note */}
+              <div className="mb-6">
+                <label className="block text-sm text-white/50 mb-2">Notiz (optional)</label>
+                <textarea
+                  value={wellnessNote}
+                  onChange={e => setWellnessNote(e.target.value)}
+                  placeholder="Wie war die Session?"
+                  rows={2}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowWellnessModal(false)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 font-medium transition-all"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={confirmWellnessLog}
+                  className="flex-1 py-3 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 rounded-xl font-bold text-white transition-all"
                 >
                   Speichern
                 </button>
