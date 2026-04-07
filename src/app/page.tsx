@@ -2105,6 +2105,130 @@ export default function MissionControl() {
                 </div>
               </div>
             )}
+
+            {/* FI Roadmap */}
+            <div className="p-8 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-red-500/10 backdrop-blur-xl rounded-3xl border border-amber-500/20">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-amber-500/20 rounded-xl">
+                  <Target className="w-5 h-5 text-amber-400" />
+                </div>
+                <h3 className="text-xl font-bold">FI Roadmap</h3>
+              </div>
+
+              {/* Current Stats */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="p-4 bg-white/5 rounded-xl text-center border border-white/10">
+                  <p className="text-xs text-white/40 mb-1">Net Worth</p>
+                  <p className="text-lg font-bold text-amber-400">€{(finances.savings + finances.crypto).toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-white/5 rounded-xl text-center border border-white/10">
+                  <p className="text-xs text-white/40 mb-1">Monthly Burn</p>
+                  <p className="text-lg font-bold text-red-400">€{finances.monthlyCosts.toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-white/5 rounded-xl text-center border border-white/10">
+                  <p className="text-xs text-white/40 mb-1">FI Number (4%)</p>
+                  <p className="text-lg font-bold text-green-400">€{((finances.monthlyCosts * 12) * 25).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Scenarios */}
+              <div className="space-y-3">
+                <p className="text-sm text-white/50 mb-3">Path to Financial Independence</p>
+
+                {/* Scenario 1: Current path (no grant) */}
+                {(() => {
+                  const netWorth = finances.savings + finances.crypto;
+                  const monthlyBurn = finances.monthlyCosts;
+                  const fiNumber = monthlyBurn * 12 * 25; // 4% rule
+                  const monthlySavings = netWorth > 0 ? Math.max(0, netWorth * 0.01) : 0; // 1% return assumption
+                  const monthsToFI = monthlySavings > 0 ? Math.ceil((fiNumber - netWorth) / monthlySavings) : 999;
+                  const yearsToFI = Math.min(999, monthsToFI / 12);
+                  return (
+                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-medium text-white/70">Current Path</p>
+                          <p className="text-xs text-white/40">No additional income</p>
+                        </div>
+                        <span className="text-xs text-white/40">{yearsToFI >= 999 ? '∞' : `${yearsToFI.toFixed(1)} yrs`}</span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-slate-500 rounded-full" style={{ width: `${Math.min(100, (netWorth / fiNumber) * 100)}%` }} />
+                      </div>
+                      <p className="text-xs text-white/30 mt-1">{((netWorth / fiNumber) * 100).toFixed(1)}% to FI • €{netWorth.toLocaleString()} / €{fiNumber.toLocaleString()}</p>
+                    </div>
+                  );
+                })()}
+
+                {/* Scenario 2: With €12K/mo grant */}
+                {(() => {
+                  const netWorth = finances.savings + finances.crypto;
+                  const monthlyBurn = finances.monthlyCosts;
+                  const grant = 12000;
+                  const fiNumber = monthlyBurn * 12 * 25;
+                  const monthlySurplus = grant - monthlyBurn; // money saved each month
+                  const monthsToFI = monthlySurplus > 0 ? Math.ceil((fiNumber - netWorth) / monthlySurplus) : 999;
+                  const yearsToFI = Math.min(999, monthsToFI / 12);
+                  const grantDate = new Date('2026-06-01');
+                  const fiDate = new Date(grantDate);
+                  fiDate.setMonth(fiDate.getMonth() + monthsToFI);
+                  return (
+                    <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/5 rounded-xl border border-green-500/20">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-medium text-green-300">With €12K/mo Grant</p>
+                          <p className="text-xs text-white/40">+€{(12000 - monthlyBurn).toLocaleString()}/mo surplus</p>
+                        </div>
+                        <span className="text-xs text-green-400 font-bold">{yearsToFI >= 999 ? '∞' : `${yearsToFI.toFixed(1)} yrs`}</span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all" style={{ width: `${Math.min(100, (netWorth / fiNumber) * 100)}%` }} />
+                      </div>
+                      <p className="text-xs text-white/30 mt-1">
+                        {monthsToFI < 999 ? `FI by ${fiDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}` : 'FI number too high'}
+                        {' • '}{((netWorth / fiNumber) * 100).toFixed(1)}% to FI
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Scenario 3: Aggressive (FI = €300K for lean FI) */}
+                {(() => {
+                  const netWorth = finances.savings + finances.crypto;
+                  const leanFI = 300000; // €25K/year lifestyle
+                  const monthlyBurn = finances.monthlyCosts;
+                  const grant = 12000;
+                  const monthlySurplus = grant - monthlyBurn;
+                  const monthsToFI = monthlySurplus > 0 ? Math.ceil((leanFI - netWorth) / monthlySurplus) : 999;
+                  const yearsToFI = Math.min(999, monthsToFI / 12);
+                  const grantDate = new Date('2026-06-01');
+                  const fiDate = new Date(grantDate);
+                  fiDate.setMonth(fiDate.getMonth() + monthsToFI);
+                  return (
+                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-medium text-purple-300">Lean FI (€300K)</p>
+                          <p className="text-xs text-white/40">€25K/year lifestyle</p>
+                        </div>
+                        <span className="text-xs text-purple-400 font-bold">{yearsToFI >= 999 ? '∞' : `${yearsToFI.toFixed(1)} yrs`}</span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-purple-500 to-pink-400 rounded-full" style={{ width: `${Math.min(100, (netWorth / leanFI) * 100)}%` }} />
+                      </div>
+                      <p className="text-xs text-white/30 mt-1">
+                        {monthsToFI < 999 ? `FI by ${fiDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}` : 'FI number too high'}
+                        {' • '}{((netWorth / leanFI) * 100).toFixed(1)}% to FI
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <p className="text-xs text-white/20 mt-4 text-center">
+                FI Number = 25× annual expenses (4% rule) • Assumes grant starts June 2026
+              </p>
+            </div>
           </div>
         )}
 
