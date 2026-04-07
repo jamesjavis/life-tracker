@@ -63,7 +63,8 @@ export async function POST(req: Request) {
       if (body.category === "savings") data.savings += body.amount;
       if (body.category === "crypto") data.crypto += body.amount;
     } else {
-      data.monthlyCosts += body.amount;
+      // Expenses deduct from savings (fixed monthlyCosts stays as budget, not cumulative)
+      data.savings = Math.max(0, data.savings - body.amount);
     }
 
     writeData(data);
@@ -100,6 +101,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, goal: data.savingsGoals[goalIndex], data });
     }
     return NextResponse.json({ success: false, error: "Goal not found" }, { status: 404 });
+  }
+
+  if (body.action === "contributeToGoal") {
+    const { goalId, amount } = body;
+    const goalIndex = data.savingsGoals.findIndex((g: any) => g.id === goalId);
+    if (goalIndex === -1) return NextResponse.json({ success: false, error: "Goal not found" }, { status: 404 });
+    if (amount > data.savings) return NextResponse.json({ success: false, error: "Insufficient savings" }, { status: 400 });
+
+    data.savings -= amount;
+    data.savingsGoals[goalIndex].current = (data.savingsGoals[goalIndex].current || 0) + amount;
+    writeData(data);
+    return NextResponse.json({ success: true, goal: data.savingsGoals[goalIndex], data });
   }
 
   if (body.action === "getMonthlySummary") {

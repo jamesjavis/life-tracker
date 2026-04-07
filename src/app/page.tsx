@@ -64,13 +64,9 @@ const PROJECTS = [
   },
 ];
 
-// === KPIs ===
-const KPIs = [
-  { label: "Sparquote", value: "67%", target: "80%", icon: TrendingUp, color: "from-green-500 to-emerald-500" },
-  { label: "Daily Progress", value: "87%", target: "100%", icon: Activity, color: "from-blue-500 to-cyan-500" },
-  { label: "Funding Chance", value: "TBD", target: "Mai/Jun", icon: Target, color: "from-purple-500 to-pink-500" },
-  { label: "Net Worth", value: "€12K", target: "€50K", icon: Wallet, color: "from-amber-500 to-orange-500" },
-];
+// === KPIs (computed dynamically from API data) ===
+// Computed inline when rendering overview — see activeTab === "overview" section
+// Net Worth = savings + crypto | Sparquote = savings / (savings + monthlyCosts) | Daily Progress from habits
 
 // === Habits ===
 const HABITS = [
@@ -678,7 +674,38 @@ export default function MissionControl() {
           <div className="space-y-8">
             {/* Quick Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {KPIs.map((kpi, i) => (
+              {[
+                {
+                  label: "Sparquote",
+                  value: `${Math.min(Math.round((finances.savings / (finances.savings + finances.monthlyCosts)) * 100), 100)}%`,
+                  target: "80%",
+                  icon: TrendingUp,
+                  color: "from-green-500 to-emerald-500",
+                },
+                {
+                  label: "Daily Progress",
+                  value: `${completedPercentage}%`,
+                  target: "100%",
+                  icon: Activity,
+                  color: "from-blue-500 to-cyan-500",
+                },
+                {
+                  label: "Funding Chance",
+                  value: "TBD",
+                  target: finances.funding.expected,
+                  icon: Target,
+                  color: "from-purple-500 to-pink-500",
+                },
+                {
+                  label: "Net Worth",
+                  value: finances.savings + finances.crypto >= 1000
+                    ? `€${((finances.savings + finances.crypto) / 1000).toFixed(0)}K`
+                    : `€${finances.savings + finances.crypto}`,
+                  target: "€50K",
+                  icon: Wallet,
+                  color: "from-amber-500 to-orange-500",
+                },
+              ].map((kpi, i) => (
                 <div
                   key={i}
                   className="relative group p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 hover:border-white/20 transition-all hover:translate-y-[-2px]"
