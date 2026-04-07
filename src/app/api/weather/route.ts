@@ -13,7 +13,7 @@ function getWeatherIcon(condition: string): string {
 
 export async function GET() {
   try {
-    const res = await fetch("https://wttr.in/Annweiler?format=j1", {
+    const res = await fetch("https://wttr.in/Landau?format=j1", {
       next: { revalidate: 900 } // cache 15 min
     });
     
