@@ -1961,6 +1961,124 @@ export default function MissionControl() {
               </button>
             </div>
 
+            {/* Monthly Spending by Category */}
+            <div className="p-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-cyan-500/20">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-cyan-500/20 rounded-xl">
+                  <TrendingUp className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-xl font-bold">Monthly Spending Breakdown</h3>
+              </div>
+
+              {/* Month selector */}
+              <div className="flex items-center gap-3 mb-6">
+                {(() => {
+                  const currentMonth = new Date();
+                  const months = [];
+                  for (let i = 0; i < 6; i++) {
+                    const d = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - i, 1);
+                    months.push(d);
+                  }
+                  return months.map((month) => {
+                    const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+                    const monthLabel = month.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+                    const monthTx = finances.transactions.filter((t: any) => {
+                      if (t.type !== 'expense') return false;
+                      const tMonth = t.date ? t.date.slice(0, 7) : '';
+                      return tMonth === monthKey;
+                    });
+                    const total = monthTx.reduce((sum: number, t: any) => sum + t.amount, 0);
+                    const isCurrentMonth = monthKey === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+                    return (
+                      <div key={monthKey} className={cn(
+                        "flex-1 p-3 rounded-xl text-center border transition-all",
+                        isCurrentMonth ? "bg-white/10 border-cyan-500/40" : "bg-white/5 border-white/10"
+                      )}>
+                        <p className="text-xs text-white/50 mb-1">{monthLabel}</p>
+                        <p className={cn("text-sm font-bold", total > 0 ? "text-cyan-400" : "text-white/30")}>
+                          {total > 0 ? `€${total.toLocaleString()}` : "—"}
+                        </p>
+                        <p className="text-xs text-white/30">{monthTx.length} tx</p>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* Category breakdown for current month */}
+              {(() => {
+                const currentMonthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+                const currentMonthTx = finances.transactions.filter((t: any) => {
+                  if (t.type !== 'expense') return false;
+                  const tMonth = t.date ? t.date.slice(0, 7) : '';
+                  return tMonth === currentMonthKey;
+                });
+
+                if (currentMonthTx.length === 0) {
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-white/40 mb-2">No expenses logged this month</p>
+                      <p className="text-xs text-white/20">Add transactions above to see your spending breakdown</p>
+                    </div>
+                  );
+                }
+
+                const categoryMap: Record<string, number> = {};
+                currentMonthTx.forEach((t: any) => {
+                  categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+                });
+
+                const totalExpenses = Object.values(categoryMap).reduce((a, b) => a + b, 0);
+                const categories = Object.entries(categoryMap).sort((a, b) => b[1] - a[1]);
+
+                const categoryColors: Record<string, string> = {
+                  food: "from-orange-500 to-red-500",
+                  transport: "from-blue-500 to-cyan-500",
+                  utilities: "from-gray-500 to-slate-500",
+                  entertainment: "from-pink-500 to-rose-500",
+                  health: "from-green-500 to-emerald-500",
+                  savings: "from-amber-500 to-yellow-500",
+                  crypto: "from-purple-500 to-indigo-500",
+                  other: "from-slate-500 to-zinc-500"
+                };
+
+                return (
+                  <>
+                    {/* Bar chart */}
+                    <div className="mb-4">
+                      {categories.map(([cat, amount]) => {
+                        const pct = (amount / totalExpenses) * 100;
+                        const color = categoryColors[cat] || categoryColors.other;
+                        return (
+                          <div key={cat} className="mb-3">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-white/70 capitalize flex items-center gap-2">
+                                <span className={cn("w-2 h-2 rounded-full bg-gradient-to-r", color)} />
+                                {cat}
+                              </span>
+                              <span className="text-white/50">€{amount.toLocaleString()} <span className="text-white/30">({pct.toFixed(0)}%)</span></span>
+                            </div>
+                            <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
+                              <div
+                                className={cn("h-full bg-gradient-to-r rounded-full transition-all duration-500", color)}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Total */}
+                    <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/10">
+                      <span className="text-white/60 font-medium">Total Expenses</span>
+                      <span className="text-xl font-bold text-red-400">−€{totalExpenses.toLocaleString()}</span>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
             {/* Recent Transactions */}
             {finances.transactions && finances.transactions.length > 0 && (
               <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
