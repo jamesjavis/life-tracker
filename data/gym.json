@@ -1,0 +1,840 @@
+{
+  "logs": [
+    "2025-09-01",
+    "2025-09-03",
+    "2025-09-08",
+    "2025-09-12",
+    "2025-09-17",
+    "2025-09-22",
+    "2025-09-26",
+    "2025-09-29",
+    "2025-10-03",
+    "2025-10-08",
+    "2025-10-13",
+    "2025-10-17",
+    "2025-10-22",
+    "2025-10-24",
+    "2025-10-29",
+    "2025-11-03",
+    "2025-11-07",
+    "2025-11-12",
+    "2025-11-17",
+    "2025-11-21",
+    "2025-11-24",
+    "2025-11-28",
+    "2025-12-03",
+    "2025-12-08",
+    "2025-12-12",
+    "2025-12-17",
+    "2025-12-19",
+    "2025-12-24",
+    "2025-12-29",
+    "2026-01-02",
+    "2026-01-07",
+    "2026-01-12",
+    "2026-01-14",
+    "2026-01-19",
+    "2026-01-23",
+    "2026-01-28",
+    "2026-02-02",
+    "2026-02-06",
+    "2026-02-11",
+    "2026-02-13",
+    "2026-02-18",
+    "2026-02-23",
+    "2026-02-27",
+    "2026-03-04",
+    "2026-03-09",
+    "2026-03-11",
+    "2026-03-16",
+    "2026-03-20",
+    "2026-03-25",
+    "2026-03-30",
+    "2026-04-03"
+  ],
+  "streak": 0,
+  "workouts": {
+    "2025-09-01": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-09-03": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-09-08": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-09-12": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-09-17": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-09-22": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-09-26": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-09-29": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-10-03": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-10-08": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-10-13": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-10-17": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-10-22": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-10-24": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-10-29": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-11-03": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-11-07": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-11-12": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-11-17": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-11-21": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-11-24": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-11-28": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-12-03": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-12-08": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2025-12-12": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-12-17": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-12-19": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2025-12-24": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2025-12-29": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-01-02": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-01-07": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-01-12": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-01-14": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-01-19": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-01-23": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-01-28": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-02-02": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-02-06": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-02-11": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-02-13": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-02-18": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-02-23": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-02-27": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-03-04": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-03-09": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-03-11": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-03-16": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-03-20": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-03-25": {
+      "muscles": [
+        "R\u00fccken",
+        "Nacken",
+        "Beine"
+      ],
+      "exercises": [
+        "Kreuzheben",
+        "Rudern LH",
+        "Nackenheben",
+        "Kniebeugen (Multi)",
+        "Beinpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Wed)"
+    },
+    "2026-03-30": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Mon)"
+    },
+    "2026-04-03": {
+      "muscles": [
+        "Brust",
+        "R\u00fccken",
+        "Schulter"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Kreuzheben",
+        "Rudern LH",
+        "Seitheben stehend",
+        "Schulterpresse"
+      ],
+      "notes": "Auto-imported from gym-stats.md (Fri)"
+    }
+  }
+}
