@@ -46,11 +46,11 @@ const PROJECTS = [
     id: "3",
     name: "eWorld Record",
     description: "Abstract Gaming Plattform",
-    status: "planning",
+    status: "active",
     priority: "medium",
     link: null,
-    progress: 20,
-    nextAction: "Konzept erstellen"
+    progress: 50,
+    nextAction: "Game Direction wählen (Speed Run vs andere)"
   },
   {
     id: "4",
@@ -97,6 +97,7 @@ export default function MissionControl() {
   const [gymLogs, setGymLogs] = useState<string[]>([]);
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
   const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
+  const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
   const [newBucketText, setNewBucketText] = useState("");
   const [loading, setLoading] = useState(true);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
@@ -104,7 +105,7 @@ export default function MissionControl() {
   const [workoutDuration, setWorkoutDuration] = useState(60);
   const [workoutIntensity, setWorkoutIntensity] = useState("medium");
   const [workoutNotes, setWorkoutNotes] = useState("");
-  const [workoutHistory, setWorkoutHistory] = useState<Record<string, { type: string; duration: number; intensity: string; notes?: string }>>({});
+  const [workoutHistory, setWorkoutHistory] = useState<Record<string, ({ type: string; duration: number; intensity: string; notes?: string } | { muscles: string[]; exercises: string[]; notes?: string; timestamp?: string })>>({});
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
 
   // Weight tracking
@@ -249,6 +250,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load streaks", e);
+      }
+
+      // Fetch habit history (heatmap)
+      try {
+        const historyRes = await fetch("/api/habit-history?days=90");
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          setHabitHistory({ weeks: historyData.weeks || [], stats: historyData.stats || {} });
+        }
+      } catch (e) {
+        console.error("Failed to load habit history", e);
       }
 
       // Fetch finances
@@ -857,14 +869,17 @@ export default function MissionControl() {
                   </a>
 
                   <a
-                    href="https://benefitsi-dashboard.vercel.app"
+                    href="https://benefitsi-landing.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 rounded-xl border border-pink-500/20 transition-all group"
                   >
                     <div className="flex items-center gap-3">
                       <Award className="w-5 h-5 text-pink-400" />
-                      <span className="font-medium">Benefitsi Partner Portal</span>
+                      <div>
+                        <span className="font-medium">Benefitsi Partner Portal</span>
+                        <span className="ml-2 text-xs text-green-400">✨ Landing Page neu!</span>
+                      </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-pink-400/60" />
                   </a>
@@ -957,6 +972,87 @@ export default function MissionControl() {
                   );
                 })}
               </div>
+
+              {/* Habit Heatmap — Monthly Calendar */}
+              {habitHistory.weeks.length > 0 && (
+                <div className="mt-8 p-5 bg-white/5 rounded-2xl border border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-base font-bold flex items-center gap-2">🔥 Habit Heatmap</h3>
+                      <p className="text-xs text-white/40 mt-0.5">Letzte 12 Wochen — % completition per Tag</p>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="flex items-center gap-1">
+                        <span className="text-white/30">0%</span>
+                        {[0, 25, 50, 75, 100].map(level => (
+                          <div key={level} className="w-3 h-3 rounded-sm" style={{ backgroundColor: level === 0 ? 'rgba(255,255,255,0.08)' : level === 25 ? 'rgba(34,197,94,0.3)' : level === 50 ? 'rgba(34,197,94,0.5)' : level === 75 ? 'rgba(34,197,94,0.75)' : 'rgba(34,197,94,1)' }} />
+                        ))}
+                        <span className="text-white/30">100%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Heatmap Grid */}
+                  <div className="flex gap-1 overflow-x-auto pb-1">
+                    {/* Day-of-week labels */}
+                    <div className="flex flex-col gap-0.5 mr-1 text-xs text-white/30 justify-around py-0.5">
+                      <div className="h-3" /> {/* offset */}
+                      <div className="h-3 leading-3">Mon</div>
+                      <div className="h-3" />
+                      <div className="h-3 leading-3">Wed</div>
+                      <div className="h-3" />
+                      <div className="h-3 leading-3">Fri</div>
+                      <div className="h-3" />
+                    </div>
+
+                    {/* Weeks */}
+                    {habitHistory.weeks.map((week, wi) => (
+                      <div key={wi} className="flex flex-col gap-0.5">
+                        {week.map((day, di) => {
+                          const bg = day.completion === 100 ? 'rgba(34,197,94,1)' : day.completion >= 75 ? 'rgba(34,197,94,0.75)' : day.completion >= 50 ? 'rgba(34,197,94,0.5)' : day.completion >= 25 ? 'rgba(34,197,94,0.3)' : day.completion > 0 ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)';
+                          const isToday = day.date === new Date().toISOString().split('T')[0];
+                          const dateObj = new Date(day.date);
+                          const showLabel = dateObj.getDate() === 1 || wi === 0;
+                          return (
+                            <div key={di} className="relative group">
+                              <div
+                                className="w-3 h-3 rounded-sm transition-all hover:ring-1 hover:ring-white/40 cursor-default"
+                                style={{ backgroundColor: bg, outline: isToday ? '1.5px solid rgba(255,255,255,0.7)' : 'none' }}
+                                title={`${day.date}: ${day.completed}/${day.total} habits (${day.completion}%)`}
+                              />
+                              {showLabel && (
+                                <div className="absolute bottom-4 left-0 text-xs text-white/40 bg-black/80 px-1 rounded whitespace-nowrap hidden group-hover:block z-10 pointer-events-none">
+                                  {dateObj.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="mt-4 grid grid-cols-4 gap-3">
+                    <div className="p-3 bg-white/5 rounded-xl text-center">
+                      <p className="text-lg font-bold text-green-400">{habitHistory.stats.avgCompletion}%</p>
+                      <p className="text-xs text-white/40">Ø Completion</p>
+                    </div>
+                    <div className="p-3 bg-white/5 rounded-xl text-center">
+                      <p className="text-lg font-bold text-green-400">{habitHistory.stats.perfectDays}</p>
+                      <p className="text-xs text-white/40">Perfect Days</p>
+                    </div>
+                    <div className="p-3 bg-white/5 rounded-xl text-center">
+                      <p className="text-lg font-bold text-orange-400">🔥{habitHistory.stats.longestPerfect}</p>
+                      <p className="text-xs text-white/40">Longest Perfect</p>
+                    </div>
+                    <div className="p-3 bg-white/5 rounded-xl text-center">
+                      <p className="text-lg font-bold text-white/70">{habitHistory.stats.totalDays}</p>
+                      <p className="text-xs text-white/40">Days Tracked</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Gym Tracker */}
@@ -1045,8 +1141,28 @@ export default function MissionControl() {
                         </button>
                         {isExpanded && workout && (
                           <div className="bg-white/10 border border-white/20 rounded-xl p-3 text-xs whitespace-normal w-48">
-                            <div className="font-medium text-white/80 capitalize mb-1">{workout.type}</div>
-                            <div className="text-white/50">{workout.duration} min · {workout.intensity}</div>
+                            {'muscles' in workout ? (
+                              <>
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                  {(workout as { muscles: string[] }).muscles.map(m => (
+                                    <span key={m} className="px-1.5 py-0.5 bg-orange-500/20 text-orange-300 rounded text-xs">{m}</span>
+                                  ))}
+                                </div>
+                                <div className="text-white/60 space-y-0.5">
+                                  {(workout as { exercises: string[] }).exercises.slice(0,4).map((ex, ei) => (
+                                    <div key={ei} className="truncate">• {ex}</div>
+                                  ))}
+                                  {(workout as { exercises: string[] }).exercises.length > 4 && (
+                                    <div className="text-white/40">+{(workout as { exercises: string[] }).exercises.length - 4} more</div>
+                                  )}
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="font-medium text-white/80 capitalize mb-1">{(workout as { type: string }).type}</div>
+                                <div className="text-white/50">{(workout as { duration: number }).duration} min · {(workout as { intensity: string }).intensity}</div>
+                              </>
+                            )}
                             {workout.notes && <div className="text-white/40 mt-1 italic">"{workout.notes}"</div>}
                           </div>
                         )}
@@ -2135,13 +2251,17 @@ export default function MissionControl() {
               <div className="space-y-3">
                 <p className="text-sm text-white/50 mb-3">Path to Financial Independence</p>
 
-                {/* Scenario 1: Current path (no grant) */}
+                {/* Scenario 1: Current path (no grant, trading only) */}
                 {(() => {
                   const netWorth = finances.savings + finances.crypto;
                   const monthlyBurn = finances.monthlyCosts;
                   const fiNumber = monthlyBurn * 12 * 25; // 4% rule
-                  const monthlySavings = netWorth > 0 ? Math.max(0, netWorth * 0.01) : 0; // 1% return assumption
-                  const monthsToFI = monthlySavings > 0 ? Math.ceil((fiNumber - netWorth) / monthlySavings) : 999;
+                  // Conservative ETF return: 7% p.a. = 0.58%/month. No regular income, so in deficit.
+                  const monthlyReturn = netWorth > 0 ? netWorth * 0.0058 : 0; // 7% annual ETF return
+                  const monthlyDeficit = monthlyBurn; // No income = losing €1000/mo
+                  const netMonthlyChange = monthlyReturn - monthlyDeficit;
+                  // Simple projection: FI unreachable without income (deficit every month)
+                  const monthsToFI = netMonthlyChange > 0 ? Math.ceil((fiNumber - netWorth) / netMonthlyChange) : 999;
                   const yearsToFI = Math.min(999, monthsToFI / 12);
                   return (
                     <div className="p-4 bg-white/5 rounded-xl border border-white/10">
