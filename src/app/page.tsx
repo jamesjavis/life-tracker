@@ -1182,7 +1182,7 @@ export default function MissionControl() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="text-base font-bold flex items-center gap-2">🔥 Habit Heatmap</h3>
-                      <p className="text-xs text-white/40 mt-0.5">Letzte 12 Wochen — % completition per Tag</p>
+                      <p className="text-xs text-white/40 mt-0.5">12 Wochen — Habits % + 💪 Gym-Sessions</p>
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       <div className="flex items-center gap-1">
@@ -1191,6 +1191,9 @@ export default function MissionControl() {
                           <div key={level} className="w-3 h-3 rounded-sm" style={{ backgroundColor: level === 0 ? 'rgba(255,255,255,0.08)' : level === 25 ? 'rgba(34,197,94,0.3)' : level === 50 ? 'rgba(34,197,94,0.5)' : level === 75 ? 'rgba(34,197,94,0.75)' : 'rgba(34,197,94,1)' }} />
                         ))}
                         <span className="text-white/30">100%</span>
+                        <span className="text-white/20 mx-1">|</span>
+                        <div className="w-2.5 h-2.5 rounded-full bg-orange-400 border border-orange-600" title="Gym day" />
+                        <span className="text-white/30">Gym</span>
                       </div>
                     </div>
                   </div>
@@ -1209,30 +1212,37 @@ export default function MissionControl() {
                     </div>
 
                     {/* Weeks */}
-                    {habitHistory.weeks.map((week, wi) => (
-                      <div key={wi} className="flex flex-col gap-0.5">
-                        {week.map((day, di) => {
-                          const bg = day.completion === 100 ? 'rgba(34,197,94,1)' : day.completion >= 75 ? 'rgba(34,197,94,0.75)' : day.completion >= 50 ? 'rgba(34,197,94,0.5)' : day.completion >= 25 ? 'rgba(34,197,94,0.3)' : day.completion > 0 ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)';
-                          const isToday = day.date === new Date().toISOString().split('T')[0];
-                          const dateObj = new Date(day.date);
-                          const showLabel = dateObj.getDate() === 1 || wi === 0;
-                          return (
-                            <div key={di} className="relative group">
-                              <div
-                                className="w-3 h-3 rounded-sm transition-all hover:ring-1 hover:ring-white/40 cursor-default"
-                                style={{ backgroundColor: bg, outline: isToday ? '1.5px solid rgba(255,255,255,0.7)' : 'none' }}
-                                title={`${day.date}: ${day.completed}/${day.total} habits (${day.completion}%)`}
-                              />
-                              {showLabel && (
-                                <div className="absolute bottom-4 left-0 text-xs text-white/40 bg-black/80 px-1 rounded whitespace-nowrap hidden group-hover:block z-10 pointer-events-none">
-                                  {dateObj.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
+                    {(() => {
+                      const gymSet = new Set(gymLogs);
+                      return habitHistory.weeks.map((week, wi) => (
+                        <div key={wi} className="flex flex-col gap-0.5">
+                          {week.map((day, di) => {
+                            const bg = day.completion === 100 ? 'rgba(34,197,94,1)' : day.completion >= 75 ? 'rgba(34,197,94,0.75)' : day.completion >= 50 ? 'rgba(34,197,94,0.5)' : day.completion >= 25 ? 'rgba(34,197,94,0.3)' : day.completion > 0 ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)';
+                            const isToday = day.date === new Date().toISOString().split('T')[0];
+                            const dateObj = new Date(day.date);
+                            const showLabel = dateObj.getDate() === 1 || wi === 0;
+                            const didGym = gymSet.has(day.date);
+                            return (
+                              <div key={di} className="relative group">
+                                <div
+                                  className="w-3 h-3 rounded-sm transition-all hover:ring-1 hover:ring-white/40 cursor-default"
+                                  style={{ backgroundColor: bg, outline: isToday ? '1.5px solid rgba(255,255,255,0.7)' : 'none' }}
+                                  title={`${day.date}: ${day.completed}/${day.total} habits (${day.completion}%)${didGym ? ' | 💪 GYM' : ''}`}
+                                />
+                                {didGym && (
+                                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-orange-400 border border-orange-600 pointer-events-none" title={`💪 Gym on ${day.date}`} />
+                                )}
+                                {showLabel && (
+                                  <div className="absolute bottom-4 left-0 text-xs text-white/40 bg-black/80 px-1 rounded whitespace-nowrap hidden group-hover:block z-10 pointer-events-none">
+                                    {dateObj.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ));
+                    })()}
                   </div>
 
                   {/* Stats Row */}
