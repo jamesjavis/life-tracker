@@ -1,0 +1,12 @@
+{
+  "items": [
+    { "id": "1", "text": "1M Euro Net Worth", "target": "€1M", "icon": "💰", "completed": false, "category": "financial", "notes": "" },
+    { "id": "2", "text": "Funding received (€12K/mo)", "target": "May/June 2026", "icon": "🎯", "completed": false, "category": "career", "notes": "Grant approval expected" },
+    { "id": "3", "text": "Successful app launch", "target": "Launch", "icon": "🚀", "completed": false, "category": "career", "notes": "Benefitsi or own product" },
+    { "id": "4", "text": "Fitness goals achieved", "target": "Ongoing", "icon": "💪", "completed": false, "category": "health", "notes": "Consistent gym, 3x/week" },
+    { "id": "5", "text": "eWorld Record game live", "target": "2026", "icon": "🎮", "completed": false, "category": "creative", "notes": "Speed Run MVP" },
+    { "id": "6", "text": "FI achieved", "target": "€300K", "icon": "🏁", "completed": false, "category": "financial", "notes": "4% rule: €1K/mo lifestyle" },
+    { "id": "7", "text": "Abstract blockchain opportunities captured", "target": "2026", "icon": "⛓️", "completed": false, "category": "financial", "notes": "Monitor active, waiting on ETH" }
+  ],
+  "lastUpdated": "2026-04-08T12:15:00.000Z"
+}

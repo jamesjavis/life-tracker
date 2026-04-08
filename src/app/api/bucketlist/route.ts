@@ -38,7 +38,7 @@ export async function GET() {
 
 // POST /api/bucketlist - Add or toggle bucket list item
 export async function POST(req: Request) {
-  const { id, action, text, target, icon } = await req.json();
+  const { id, action, text, target, icon, category, notes } = await req.json();
   const data = readData();
 
   if (action === "toggle" && id) {
@@ -51,6 +51,8 @@ export async function POST(req: Request) {
       target: target || "",
       icon: icon || "🎯",
       completed: false,
+      category: category || "other",
+      notes: notes || "",
     });
   } else if (action === "remove" && id) {
     data.items = data.items.filter((i: any) => i.id !== id);

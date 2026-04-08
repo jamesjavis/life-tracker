@@ -99,6 +99,8 @@ export default function MissionControl() {
   const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
   const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
   const [newBucketText, setNewBucketText] = useState("");
+  const [bucketCategory, setBucketCategory] = useState<string>("all");
+  const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
   const [loading, setLoading] = useState(true);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
@@ -507,13 +509,14 @@ export default function MissionControl() {
     const res = await fetch("/api/bucketlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "add", text: newBucketText.trim() }),
+      body: JSON.stringify({ action: "add", text: newBucketText.trim(), category: newBucketCategory }),
     });
 
     if (res.ok) {
       const data = await res.json();
       setBucketList(data.items || bucketList);
       setNewBucketText("");
+      setNewBucketCategory("other");
     }
   }
 
@@ -1950,6 +1953,77 @@ export default function MissionControl() {
             </button>
           </div>
 
+          {/* Progress Overview */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {(() => {
+              const total = bucketList.length;
+              const done = bucketList.filter(i => i.completed).length;
+              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+              return (
+                <>
+                  <div className="p-4 bg-white/5 rounded-2xl text-center border border-white/10">
+                    <p className="text-2xl font-bold text-purple-300">{done}/{total}</p>
+                    <p className="text-xs text-white/40 mt-1">Completed</p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-2xl text-center border border-white/10">
+                    <p className="text-2xl font-bold text-green-400">{pct}%</p>
+                    <p className="text-xs text-white/40 mt-1">Progress</p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-2xl text-center border border-white/10">
+                    <p className="text-2xl font-bold text-amber-400">{total - done}</p>
+                    <p className="text-xs text-white/40 mt-1">Remaining</p>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Category breakdown */}
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {(() => {
+              const cats = Array.from(new Set(bucketList.map(i => i.category || 'other')));
+              return cats.map(cat => {
+                const total = bucketList.filter(i => (i.category || 'other') === cat).length;
+                const done = bucketList.filter(i => (i.category || 'other') === cat && i.completed).length;
+                const catColors: Record<string, string> = {
+                  financial: 'bg-green-500/20 text-green-300 border-green-500/30',
+                  career: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+                  health: 'bg-red-500/20 text-red-300 border-red-500/30',
+                  creative: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+                  other: 'bg-white/10 text-white/60 border-white/20',
+                };
+                return (
+                  <span key={cat} className={cn("px-3 py-1 rounded-full text-xs border capitalize", catColors[cat] || catColors.other)}>
+                    {cat} {done}/{total}
+                  </span>
+                );
+              });
+            })()}
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex gap-2 mb-4 flex-wrap">
+            <button
+              onClick={() => setBucketCategory("all")}
+              className={cn("px-3 py-1 rounded-full text-xs border transition-all",
+                bucketCategory === "all" ? "bg-purple-500/30 text-purple-300 border-purple-500/40" : "bg-white/5 text-white/40 border-white/10 hover:bg-white/10")
+              }
+            >
+              All
+            </button>
+            {["financial", "career", "health", "creative"].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setBucketCategory(cat)}
+                className={cn("px-3 py-1 rounded-full text-xs border capitalize transition-all",
+                  bucketCategory === cat ? "bg-purple-500/30 text-purple-300 border-purple-500/40" : "bg-white/5 text-white/40 border-white/10 hover:bg-white/10")
+                }
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
           {/* Add New Item */}
           <div className="flex gap-2 mb-4">
             <input
@@ -1960,6 +2034,17 @@ export default function MissionControl() {
               placeholder="Neues Ziel hinzufügen..."
               className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30"
             />
+            <select
+              value={newBucketCategory}
+              onChange={e => setNewBucketCategory(e.target.value)}
+              className="px-3 py-3 bg-white/5 border border-white/10 rounded-xl text-white/70 text-sm focus:outline-none"
+            >
+              <option value="financial">Financial</option>
+              <option value="career">Career</option>
+              <option value="health">Health</option>
+              <option value="creative">Creative</option>
+              <option value="other">Other</option>
+            </select>
             <button
               onClick={addBucketItem}
               className="px-4 py-3 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-xl text-purple-400 font-medium transition-all"
@@ -1969,7 +2054,7 @@ export default function MissionControl() {
           </div>
 
           <div className="space-y-4">
-            {bucketList.map((item) => (
+            {(bucketCategory === "all" ? bucketList : bucketList.filter(i => i.category === bucketCategory)).map((item) => (
               <div
                 key={item.id}
                 onClick={() => toggleBucketItem(item.id)}
@@ -1984,7 +2069,19 @@ export default function MissionControl() {
                 <div className="flex-1">
                   <p className={cn("font-medium", item.completed && "line-through text-white/40")}>{item.text}</p>
                   <p className="text-xs text-white/40">{item.target}</p>
+                  {item.notes && !item.completed && <p className="text-xs text-white/30 mt-1 italic">{item.notes}</p>}
                 </div>
+                {item.category && (
+                  <span className={cn("px-2 py-0.5 rounded-full text-xs capitalize border",
+                    item.category === 'financial' ? 'bg-green-500/10 text-green-300 border-green-500/20' :
+                    item.category === 'career' ? 'bg-blue-500/10 text-blue-300 border-blue-500/20' :
+                    item.category === 'health' ? 'bg-red-500/10 text-red-300 border-red-500/20' :
+                    item.category === 'creative' ? 'bg-purple-500/10 text-purple-300 border-purple-500/20' :
+                    'bg-white/5 text-white/40 border-white/10'
+                  )}>
+                    {item.category}
+                  </span>
+                )}
                 {item.completed ? (
                   <CheckCircle2 className="w-5 h-5 text-green-400" />
                 ) : (
