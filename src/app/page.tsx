@@ -215,6 +215,63 @@ export default function MissionControl() {
     fetchData();
   }, []);
 
+  // Fetch week summary
+  useEffect(() => {
+    async function loadWeekSummary() {
+      try {
+        const res = await fetch("/api/week-summary");
+        if (!res.ok) return;
+        const data = await res.json();
+        const container = document.getElementById("week-summary-container");
+        const loading = document.getElementById("week-summary-loading");
+        if (!container) return;
+        if (loading) loading.style.display = "none";
+
+        const emojiMap: Record<string, string> = {
+          habits: "📋", gym: "💪", water: "💧", sleep: "🌙", mood: "💭"
+        };
+        const colorMap: Record<string, string> = {
+          gym: "text-orange-400",
+          water: "text-cyan-400",
+          sleep: "text-indigo-400",
+          mood: "text-pink-400",
+        };
+
+        container.innerHTML = data.days.map((day: any) => {
+          const items = [];
+          if (day.habits.pct > 0) items.push(`📋 ${day.habits.done}/${day.habits.total}`);
+          if (day.gym) items.push("💪");
+          if (day.water > 0) items.push(`💧 ${day.water}`);
+          if (day.sleep) items.push(`🌙 ${day.sleep.hours}h`);
+          if (day.mood) items.push(`⚡${day.mood.energy}`);
+          if (day.nutrition.calories > 0) items.push(`🍽️${day.nutrition.calories}`);
+          if (day.weight) items.push(`⚖️${day.weight}kg`);
+
+          const completeness = Math.round((day.habits.pct / 100) * 5);
+          const bar = "●".repeat(completeness) + "○".repeat(5 - completeness);
+
+          return `
+            <div class="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+              <span class="text-xs text-white/40 w-8">${day.dayName}</span>
+              <span class="${day.habits.pct >= 75 ? "text-green-400" : day.habits.pct >= 50 ? "text-yellow-400" : "text-white/30"} text-xs font-mono w-10">${bar}</span>
+              <span class="text-xs text-white/60 flex-1">${items.length > 0 ? items.join(" ") : "—"}</span>
+              ${day.gym ? '<span class="text-xs">🔥' + (data.streaks?.gym || 0) + '</span>' : ''}
+            </div>
+          `;
+        }).join("");
+
+        // Streak badges
+        if (data.streaks?.gym > 0) {
+          container.innerHTML += `<div class="mt-2 flex gap-2"><span class="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs">💪 ${data.streaks.gym}-day gym streak</span></div>`;
+        }
+      } catch(e) {
+        const loading = document.getElementById("week-summary-loading");
+        if (loading) loading.textContent = "Fehler";
+      }
+    }
+    loadWeekSummary();
+  }, []);
+
   async function fetchData() {
     try {
       // Fetch habits
@@ -884,6 +941,20 @@ export default function MissionControl() {
                   <p className="text-xs text-white/40">kcal</p>
                   <p className="text-xs text-white/30 mt-0.5">{nutritionData.dailyNutrition.protein}g P</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Weekly Summary — 7-Day Overview */}
+            <div className="p-6 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-blue-500/20 rounded-xl">
+                  <Activity className="w-4 h-4 text-blue-400" />
+                </div>
+                <h3 className="text-lg font-bold">Wochenüberblick</h3>
+                <span className="text-xs text-white/30 ml-auto" id="week-summary-loading">Laden...</span>
+              </div>
+              <div id="week-summary-container" className="space-y-2">
+                {/* Filled by JS fetch */}
               </div>
             </div>
 
