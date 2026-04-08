@@ -1,0 +1,92 @@
+{
+  "entries": [
+    {
+      "date": "2026-04-08",
+      "duration": 6,
+      "quality": 4,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-07",
+      "duration": 7.5,
+      "quality": 3,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-06",
+      "duration": 8.5,
+      "quality": 3,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-05",
+      "duration": 7,
+      "quality": 3,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-04",
+      "duration": 8.5,
+      "quality": 5,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-03",
+      "duration": 7.5,
+      "quality": 4,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-02",
+      "duration": 7,
+      "quality": 3,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-01",
+      "duration": 7,
+      "quality": 4,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-31",
+      "duration": 7.5,
+      "quality": 5,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-30",
+      "duration": 7,
+      "quality": 5,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-29",
+      "duration": 8,
+      "quality": 3,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-28",
+      "duration": 8.5,
+      "quality": 3,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-27",
+      "duration": 8,
+      "quality": 5,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-26",
+      "duration": 7,
+      "quality": 4,
+      "notes": ""
+    }
+  ],
+  "goals": {
+    "minDuration": 7,
+    "maxScreen": 30
+  }
+}

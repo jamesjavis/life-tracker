@@ -1,1 +1,96 @@
-{"habits":{"2026-03-30":{}},"lastReset":"2026-03-30T00:00:00.000Z"}
+{
+  "habits": {
+    "2026-04-08": {},
+    "2026-04-07": {
+      "gym": true,
+      "pushups": true,
+      "meditation": true,
+      "lesen": true
+    },
+    "2026-04-06": {
+      "smoothie": true,
+      "meditation": true,
+      "duolingo": true,
+      "yoga": true,
+      "atem": true
+    },
+    "2026-04-05": {
+      "yoga": true,
+      "creatin": true,
+      "pushups": true,
+      "smoothie": true,
+      "meditation": true
+    },
+    "2026-04-04": {
+      "duolingo": true,
+      "atem": true,
+      "meditation": true,
+      "gym": true,
+      "pushups": true
+    },
+    "2026-04-03": {
+      "lesen": true,
+      "creatin": true,
+      "meditation": true,
+      "duolingo": true
+    },
+    "2026-04-02": {
+      "pushups": true,
+      "gym": true,
+      "atem": true,
+      "smoothie": true,
+      "meditation": true
+    },
+    "2026-04-01": {
+      "pushups": true,
+      "atem": true,
+      "creatin": true,
+      "duolingo": true
+    },
+    "2026-03-31": {
+      "smoothie": true,
+      "pushups": true,
+      "meditation": true,
+      "lesen": true,
+      "creatin": true
+    },
+    "2026-03-30": {
+      "lesen": true,
+      "smoothie": true,
+      "meditation": true,
+      "creatin": true,
+      "yoga": true,
+      "atem": true
+    },
+    "2026-03-29": {
+      "meditation": true,
+      "pushups": true,
+      "atem": true,
+      "lesen": true,
+      "yoga": true
+    },
+    "2026-03-28": {
+      "yoga": true,
+      "meditation": true,
+      "lesen": true,
+      "smoothie": true,
+      "atem": true
+    },
+    "2026-03-27": {
+      "duolingo": true,
+      "smoothie": true,
+      "lesen": true,
+      "gym": true,
+      "yoga": true
+    },
+    "2026-03-26": {
+      "duolingo": true,
+      "lesen": true,
+      "creatin": true,
+      "atem": true,
+      "gym": true,
+      "meditation": true
+    }
+  },
+  "lastReset": "2026-04-08T00:00:00.000Z"
+}
