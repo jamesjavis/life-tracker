@@ -945,6 +945,35 @@ export default function MissionControl() {
                   <p className="text-xs text-white/30 mt-0.5">{nutritionData.dailyNutrition.protein}g P</p>
                 </div>
               </div>
+
+              {/* Quick-Tap Habits — toggle habits without leaving overview */}
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-white/40 font-medium">Schnell abhaken</p>
+                  <p className="text-xs text-white/30">{completedCount}/{HABITS.length} heute</p>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {HABITS.map(habit => (
+                    <button
+                      key={habit.id}
+                      onClick={() => toggleHabit(habit.id)}
+                      title={habit.label}
+                      className={cn(
+                        "flex-shrink-0 w-12 h-12 rounded-xl border flex flex-col items-center justify-center transition-all hover:scale-105 active:scale-95",
+                        habits[habit.id]
+                          ? "bg-green-500/25 border-green-500/40"
+                          : "bg-white/5 border-white/10 hover:border-white/20"
+                      )}
+                    >
+                      <span className="text-xl leading-none">{habit.emoji}</span>
+                      <span className={cn(
+                        "text-[9px] mt-0.5 leading-tight",
+                        habits[habit.id] ? "text-green-400" : "text-white/30"
+                      )}>{habit.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Weekly Summary — 7-Day Overview */}
