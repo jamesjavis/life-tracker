@@ -787,6 +787,106 @@ export default function MissionControl() {
               </div>
             )}
 
+            {/* Today's Snapshot — All Tracker Metrics at a Glance */}
+            <div className="p-6 bg-gradient-to-br from-white/5 via-white/3 to-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/20 rounded-xl">
+                    <Activity className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">Today's Snapshot</h3>
+                    <p className="text-xs text-white/40">All metrics in one view</p>
+                  </div>
+                </div>
+                <span className="text-xs text-white/30">
+                  {new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                {/* Habits */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">📋</div>
+                  <p className="text-sm font-bold text-white/80">{completedCount}/{HABITS.length}</p>
+                  <p className="text-xs text-white/40">Habits</p>
+                  <div className="h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${completedPercentage}%` }} />
+                  </div>
+                </div>
+
+                {/* Water */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">💧</div>
+                  <p className="text-sm font-bold text-cyan-400">{waterData.todayGlasses}/{waterData.dailyGoal}</p>
+                  <p className="text-xs text-white/40">Water</p>
+                  <div className="h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
+                    <div className="h-full bg-cyan-500 rounded-full transition-all" style={{ width: `${Math.min(waterData.todayProgress, 100)}%` }} />
+                  </div>
+                </div>
+
+                {/* Sleep */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">🌙</div>
+                  <p className="text-sm font-bold text-indigo-400">
+                    {sleepEntries[0] ? `${sleepEntries[0].duration}h` : '—'}
+                  </p>
+                  <p className="text-xs text-white/40">Sleep</p>
+                  {sleepEntries[0] && (
+                    <div className="mt-1 flex justify-center gap-0.5">
+                      {[1,2,3,4,5,6,7,8,9,10].slice(0, Math.round(sleepEntries[0].quality || 0)).map(q => (
+                        <div key={q} className="w-1 h-1 rounded-full bg-indigo-400" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Gym */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">💪</div>
+                  <p className="text-sm font-bold text-orange-400">{gymStreak}🔥</p>
+                  <p className="text-xs text-white/40">Gym Streak</p>
+                  {gymLogs.includes(todayStr) ? (
+                    <span className="mt-1 inline-block text-xs text-green-400">✓ Heute</span>
+                  ) : (
+                    <span className="mt-1 inline-block text-xs text-white/30">Offen</span>
+                  )}
+                </div>
+
+                {/* Energy */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">⚡</div>
+                  <p className="text-sm font-bold text-rose-400">{moodData.energy}/10</p>
+                  <p className="text-xs text-white/40">Energy</p>
+                  <div className="mt-1.5 flex justify-center gap-0.5">
+                    {[1,2,3,4,5,6,7,8,9,10].slice(0, moodData.energy).map(e => (
+                      <div key={e} className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Mood */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">💭</div>
+                  <p className="text-sm font-bold text-pink-400">{moodData.mood}/10</p>
+                  <p className="text-xs text-white/40">Mood</p>
+                  <div className="mt-1.5 flex justify-center gap-0.5">
+                    {[1,2,3,4,5,6,7,8,9,10].slice(0, moodData.mood).map(m => (
+                      <div key={m} className="w-1.5 h-1.5 rounded-full bg-pink-400" />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Nutrition */}
+                <div className="p-3 bg-white/5 rounded-xl text-center">
+                  <div className="text-2xl mb-1">🍽️</div>
+                  <p className="text-sm font-bold text-orange-400">{nutritionData.dailyNutrition.calories}</p>
+                  <p className="text-xs text-white/40">kcal</p>
+                  <p className="text-xs text-white/30 mt-0.5">{nutritionData.dailyNutrition.protein}g P</p>
+                </div>
+              </div>
+            </div>
+
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-6">
               {/* High Priority Project */}
