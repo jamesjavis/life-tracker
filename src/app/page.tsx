@@ -156,6 +156,12 @@ export default function MissionControl() {
     savingsGoals: []
   });
 
+  // Mentor Tips
+  const [mentorData, setMentorData] = useState<{
+    today: any;
+    pastTips: any[];
+  }>({ today: null, pastTips: [] });
+
   // Mood/Energy tracking
   const [moodData, setMoodData] = useState<{
     energy: number;
@@ -436,6 +442,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load wellness", e);
+      }
+
+      // Fetch mentor tips
+      try {
+        const mentorRes = await fetch("/api/mentor");
+        if (mentorRes.ok) {
+          const mentorResult = await mentorRes.json();
+          setMentorData({ today: mentorResult.today, pastTips: mentorResult.pastTips || [] });
+        }
+      } catch (e) {
+        console.error("Failed to load mentor tips", e);
       }
     } catch (e) {
       console.error("Failed to load data", e);
@@ -1064,6 +1081,55 @@ export default function MissionControl() {
                 </div>
               </div>
             </div>
+
+            {/* Daily Mentor Section */}
+            {mentorData.today && (
+              <div className="p-6 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-fuchsia-500/10 backdrop-blur-xl rounded-3xl border border-violet-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-violet-500/20 rounded-xl">
+                      <span className="text-xl">{mentorData.today.emoji}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold">Daily Mentor</h3>
+                      <p className="text-xs text-white/40">Tip #{((mentorData.today.dayOfYear || 0) % 30) + 1} of {30}</p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 bg-violet-500/20 text-violet-400 rounded-full text-xs font-medium capitalize">
+                    {mentorData.today.category}
+                  </span>
+                </div>
+
+                <div className="mb-3">
+                  <h4 className="text-xl font-bold text-white mb-2">{mentorData.today.title}</h4>
+                  <p className="text-sm text-white/60 leading-relaxed">{mentorData.today.text}</p>
+                </div>
+
+                {mentorData.today.action && (
+                  <div className="p-3 bg-violet-500/10 border border-violet-500/20 rounded-xl mb-3">
+                    <p className="text-xs text-violet-400 font-medium mb-1">🎯 Your Action</p>
+                    <p className="text-sm text-white/70">{mentorData.today.action}</p>
+                  </div>
+                )}
+
+                {mentorData.pastTips.length > 0 && (
+                  <div className="border-t border-white/10 pt-3">
+                    <p className="text-xs text-white/30 mb-2">Previous Tips</p>
+                    <div className="flex gap-1 overflow-x-auto pb-1">
+                      {mentorData.pastTips.slice(0, 5).map((tip: any) => (
+                        <div
+                          key={tip.id}
+                          title={tip.title}
+                          className="flex-shrink-0 w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-sm hover:bg-violet-500/20 hover:border-violet-500/30 transition-all cursor-default"
+                        >
+                          {tip.emoji}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-6">

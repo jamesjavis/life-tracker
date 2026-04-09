@@ -24,20 +24,26 @@ function writeData(data: any) {
 
 function calculateStreak(logs: string[]): number {
   if (!logs.length) return 0;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const todayStr = today.toISOString().split("T")[0];
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-  if (!logs.includes(todayStr) && !logs.includes(yesterdayStr)) {
+  const sorted = [...logs].sort();
+  const lastLog = sorted[sorted.length - 1];
+
+  // If streak is broken (last workout more than 1 day ago), return 0
+  if (lastLog !== todayStr && lastLog !== yesterdayStr) {
     return 0;
   }
 
+  // Start from most recent log and count backwards through consecutive days
   let streak = 0;
-  let currentDate = new Date(today);
+  let currentDate = new Date(lastLog);
+  currentDate.setHours(0, 0, 0, 0);
 
   while (logs.includes(currentDate.toISOString().split("T")[0])) {
     streak++;
@@ -53,6 +59,10 @@ export async function GET(req: Request) {
   const date = searchParams.get("date");
   const data = readData();
 
+  // Always recalculate streak dynamically (data.streak in file may be stale)
+  data.streak = calculateStreak(data.logs);
+
+
   if (date) {
     const workout = data.workouts?.[date];
     return NextResponse.json({ 
@@ -61,6 +71,7 @@ export async function GET(req: Request) {
       workout: workout || null 
     });
   }
+
 
   return NextResponse.json({ logs: data.logs, streak: data.streak, workouts: data.workouts || {} });
 }
