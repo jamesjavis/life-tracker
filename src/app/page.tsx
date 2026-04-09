@@ -266,6 +266,39 @@ export default function MissionControl() {
         if (data.streaks?.gym > 0) {
           container.innerHTML += `<div class="mt-2 flex gap-2"><span class="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs">💪 ${data.streaks.gym}-day gym streak</span></div>`;
         }
+
+        // === Populate 7-Day Sparkline ===
+        const sparklineEl = document.getElementById("habit-sparkline");
+        const weekGymCount = document.getElementById("week-gym-count");
+        const weekSleepAvg = document.getElementById("week-sleep-avg");
+        const weekAvgLabel = document.getElementById("week-avg-label");
+
+        if (sparklineEl && data.days) {
+          const pcts = data.days.map((d: any) => d.habits.pct || 0);
+          const maxPct = Math.max(...pcts, 1);
+          const gymCount = data.days.filter((d: any) => d.gym).length;
+          const sleepEntries = data.days.filter((d: any) => d.sleep).map((d: any) => d.sleep.hours);
+          const sleepAvg = sleepEntries.length > 0
+            ? (sleepEntries.reduce((a: number, b: number) => a + b, 0) / sleepEntries.length).toFixed(1)
+            : null;
+          const avgPct = Math.round(pcts.reduce((a: number, b: number) => a + b, 0) / pcts.length);
+
+          sparklineEl.innerHTML = pcts.map((pct: number, i: number) => {
+            const height = Math.max(4, Math.round((pct / maxPct) * 40));
+            const color = pct >= 75 ? "bg-green-400" : pct >= 50 ? "bg-yellow-400" : "bg-white/20";
+            return `<div class="flex-1 ${color} rounded-sm transition-all" style="height:${height}px" title="${pct}%" />`;
+          }).join("");
+
+          if (weekGymCount) weekGymCount.textContent = String(gymCount);
+          if (weekSleepAvg) weekSleepAvg.textContent = sleepAvg ? `${sleepAvg}h` : "—";
+          if (weekAvgLabel) weekAvgLabel.textContent = `Ø ${avgPct}%`;
+
+          // Day labels
+          data.days.forEach((d: any, i: number) => {
+            const labelEl = document.getElementById(`sparkline-day-${i}`);
+            if (labelEl) labelEl.textContent = d.dayName;
+          });
+        }
       } catch(e) {
         const loading = document.getElementById("week-summary-loading");
         if (loading) loading.textContent = "Fehler";
@@ -987,6 +1020,48 @@ export default function MissionControl() {
               </div>
               <div id="week-summary-container" className="space-y-2">
                 {/* Filled by JS fetch */}
+              </div>
+            </div>
+
+            {/* Weekly Trends — 7-Day Sparkline */}
+            <div className="p-6 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-purple-500/20 rounded-xl">
+                  <TrendingUp className="w-4 h-4 text-purple-400" />
+                </div>
+                <h3 className="text-lg font-bold">7-Tage Trend</h3>
+              </div>
+              {/* Habit sparkline */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs text-white/50">Habits</p>
+                  <p className="text-xs text-white/30" id="week-avg-label">—</p>
+                </div>
+                <div id="habit-sparkline" className="flex items-end gap-1 h-10">
+                  {/* Filled by JS */}
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-[9px] text-white/25" id="sparkline-day-6">—</span>
+                  <span className="text-[9px] text-white/25" id="sparkline-day-5">—</span>
+                  <span className="text-[9px] text-white/25" id="sparkline-day-4">—</span>
+                  <span className="text-[9px] text-white/25" id="sparkline-day-3">—</span>
+                  <span className="text-[9px] text-white/25" id="sparkline-day-2">—</span>
+                  <span className="text-[9px] text-white/25" id="sparkline-day-1">—</span>
+                  <span className="text-[9px] text-white/25" id="sparkline-day-0">—</span>
+                </div>
+              </div>
+              {/* Gym + Sleep row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-white/5 rounded-xl">
+                  <p className="text-xs text-white/40 mb-1">💪 Gym-Sessions</p>
+                  <p className="text-lg font-bold text-orange-400" id="week-gym-count">—</p>
+                  <p className="text-[10px] text-white/25 mt-0.5">diese Woche</p>
+                </div>
+                <div className="p-3 bg-white/5 rounded-xl">
+                  <p className="text-xs text-white/40 mb-1">🌙 Ø Schlaf</p>
+                  <p className="text-lg font-bold text-indigo-400" id="week-sleep-avg">—</p>
+                  <p className="text-[10px] text-white/25 mt-0.5">Std/ Nacht</p>
+                </div>
               </div>
             </div>
 
