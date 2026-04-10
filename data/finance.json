@@ -1,1 +1,26 @@
-{"savings":2000,"crypto":10000,"monthlyCosts":1000,"funding":{"status":"pending","amount":12000,"expected":"May/June 2026"},"transactions":[],"savingsGoals":[{"id":"1","name":"Emergency Fund","target":5000,"current":2000},{"id":"2","name":"Business Investment","target":10000,"current":0}],"lastUpdated":"2026-03-30T17:00:00.000Z"}
+{
+  "savings": 2000,
+  "crypto": 10000,
+  "monthlyCosts": 1000,
+  "funding": {
+    "status": "pending",
+    "amount": 12000,
+    "expected": "May/June 2026"
+  },
+  "transactions": [],
+  "savingsGoals": [
+    {
+      "id": "1",
+      "name": "Emergency Fund",
+      "target": 5000,
+      "current": 2000
+    },
+    {
+      "id": "2",
+      "name": "Business Investment",
+      "target": 10000,
+      "current": 0
+    }
+  ],
+  "lastUpdated": "2026-04-10T21:28:03.099Z"
+}
