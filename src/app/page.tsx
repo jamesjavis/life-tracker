@@ -232,6 +232,35 @@ export default function MissionControl() {
   const [wellnessType, setWellnessType] = useState("mindfulness");
   const [wellnessNote, setWellnessNote] = useState("");
 
+  // Breathing exercise state
+  const [breathingData, setBreathingData] = useState<{
+    sessions: any[];
+    today: any[] | null;
+    stats: { totalSessions: number; totalMinutes: number; avgDuration: number; streak: number; last7Count: number; todayCount: number };
+  }>({ sessions: [], today: null, stats: { totalSessions: 0, totalMinutes: 0, avgDuration: 0, streak: 0, last7Count: 0, todayCount: 0 } });
+  const [breathingActive, setBreathingActive] = useState(false);
+  const [breathingPattern, setBreathingPattern] = useState("box");
+  const [breathingPhase, setBreathingPhase] = useState("idle");
+  const [breathingSeconds, setBreathingSeconds] = useState(0);
+  const [breathingRounds, setBreathingRounds] = useState(0);
+
+  const BREATHING_PATTERNS: Record<string, { label: string; inhale: number; hold: number; exhale: number; hold2?: number; desc: string }> = {
+    box: { label: "Box Breathing", inhale: 4, hold: 4, exhale: 4, hold2: 4, desc: "Equal 4-4-4-4 — Navy SEAL technique for calm focus" },
+    "478": { label: "4-7-8 Breathing", inhale: 4, hold: 7, exhale: 8, desc: "Dr. Andrew Weil's relaxation breathing" },
+    physio: { label: "Physiological Sigh", inhale: 2, hold: 0, exhale: 6, desc: "Double inhale + long exhale — fastest stress relief" },
+    calm: { label: "Deep Calm", inhale: 5, hold: 5, exhale: 8, hold2: 0, desc: "Long exhales for deep relaxation" },
+  };
+
+  async function logBreathingSession(duration: number, rounds: number) {
+    await fetch("/api/breathing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "log", duration, rounds, pattern: breathingPattern })
+    });
+    const res = await fetch("/api/breathing");
+    if (res.ok) setBreathingData(await res.json());
+  }
+
   // Weather data - Annweiler, Germany
   const [weather, setWeather] = useState<{ temp: number; feels: number; condition: string; humidity: number; wind: number; icon: string } | null>(null);
   const [forecast, setForecast] = useState<Array<{ date: string; min: number; max: number; condition: string; icon: string }>>([]);
@@ -477,6 +506,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load wellness", e);
+      }
+
+      // Fetch breathing
+      try {
+        const breathingRes = await fetch("/api/breathing");
+        if (breathingRes.ok) {
+          const breathingResult = await breathingRes.json();
+          setBreathingData(breathingResult);
+        }
+      } catch (e) {
+        console.error("Failed to load breathing", e);
       }
 
       // Fetch mentor tips
@@ -1974,10 +2014,144 @@ export default function MissionControl() {
               </div>
             </div>
           )}
+
+          {/* Breathing Exercise */}
+          <div className="mt-6 p-5 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-2xl border border-teal-500/20">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl">🌬️</span>
+              <h3 className="font-bold">Breathing Exercise</h3>
+              <span className="ml-auto text-xs text-white/40">{breathingData.stats.streak}🔥 streak</span>
+            </div>
+
+            {/* Pattern Selector */}
+            <div className="flex gap-2 flex-wrap mb-4">
+              {Object.entries(BREATHING_PATTERNS).map(([key, pat]) => (
+                <button
+                  key={key}
+                  onClick={() => { if (!breathingActive) setBreathingPattern(key); }}
+                  disabled={breathingActive}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+                    breathingPattern === key
+                      ? "bg-teal-500/30 border-teal-500/50 text-teal-300"
+                      : "bg-white/5 border-white/10 text-white/50 hover:text-white/80"
+                  )}
+                >
+                  {pat.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-white/40 mb-4">{BREATHING_PATTERNS[breathingPattern]?.desc}</p>
+
+            {/* Breathing Circle Animation */}
+            <div className="flex justify-center mb-4">
+              <div className="relative w-32 h-32 flex items-center justify-center">
+                {/* Outer ring */}
+                <div className={cn(
+                  "absolute inset-0 rounded-full border-2 transition-all duration-1000",
+                  breathingPhase === "idle" ? "border-white/10" :
+                  breathingPhase === "inhale" ? "border-cyan-400 scale-110" :
+                  breathingPhase === "hold" ? "border-cyan-400/70 scale-110" :
+                  breathingPhase === "exhale" ? "border-teal-400 scale-90" :
+                  "border-teal-400/50 scale-90"
+                )} />
+                {/* Inner circle */}
+                <div className={cn(
+                  "w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/40 to-teal-500/40 backdrop-blur-sm flex items-center justify-center transition-all duration-1000",
+                  breathingPhase === "idle" ? "scale-100" :
+                  breathingPhase === "inhale" ? "scale-125" :
+                  breathingPhase === "hold" ? "scale-125" : "scale-75"
+                )}>
+                  <span className="text-sm font-bold text-white/80">
+                    {breathingPhase === "idle" ? "▶" :
+                     breathingPhase === "inhale" ? "IN" :
+                     breathingPhase === "hold" ? "HOLD" : "OUT"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Timer + Round Counter */}
+            <div className="flex justify-center gap-6 mb-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-cyan-400">{Math.floor(breathingSeconds / 60)}:{(breathingSeconds % 60).toString().padStart(2, "0")}</p>
+                <p className="text-xs text-white/40">Duration</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-teal-400">{breathingRounds}</p>
+                <p className="text-xs text-white/40">Rounds</p>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex gap-2">
+              {!breathingActive ? (
+                <button
+                  onClick={() => {
+                    setBreathingActive(true);
+                    setBreathingSeconds(0);
+                    setBreathingRounds(0);
+                    setBreathingPhase("inhale");
+                    let elapsed = 0;
+                    let rounds = 0;
+                    const pat = BREATHING_PATTERNS[breathingPattern];
+                    const cycleSec = (pat.inhale + pat.hold + pat.exhale + (pat.hold2 || 0));
+                    const tick = () => {
+                      elapsed++;
+                      setBreathingSeconds(elapsed);
+                      const pos = elapsed % cycleSec;
+                      let phase = "idle";
+                      if (pos <= pat.inhale) phase = "inhale";
+                      else if (pos <= pat.inhale + pat.hold) phase = "hold";
+                      else if (pos <= pat.inhale + pat.hold + pat.exhale) phase = "exhale";
+                      else phase = "hold2";
+                      if (elapsed > 0 && elapsed % cycleSec === 0) { rounds++; setBreathingRounds(rounds); }
+                      setBreathingPhase(phase);
+                    };
+                    const interval = setInterval(tick, 1000);
+                    (window as any).__breathingInterval = interval;
+                  }}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 rounded-xl font-bold text-white text-sm transition-all"
+                >
+                  ▶ Start {BREATHING_PATTERNS[breathingPattern]?.label}
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    clearInterval((window as any).__breathingInterval);
+                    setBreathingActive(false);
+                    setBreathingPhase("idle");
+                    if (breathingSeconds > 10) logBreathingSession(breathingSeconds, breathingRounds);
+                    setBreathingSeconds(0);
+                    setBreathingRounds(0);
+                  }}
+                  className="flex-1 py-2.5 bg-red-500/30 hover:bg-red-500/50 border border-red-500/40 rounded-xl font-bold text-red-300 text-sm transition-all"
+                >
+                  ■ Stop & Log
+                </button>
+              )}
+            </div>
+
+            {/* Stats row */}
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="text-center p-2 bg-white/5 rounded-xl">
+                <p className="text-lg font-bold text-cyan-400">{breathingData.stats.totalSessions}</p>
+                <p className="text-xs text-white/40">Total Sessions</p>
+              </div>
+              <div className="text-center p-2 bg-white/5 rounded-xl">
+                <p className="text-lg font-bold text-teal-400">{breathingData.stats.totalMinutes}m</p>
+                <p className="text-xs text-white/40">Total Minutes</p>
+              </div>
+              <div className="text-center p-2 bg-white/5 rounded-xl">
+                <p className="text-lg font-bold text-white/60">{breathingData.stats.todayCount}</p>
+                <p className="text-xs text-white/40">Today</p>
+              </div>
+            </div>
+          </div>
         </div>
         )}
 
-        {/* Water Tracker */}
+        {/* Water Tracker */}]
         {activeTab === "tracker" && (
           <div className="p-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-cyan-500/20">
             <div className="flex items-center justify-between mb-6">
