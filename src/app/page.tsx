@@ -110,6 +110,41 @@ export default function MissionControl() {
   const [workoutHistory, setWorkoutHistory] = useState<Record<string, ({ type: string; duration: number; intensity: string; notes?: string } | { muscles: string[]; exercises: string[]; notes?: string; timestamp?: string })>>({});
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
 
+  // Strength training exercise logging
+  const [workoutExercises, setWorkoutExercises] = useState<Array<{ name: string; sets: number; reps: number; weight: number }>>([]);
+  const [newExerciseName, setNewExerciseName] = useState("");
+  const [newExerciseSets, setNewExerciseSets] = useState(3);
+  const [newExerciseReps, setNewExerciseReps] = useState(10);
+  const [newExerciseWeight, setNewExerciseWeight] = useState(0);
+
+  const COMMON_EXERCISES: Record<string, string[]> = {
+    Chest: ["Bench Press", "Incline Bench Press", "Dumbbell Fly", "Push-ups", "Cable Crossover"],
+    Back: ["Pull-ups", "Barbell Row", "Lat Pulldown", "Seated Row", "Deadlift"],
+    Shoulders: ["Overhead Press", "Lateral Raise", "Face Pull", "Shrugs", "Arnold Press"],
+    Arms: ["Bicep Curl", "Tricep Pushdown", "Hammer Curl", "Skull Crushers", "Preacher Curl"],
+    Legs: ["Squat", "Leg Press", "Romanian Deadlift", "Leg Curl", "Leg Extension", "Calf Raise"],
+    Core: ["Plank", "Cable Crunch", "Hanging Leg Raise", "Russian Twist", "Ab Wheel"]
+  };
+
+  function addExercise() {
+    if (!newExerciseName.trim()) return;
+    setWorkoutExercises(prev => [...prev, {
+      name: newExerciseName.trim(),
+      sets: newExerciseSets,
+      reps: newExerciseReps,
+      weight: newExerciseWeight
+    }]);
+    setNewExerciseName("");
+    setNewExerciseSets(3);
+    setNewExerciseReps(10);
+    setNewExerciseWeight(0);
+  }
+
+  function removeExercise(idx: number) {
+    setWorkoutExercises(prev => prev.filter((_, i) => i !== idx));
+  }
+
+
   // Weight tracking
   const [weightEntries, setWeightEntries] = useState<any[]>([]);
   const [weightGoal, setWeightGoal] = useState(75.0);
@@ -510,7 +545,19 @@ export default function MissionControl() {
     const today = new Date().toISOString().split("T")[0];
     if (gymLogs.includes(today)) return;
 
-    const workout = {
+    const muscles = [...new Set(workoutExercises.map(e => {
+      const found = Object.entries(COMMON_EXERCISES).find(([_, exs]) => exs.includes(e.name));
+      return found ? found[0] : 'Other';
+    }))];
+
+    const workout = workoutType === 'strength' && workoutExercises.length > 0 ? {
+      type: workoutType,
+      duration: workoutDuration,
+      intensity: workoutIntensity,
+      notes: workoutNotes,
+      muscles,
+      exercises: workoutExercises
+    } : {
       type: workoutType,
       duration: workoutDuration,
       intensity: workoutIntensity,
@@ -527,11 +574,10 @@ export default function MissionControl() {
       const data = await res.json();
       setGymLogs(prev => [...prev, today].sort());
       setGymStreak(data.streak);
-      // Also update local workout history
-      setWorkoutHistory(prev => ({
-        ...prev,
-        [today]: { type: workoutType, duration: workoutDuration, intensity: workoutIntensity, notes: workoutNotes }
-      }));
+      const historyEntry = workoutType === 'strength' && workoutExercises.length > 0
+        ? { type: workoutType, duration: workoutDuration, intensity: workoutIntensity, notes: workoutNotes, muscles, exercises: workoutExercises }
+        : { type: workoutType, duration: workoutDuration, intensity: workoutIntensity, notes: workoutNotes };
+      setWorkoutHistory(prev => ({ ...prev, [today]: historyEntry }));
     }
     setShowWorkoutModal(false);
     // Reset form
@@ -539,6 +585,11 @@ export default function MissionControl() {
     setWorkoutDuration(60);
     setWorkoutIntensity("medium");
     setWorkoutNotes("");
+    setWorkoutExercises([]);
+    setNewExerciseName("");
+    setNewExerciseSets(3);
+    setNewExerciseReps(10);
+    setNewExerciseWeight(0);
   }
 
   async function toggleBucketItem(id: string) {
@@ -2869,14 +2920,104 @@ export default function MissionControl() {
                 </div>
               </div>
 
+              {/* Strength: Exercise Logger */}
+              {workoutType === 'strength' && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm text-white/50">Exercises ({workoutExercises.length})</label>
+                    {workoutExercises.length > 0 && (
+                      <span className="text-xs text-orange-400">{workoutExercises.reduce((s, e) => s + e.sets, 0)} total sets</span>
+                    )}
+                  </div>
+
+                  {/* Added Exercises */}
+                  {workoutExercises.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {workoutExercises.map((ex, i) => (
+                        <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/20 border border-orange-500/30 rounded-lg text-xs">
+                          <span className="text-orange-300 font-medium">{ex.name}</span>
+                          <span className="text-white/50">{ex.sets}x{ex.reps}</span>
+                          {ex.weight > 0 && <span className="text-white/40">{ex.weight}kg</span>}
+                          <button onClick={() => removeExercise(i)} className="ml-1 text-white/30 hover:text-red-400 transition-colors">x</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Quick Add by Muscle Group */}
+                  <div className="mb-3">
+                    <p className="text-xs text-white/30 mb-2">Quick Add</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {Object.entries(COMMON_EXERCISES).map(([muscle, exs]) => (
+                        <div key={muscle} className="relative group">
+                          <button className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-white/60 hover:bg-orange-500/20 hover:border-orange-500/30 hover:text-orange-300 transition-all">
+                            {muscle}
+                          </button>
+                          <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-10 bg-[#1a1a1a] border border-white/20 rounded-xl p-2 shadow-xl min-w-32">
+                            {exs.map(ex => (
+                              <button
+                                key={ex}
+                                onClick={() => { setNewExerciseName(ex); addExercise(); }}
+                                className="block w-full text-left px-2 py-1 text-xs text-white/70 hover:text-orange-300 hover:bg-orange-500/10 rounded transition-all"
+                              >
+                                {ex}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Custom Exercise Input */}
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Custom exercise..."
+                      value={newExerciseName}
+                      onChange={e => setNewExerciseName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addExercise(); } }}
+                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:outline-none focus:border-orange-500/50"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Sets"
+                      value={newExerciseSets || ''}
+                      onChange={e => setNewExerciseSets(Number(e.target.value))}
+                      className="w-14 px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:outline-none focus:border-orange-500/50 text-center"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Reps"
+                      value={newExerciseReps || ''}
+                      onChange={e => setNewExerciseReps(Number(e.target.value))}
+                      className="w-14 px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:outline-none focus:border-orange-500/50 text-center"
+                    />
+                    <input
+                      type="number"
+                      placeholder="kg"
+                      value={newExerciseWeight || ''}
+                      onChange={e => setNewExerciseWeight(Number(e.target.value))}
+                      className="w-14 px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:outline-none focus:border-orange-500/50 text-center"
+                    />
+                    <button
+                      onClick={addExercise}
+                      className="px-3 py-2 bg-orange-500/30 hover:bg-orange-500/50 border border-orange-500/40 rounded-lg text-xs text-orange-300 font-medium transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Notes */}
               <div className="mb-6">
-                <label className="block text-sm text-white/50 mb-2">Notes (optional)</label>
+                <label className="block text-sm text-white/50 mb-2">Notes</label>
                 <textarea
                   value={workoutNotes}
                   onChange={e => setWorkoutNotes(e.target.value)}
-                  placeholder="e.g. PR on deadlift, felt great..."
-                  rows={3}
+                  placeholder="How did you feel? Any PRs?"
+                  rows={2}
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
                 />
               </div>
