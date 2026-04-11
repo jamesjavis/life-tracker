@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mission Control | Patrick Rieder",
-  description: "Personal dashboard for projects, finances, and goals",
+  title: "Life Tracker | Patrick Rieder",
+  description: "Personal tracker for habits, gym, sleep, weight, water, nutrition, mood, wellness, and finance",
 };
 
 export default function RootLayout({

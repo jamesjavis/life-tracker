@@ -62,18 +62,75 @@ export async function GET(req: Request) {
   // Always recalculate streak dynamically (data.streak in file may be stale)
   data.streak = calculateStreak(data.logs);
 
+  // Compute weekly frequency stats
+  const now = new Date();
+  const thisWeekStart = new Date(now);
+  thisWeekStart.setDate(now.getDate() - now.getDay());
+  thisWeekStart.setHours(0, 0, 0, 0);
+
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const weeklyFreq: Record<string, number> = {};
+  const monthlyCount = { this: 0, last: 0 };
+  const totalSessions = data.logs.length;
+
+  data.logs.forEach((log: string) => {
+    const d = new Date(log);
+    const year = d.getFullYear();
+    const week = Math.ceil(((d.getTime() - new Date(year, 0, 1).getTime()) / 86400000 + new Date(year, 0, 1).getDay() + 1) / 7);
+    const yw = `${year}-W${week.toString().padStart(2, '0')}`;
+    weeklyFreq[yw] = (weeklyFreq[yw] || 0) + 1;
+
+    if (d >= thisMonthStart) monthlyCount.this++;
+    else {
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      if (d >= lastMonthStart) monthlyCount.last++;
+    }
+  });
+
+  // Last 8 weeks as ordered array
+  const last8Weeks = Object.entries(weeklyFreq)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 8)
+    .map(([week, count]) => ({ week, count }));
+
+  // Average gap between sessions
+  const sortedLogs = [...data.logs].sort();
+  let avgGap = 0;
+  if (sortedLogs.length >= 2) {
+    let total = 0;
+    for (let i = 1; i < sortedLogs.length; i++) {
+      total += (new Date(sortedLogs[i]).getTime() - new Date(sortedLogs[i-1]).getTime()) / 86400000;
+    }
+    avgGap = Math.round(total / (sortedLogs.length - 1));
+  }
+
+  // This week's sessions
+  const thisWeekLogs = data.logs.filter((log: string) => new Date(log) >= thisWeekStart);
+
+  const stats = {
+    totalSessions,
+    thisWeekSessions: thisWeekLogs.length,
+    monthlyThis: monthlyCount.this,
+    monthlyLast: monthlyCount.last,
+    avgGapDays: avgGap,
+    last8Weeks,
+    weeklyAverage: totalSessions > 0
+      ? parseFloat((totalSessions / Math.max(1, (new Date(sortedLogs[0]).getTime() > 0 ? (now.getTime() - new Date(sortedLogs[0]).getTime()) / (1000 * 60 * 60 * 24 * 7) : 1))).toFixed(1))
+      : 0,
+  };
 
   if (date) {
     const workout = data.workouts?.[date];
     return NextResponse.json({ 
       logs: data.logs, 
       streak: data.streak, 
-      workout: workout || null 
+      workout: workout || null,
+      stats,
     });
   }
 
-
-  return NextResponse.json({ logs: data.logs, streak: data.streak, workouts: data.workouts || {} });
+  return NextResponse.json({ logs: data.logs, streak: data.streak, workouts: data.workouts || {}, stats });
 }
 
 // POST /api/gym - Log gym session with optional workout details

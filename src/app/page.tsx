@@ -96,6 +96,7 @@ export default function MissionControl() {
   const [gymStreak, setGymStreak] = useState(0);
   const [gymLogs, setGymLogs] = useState<string[]>([]);
   const [gymComeback, setGymComeback] = useState<any>(null);
+  const [gymStats, setGymStats] = useState<any>(null);
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
   const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
   const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
@@ -457,6 +458,7 @@ export default function MissionControl() {
         setGymStreak(gymData.streak || 0);
         setGymLogs(gymData.logs || []);
         setWorkoutHistory(gymData.workouts || {});
+        if (gymData.stats) setGymStats(gymData.stats);
       }
 
       // Fetch gym comeback data
@@ -1850,6 +1852,37 @@ export default function MissionControl() {
                     <p className="text-sm text-white/30">Noch keine Sessions geloggt</p>
                   )}
                 </div>
+
+                {/* Weekly Frequency Sparkline */}
+                {gymStats && gymStats.last8Weeks && gymStats.last8Weeks.length > 0 && (
+                  <div className="mt-5 pt-4 border-t border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-white/40">📊 Frequenz (letzte Wochen)</p>
+                      <div className="flex gap-3 text-xs text-white/40">
+                        <span>Dieses Woche: <span className="text-orange-400 font-bold">{gymStats.thisWeekSessions}x</span></span>
+                        <span>Ø alle <span className="text-orange-400 font-bold">{gymStats.avgGapDays}</span> Tage</span>
+                        <span>Dieser Monat: <span className="text-orange-400 font-bold">{gymStats.monthlyThis}x</span></span>
+                      </div>
+                    </div>
+                    <div className="flex items-end gap-1 h-10">
+                      {gymStats.last8Weeks.slice().reverse().map((w: any, i: number) => {
+                        const maxCount = Math.max(...gymStats.last8Weeks.map((x: any) => x.count), 1);
+                        const height = Math.max(4, Math.round((w.count / maxCount) * 40));
+                        const label = w.week.split('-W')[1];
+                        return (
+                          <div key={i} className="flex-1 group relative flex flex-col items-center">
+                            <div
+                              className="w-full bg-orange-500/60 hover:bg-orange-400 rounded-sm transition-all cursor-default"
+                              style={{ height: `${height}px` }}
+                              title={`${w.week}: ${w.count}x`}
+                            />
+                            <span className="text-[9px] text-white/30 mt-1">W{label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
