@@ -95,6 +95,7 @@ export default function MissionControl() {
   const [habits, setHabits] = useState<Record<string, boolean>>({});
   const [gymStreak, setGymStreak] = useState(0);
   const [gymLogs, setGymLogs] = useState<string[]>([]);
+  const [gymComeback, setGymComeback] = useState<any>(null);
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
   const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
   const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
@@ -446,6 +447,13 @@ export default function MissionControl() {
         setGymStreak(gymData.streak || 0);
         setGymLogs(gymData.logs || []);
         setWorkoutHistory(gymData.workouts || {});
+      }
+
+      // Fetch gym comeback data
+      const comebackRes = await fetch("/api/gym-comeback");
+      if (comebackRes.ok) {
+        const comebackData = await comebackRes.json();
+        setGymComeback(comebackData);
       }
 
       // Fetch bucket list
@@ -1040,6 +1048,54 @@ export default function MissionControl() {
                 </div>
               </div>
             )}
+
+            {/* Gym Comeback Banner — show when gap >= 4 days */}
+            {gymComeback && gymComeback.gapDays !== null && gymComeback.gapDays >= 4 && !gymComeback.gymDoneToday && (
+              <div className="p-5 rounded-2xl border bg-gradient-to-r from-orange-500/15 to-red-500/10 border-orange-500/25">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2.5 rounded-xl bg-orange-500/20 text-2xl">🏋️</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-orange-300">Gym Comeback</h3>
+                      <span className="text-xs text-orange-400/60 font-mono">
+                        {gymComeback.gapDays} Tage Pause
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 mt-0.5">{gymComeback.motivation}</p>
+                  </div>
+                </div>
+
+                {gymComeback.comebackPlan && (
+                  <div className="bg-black/20 rounded-xl p-3 mb-3">
+                    <div className="flex items-center gap-4 text-xs text-white/50 mb-2">
+                      <span>📅 {gymComeback.comebackPlan.targetSessions} Sessions</span>
+                      <span>⏱️ Alle {gymComeback.avgGapDays} Tage</span>
+                      <span>🏆 Best: {gymComeback.longestStreak} Tage</span>
+                      <span>📊 {gymComeback.totalSessions} Total</span>
+                    </div>
+                    <p className="text-xs text-orange-300/80 italic">{gymComeback.comebackPlan.focus}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-white/40">
+                    <span className="font-mono">Letzte: {gymComeback.lastSession}</span>
+                    {gymComeback.thisMonthSessions > 0 && (
+                      <span className="ml-3">| Diesen Monat: {gymComeback.thisMonthSessions}x</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowWorkoutModal(true);
+                    }}
+                    className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-xl font-bold text-xs transition-all active:scale-95"
+                  >
+                    💪 Heute trainieren
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Quick Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
