@@ -52,7 +52,7 @@ export async function GET() {
   const summary = days.map((day) => {
     const dayHabits = habitsMap[day] || {};
     const habitCount = Object.keys(dayHabits).filter(k => dayHabits[k]).length;
-    const totalHabits = 8; // HABITS.length in page.tsx
+    const totalHabits = 9; // HABITS.length in page.tsx
 
     const gymDone = gymLogs.includes(day);
 
