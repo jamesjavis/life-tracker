@@ -1,0 +1,12 @@
+{
+  "supplements": [
+    { "id": "creatin", "name": "Creatin", "emoji": "💪", "dose": "5g", "frequency": "daily", "notes": "Mon-Thu + Sat" },
+    { "id": "vitamin_d", "name": "Vitamin D", "emoji": "☀️", "dose": "2000 IE", "frequency": "daily", "notes": "With fatty meal" },
+    { "id": "omega3", "name": "Omega-3", "emoji": "🐟", "dose": "2g", "frequency": "daily", "notes": "" },
+    { "id": "magnesium", "name": "Magnesium", "emoji": "⚡", "dose": "400mg", "frequency": "daily", "notes": "Evening" },
+    { "id": "zink", "name": "Zink", "emoji": "🛡️", "dose": "25mg", "frequency": "daily", "notes": "" },
+    { "id": "multivitamin", "name": "Multivitamin", "emoji": "💊", "dose": "1", "frequency": "daily", "notes": "Morning" }
+  ],
+  "log": [],
+  "lastUpdated": "2026-04-10T15:57:00.000Z"
+}

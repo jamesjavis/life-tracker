@@ -91,7 +91,7 @@ const BUCKET_LIST = [
 ];
 
 export default function MissionControl() {
-  const [activeTab, setActiveTab] = useState<"overview" | "projects" | "finances" | "tracker">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "projects" | "finances" | "tracker" | "trends">("overview");
   const [habits, setHabits] = useState<Record<string, boolean>>({});
   const [gymStreak, setGymStreak] = useState(0);
   const [gymLogs, setGymLogs] = useState<string[]>([]);
@@ -102,6 +102,7 @@ export default function MissionControl() {
   const [bucketCategory, setBucketCategory] = useState<string>("all");
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
   const [loading, setLoading] = useState(true);
+  const [trendsData, setTrendsData] = useState<{ days: any[]; weeks: any[]; streaks: any; trends: any; generatedAt: string } | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
   const [workoutDuration, setWorkoutDuration] = useState(60);
@@ -109,6 +110,36 @@ export default function MissionControl() {
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [workoutHistory, setWorkoutHistory] = useState<Record<string, ({ type: string; duration: number; intensity: string; notes?: string } | { muscles: string[]; exercises: string[]; notes?: string; timestamp?: string })>>({});
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
+
+  // Weekend Challenge
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun, 6=Sat
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const [weekendBonusClaimed, setWeekendBonusClaimed] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('weekendBonusClaimed') : null;
+    const todayStr = today.toISOString().split('T')[0];
+    return saved === todayStr;
+  });
+
+  async function claimWeekendBonus() {
+    const todayStr = today.toISOString().split('T')[0];
+    // Toggle all habits ON for today as a bonus
+    await Promise.all(HABITS.map(habit =>
+      fetch("/api/habits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ habitId: habit.id, completed: true, date: todayStr }),
+      })
+    ));
+    // Refresh habits
+    const habitsRes = await fetch("/api/habits");
+    if (habitsRes.ok) {
+      const habitsData = await habitsRes.json();
+      setHabits(habitsData.habits?.[todayStr] || {});
+    }
+    setWeekendBonusClaimed(true);
+    if (typeof window !== 'undefined') localStorage.setItem('weekendBonusClaimed', todayStr);
+  }
 
   // Strength training exercise logging
   const [workoutExercises, setWorkoutExercises] = useState<Array<{ name: string; sets: number; reps: number; weight: number }>>([]);
@@ -238,6 +269,13 @@ export default function MissionControl() {
     today: any[] | null;
     stats: { totalSessions: number; totalMinutes: number; avgDuration: number; streak: number; last7Count: number; todayCount: number };
   }>({ sessions: [], today: null, stats: { totalSessions: 0, totalMinutes: 0, avgDuration: 0, streak: 0, last7Count: 0, todayCount: 0 } });
+
+  // Supplements tracking
+  const [supplementsData, setSupplementsData] = useState<{
+    supplements: any[];
+    takenToday: number;
+    total: number;
+  }>({ supplements: [], takenToday: 0, total: 0 });
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPattern, setBreathingPattern] = useState("box");
   const [breathingPhase, setBreathingPhase] = useState("idle");
@@ -259,6 +297,20 @@ export default function MissionControl() {
     });
     const res = await fetch("/api/breathing");
     if (res.ok) setBreathingData(await res.json());
+  }
+
+  async function toggleSupplement(supplementId: string) {
+    try {
+      await fetch("/api/supplements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "take", supplementId }),
+      });
+      const res = await fetch("/api/supplements");
+      if (res.ok) setSupplementsData(await res.json());
+    } catch (e) {
+      console.error("Failed to toggle supplement", e);
+    }
   }
 
   // Weather data - Annweiler, Germany
@@ -517,6 +569,28 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load breathing", e);
+      }
+
+      // Fetch supplements
+      try {
+        const supplementsRes = await fetch("/api/supplements");
+        if (supplementsRes.ok) {
+          const supplementsResult = await supplementsRes.json();
+          setSupplementsData(supplementsResult);
+        }
+      } catch (e) {
+        console.error("Failed to load supplements", e);
+      }
+
+      // Fetch trends
+      try {
+        const trendsRes = await fetch("/api/trends");
+        if (trendsRes.ok) {
+          const trendsResult = await trendsRes.json();
+          setTrendsData(trendsResult);
+        }
+      } catch (e) {
+        console.error("Failed to load trends", e);
       }
 
       // Fetch mentor tips
@@ -862,6 +936,7 @@ export default function MissionControl() {
             {[
               { key: "overview", label: "Overview", icon: Activity },
               { key: "tracker", label: "Tracker", icon: Dumbbell },
+              { key: "trends", label: "Trends", icon: TrendingUp },
               { key: "projects", label: "Projects", icon: Rocket },
               { key: "finances", label: "Finances", icon: DollarSign },
             ].map(tab => (
@@ -885,6 +960,86 @@ export default function MissionControl() {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="space-y-8">
+            {/* Weekend Challenge Banner */}
+            {isWeekend && (
+              <div className={cn(
+                "p-6 rounded-3xl border backdrop-blur-xl",
+                completedCount === HABITS.length
+                  ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30"
+                  : weekendBonusClaimed
+                  ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-amber-500/30"
+                  : "bg-gradient-to-r from-purple-500/20 via-pink-500/10 to-cyan-500/20 border-pink-500/30"
+              )}>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "p-3 rounded-2xl text-3xl",
+                      completedCount === HABITS.length ? "bg-green-500/20" : "bg-pink-500/20"
+                    )}>
+                      {completedCount === HABITS.length ? "🎉" : "⚡"}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-bold">
+                          {dayOfWeek === 6 ? "Samstag" : "Sonntag"} Challenge
+                        </h3>
+                        {completedCount === HABITS.length && (
+                          <span className="px-2 py-0.5 bg-green-500/30 text-green-400 rounded-full text-xs font-bold">ALLES GESCHAFFT!</span>
+                        )}
+                      </div>
+                      {completedCount === HABITS.length ? (
+                        <p className="text-sm text-white/60">Perfekter Start ins Wochenende! Genieß den Erfolg. 💪</p>
+                      ) : weekendBonusClaimed ? (
+                        <p className="text-sm text-white/60">Bonus-Start aktiv! Noch {HABITS.length - completedCount} Habits offen — du rockst das! 🔥</p>
+                      ) : (
+                        <p className="text-sm text-white/60">
+                          Letztes Habit: vor {Math.floor((Date.now() - (new Date("2026-04-08").getTime())) / (1000 * 60 * 60 * 24))} Tagen.
+                          Weekend-Bonus: Alle Habits mit einem Klick starten!
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">{completedCount}/{HABITS.length}</p>
+                      <p className="text-xs text-white/40">Habits heute</p>
+                    </div>
+                    {completedCount < HABITS.length && !weekendBonusClaimed && (
+                      <button
+                        onClick={claimWeekendBonus}
+                        className="px-5 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 rounded-xl font-bold text-sm transition-all active:scale-95 whitespace-nowrap"
+                      >
+                        ⚡ Weekend-Start
+                      </button>
+                    )}
+                    {completedCount < HABITS.length && weekendBonusClaimed && (
+                      <span className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-xl text-sm font-bold">
+                        🔥 Im Recovery-Modus
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* Mini habit preview */}
+                <div className="mt-4 flex gap-2 flex-wrap">
+                  {HABITS.map(habit => (
+                    <button
+                      key={habit.id}
+                      onClick={() => toggleHabit(habit.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all",
+                        habits[habit.id]
+                          ? "bg-green-500/25 border-green-500/40 text-green-300"
+                          : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
+                      )}
+                    >
+                      <span>{habit.emoji}</span>
+                      <span>{habit.label}</span>
+                      {habits[habit.id] ? <span>✓</span> : <span className="text-white/30">○</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Quick Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
@@ -2338,6 +2493,86 @@ export default function MissionControl() {
           </div>
         )}
 
+        {/* Supplements Tracker */}
+        {activeTab === "tracker" && (
+          <div className="p-8 bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl rounded-3xl border border-amber-500/20">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/20 rounded-xl">
+                  <span className="text-2xl">💊</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Supplements</h2>
+                  <p className="text-xs text-white/40">Creatin · Vitamin D · Omega-3 · Magnesium</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-amber-400">{supplementsData.takenToday}/{supplementsData.total}</p>
+                <p className="text-xs text-white/50">taken today</p>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-6">
+              <div
+                className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all"
+                style={{ width: `${supplementsData.total > 0 ? (supplementsData.takenToday / supplementsData.total) * 100 : 0}%` }}
+              />
+            </div>
+
+            {/* Supplement Pills Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+              {supplementsData.supplements.map((s: any) => (
+                <button
+                  key={s.id}
+                  onClick={() => toggleSupplement(s.id)}
+                  className={cn(
+                    "p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-[0.98]",
+                    s.taken
+                      ? "bg-green-500/20 border-green-500/30"
+                      : "bg-white/5 border-white/10 hover:border-white/20"
+                  )}
+                >
+                  <div className="text-2xl mb-1">{s.emoji}</div>
+                  <div className="text-sm font-medium text-white/80 truncate">{s.name}</div>
+                  <div className="text-xs text-white/40 mt-0.5">{s.dose}</div>
+                  <div className="mt-2 flex items-center justify-between">
+                    {s.taken ? (
+                      <span className="text-green-400 text-xs">✓</span>
+                    ) : (
+                      <span className="text-white/20 text-xs">—</span>
+                    )}
+                    {s.streak > 0 && (
+                      <span className="text-xs text-orange-400">🔥{s.streak}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Last 7 days mini bar */}
+            {supplementsData.supplements.length > 0 && (
+              <div className="p-4 bg-white/5 rounded-2xl">
+                <p className="text-xs text-white/40 mb-3">Letzte 7 Tage — consistency</p>
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  {supplementsData.supplements.map((s: any) => (
+                    <div key={s.id} className="flex-shrink-0 w-20 p-2 bg-white/5 rounded-xl text-center">
+                      <div className="text-lg mb-0.5">{s.emoji}</div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-500 rounded-full transition-all"
+                          style={{ width: `${Math.round((s.last7Days / 7) * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-white/40 mt-1">{s.last7Days}/7</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Bucket List */}
         {activeTab === "tracker" && (
         <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
@@ -3022,6 +3257,211 @@ export default function MissionControl() {
                 FI Number = 25× annual expenses (4% rule) • Assumes grant starts June 2026
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Trends Tab */}
+        {activeTab === "trends" && (
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">30-Day Trends</h2>
+                <p className="text-white/40 text-sm">Week-over-week comparison</p>
+              </div>
+              {trendsData && (
+                <div className="text-xs text-white/30">
+                  Updated {new Date(trendsData.generatedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
+            </div>
+
+            {!trendsData ? (
+              <div className="text-center py-20 text-white/40">Loading trends...</div>
+            ) : (
+              <>
+                {/* KPI Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {/* Gym */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Gym Days</span>
+                      <Dumbbell className="w-4 h-4 text-orange-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.gym.value}<span className="text-sm text-white/40">/7d</span></p>
+                    <p className={cn("text-xs font-medium mt-1", trendsData.trends.gym.change >= 0 ? "text-green-400" : "text-red-400")}>
+                      {trendsData.trends.gym.change >= 0 ? "+" : ""}{trendsData.trends.gym.change}% vs prev week
+                    </p>
+                  </div>
+
+                  {/* Habits */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Avg Habits</span>
+                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.habits.value}<span className="text-sm text-white/40">%</span></p>
+                    <p className={cn("text-xs font-medium mt-1", trendsData.trends.habits.change >= 0 ? "text-green-400" : "text-red-400")}>
+                      {trendsData.trends.habits.change >= 0 ? "+" : ""}{trendsData.trends.habits.change}% vs prev week
+                    </p>
+                  </div>
+
+                  {/* Mood */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Avg Mood</span>
+                      <Star className="w-4 h-4 text-yellow-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.mood.value || "—"}<span className="text-sm text-white/40">/10</span></p>
+                    <p className={cn("text-xs font-medium mt-1", (trendsData.trends.mood.change || 0) >= 0 ? "text-green-400" : "text-red-400")}>
+                      {(trendsData.trends.mood.change || 0) >= 0 ? "+" : ""}{trendsData.trends.mood.change || 0}% vs prev week
+                    </p>
+                  </div>
+
+                  {/* Sleep */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Avg Sleep</span>
+                      <Moon className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.sleep.value || "—"}<span className="text-sm text-white/40">h</span></p>
+                    <p className={cn("text-xs font-medium mt-1", (trendsData.trends.sleep.change || 0) >= 0 ? "text-green-400" : "text-red-400")}>
+                      {(trendsData.trends.sleep.change || 0) >= 0 ? "+" : ""}{trendsData.trends.sleep.change || 0}% vs prev week
+                    </p>
+                  </div>
+
+                  {/* Calories */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Calories</span>
+                      <Flame className="w-4 h-4 text-red-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.calories.value?.toLocaleString() || 0}</p>
+                    <p className={cn("text-xs font-medium mt-1", trendsData.trends.calories.change >= 0 ? "text-green-400" : "text-red-400")}>
+                      {trendsData.trends.calories.change >= 0 ? "+" : ""}{trendsData.trends.calories.change}% vs prev week
+                    </p>
+                  </div>
+
+                  {/* Weight */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Weight</span>
+                      <Activity className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.weight.value || "—"}<span className="text-sm text-white/40">kg</span></p>
+                    <p className={cn("text-xs font-medium mt-1", (trendsData.trends.weight.change || 0) <= 0 ? "text-green-400" : "text-red-400")}>
+                      {trendsData.trends.weight.change !== null ? `${trendsData.trends.weight.change > 0 ? "+" : ""}${trendsData.trends.weight.change}kg vs prev week` : "No data"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 30-Day Gym Chart */}
+                <div className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Dumbbell className="w-5 h-5 text-orange-400" />
+                    Gym — Last 30 Days
+                  </h3>
+                  <div className="grid grid-cols-6 md:grid-cols-10 gap-1">
+                    {trendsData.days.slice(-30).map((day: any) => (
+                      <div
+                        key={day.date}
+                        className={cn(
+                          "aspect-square rounded-md flex items-center justify-center text-xs font-medium transition-all hover:scale-110 cursor-default",
+                          day.gym
+                            ? "bg-gradient-to-br from-orange-500 to-red-500 text-white"
+                            : "bg-white/5 text-white/30"
+                        )}
+                        title={`${day.date} ${day.gym ? "✅ Gym" : "rest"}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex gap-6 mt-3 text-xs text-white/40">
+                    <span>● Gym day</span>
+                    <span>○ Rest day</span>
+                    <span className="ml-auto">Streak: {trendsData.streaks.gym} days</span>
+                  </div>
+                </div>
+
+                {/* 30-Day Habits Chart */}
+                <div className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    Habit Completion — Last 30 Days
+                  </h3>
+                  <div className="flex items-end gap-1 h-20">
+                    {trendsData.days.slice(-30).map((day: any) => (
+                      <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
+                        <div
+                          className={cn("w-full rounded-t-md transition-all",
+                            day.habits.pct === 100 ? "bg-green-500" :
+                            day.habits.pct >= 66 ? "bg-green-400/70" :
+                            day.habits.pct >= 33 ? "bg-yellow-400/60" :
+                            day.habits.pct > 0 ? "bg-orange-400/50" :
+                            "bg-white/10"
+                          )}
+                          style={{ height: `${Math.max(4, day.habits.pct)}%` }}
+                          title={`${day.date}: ${day.habits.done}/${day.habits.total} (${day.habits.pct}%)`}
+                        />
+                        <span className="text-white/20 text-xs">{day.dayName}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-4 mt-3 text-xs text-white/40">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-green-500" /> 100%</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-yellow-400/60" /> 33-66%</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-white/10" /> 0%</span>
+                    <span className="ml-auto">Habit streak: {trendsData.streaks.habit} days</span>
+                  </div>
+                </div>
+
+                {/* Weekly Summary Table */}
+                <div className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                  <h3 className="text-lg font-bold mb-4">Weekly Breakdown</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-white/40 border-b border-white/10">
+                          <th className="text-left pb-3 font-medium">Week</th>
+                          <th className="text-center pb-3 font-medium">Gym</th>
+                          <th className="text-center pb-3 font-medium">Habits</th>
+                          <th className="text-center pb-3 font-medium">Mood</th>
+                          <th className="text-center pb-3 font-medium">Sleep</th>
+                          <th className="text-right pb-3 font-medium">Calories</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...trendsData.weeks].reverse().map((week: any) => (
+                          <tr key={week.week} className="border-b border-white/5">
+                            <td className="py-3 font-medium">Week {week.week}</td>
+                            <td className="text-center py-3">
+                              <span className={cn("px-2 py-1 rounded-md text-xs font-bold",
+                                week.gymDays >= 4 ? "bg-green-500/20 text-green-400" :
+                                week.gymDays >= 2 ? "bg-yellow-500/20 text-yellow-400" :
+                                "bg-white/5 text-white/30"
+                              )}>{week.gymDays} days</span>
+                            </td>
+                            <td className="text-center py-3">
+                              <span className={cn("font-bold",
+                                week.avgHabitPct >= 75 ? "text-green-400" :
+                                week.avgHabitPct >= 50 ? "text-yellow-400" :
+                                "text-white/40"
+                              )}>{week.avgHabitPct}%</span>
+                            </td>
+                            <td className="text-center py-3">
+                              <span className={week.avgMood >= 7 ? "text-green-400" : week.avgMood >= 5 ? "text-yellow-400" : "text-white/40"}>
+                                {week.avgMood || "—"}/10
+                              </span>
+                            </td>
+                            <td className="text-center py-3 text-white/60">{week.avgSleep || "—"}h</td>
+                            <td className="text-right py-3 text-white/60">{week.totalCalories.toLocaleString()} kcal</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
