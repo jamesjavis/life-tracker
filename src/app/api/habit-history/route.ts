@@ -5,10 +5,10 @@ import path from "path";
 const DATA_FILE = path.join(process.cwd(), "data", "habits.json");
 
 const HABIT_DEFAULTS = [
-  { id: "duolingo", label: "Duolingo", emoji: "🇪🇸" },
   { id: "yoga", label: "Yoga", emoji: "🧘" },
   { id: "meditation", label: "Meditation", emoji: "🧘‍♂️" },
   { id: "gym", label: "Gym", emoji: "💪" },
+  { id: "bauchworkout", label: "Bauch", emoji: "🏋️" },
   { id: "lesen", label: "Lesen", emoji: "📚" },
   { id: "creatin", label: "Creatin", emoji: "💊" },
   { id: "pushups", label: "Push-ups", emoji: "💨" },

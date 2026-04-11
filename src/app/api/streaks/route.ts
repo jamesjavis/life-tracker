@@ -93,7 +93,7 @@ export async function GET() {
   const habitsData = readHabits();
   const habitsStreaks = readStreaks();
 
-  const HABIT_IDS = ["duolingo", "yoga", "meditation", "gym", "lesen", "creatin", "pushups", "atem", "smoothie"];
+  const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
 
   const result: Record<string, any> = {};
 
