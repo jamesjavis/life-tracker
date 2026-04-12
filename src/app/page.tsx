@@ -100,6 +100,20 @@ export default function MissionControl() {
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
   const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
   const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
+
+  // Find last date with logged habits from history
+  const lastHabitDateStr = (() => {
+    let last: string | null = null;
+    habitHistory.weeks.forEach(week => {
+      week.forEach(day => {
+        if (day.date && day.total > 0 && (!last || day.date > last)) last = day.date;
+      });
+    });
+    return last;
+  })();
+  const daysSinceLastHabit = lastHabitDateStr
+    ? Math.floor((Date.now() - new Date(lastHabitDateStr + "T00:00:00").getTime()) / (1000 * 60 * 60 * 24))
+    : null;
   const [newBucketText, setNewBucketText] = useState("");
   const [bucketCategory, setBucketCategory] = useState<string>("all");
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
@@ -1024,7 +1038,7 @@ export default function MissionControl() {
                         <p className="text-sm text-white/60">Bonus-Start aktiv! Noch {HABITS.length - completedCount} Habits offen — du rockst das! 🔥</p>
                       ) : (
                         <p className="text-sm text-white/60">
-                          Letztes Habit: vor {Math.floor((Date.now() - (new Date("2026-04-08").getTime())) / (1000 * 60 * 60 * 24))} Tagen.
+                          Letztes Habit: vor {daysSinceLastHabit ?? "?"} Tagen.
                           Weekend-Bonus: Alle Habits mit einem Klick starten!
                         </p>
                       )}
@@ -3541,6 +3555,25 @@ export default function MissionControl() {
                     </p>
                   </div>
                 </div>
+
+                {/* AI Observations */}
+                {(() => {
+                  const obs: { emoji: string; label: string; text: string; color: string }[] = [];
+                  const last7 = trendsData.days.slice(-7);
+                  const missing = last7.filter((d: any) => d.habits.pct === 0);
+                  if (missing.length >= 3) obs.push({ emoji: "⚠️", label: "Data Gap", text: `${missing.length} of the last 7 days have no habit data — use Retro-Log to fill in.`, color: "orange" });
+                  if (last7.filter((d: any) => d.habits.pct === 100).length >= 3) obs.push({ emoji: "🔥", label: "Perfect Days", text: `${last7.filter((d: any) => d.habits.pct === 100).length} perfect habit days this week — keep it up!`, color: "green" });
+                  if (trendsData.trends.gym.change <= -30 && trendsData.trends.gym.value === 0) obs.push({ emoji: "💪", label: "Gym Restart", text: "No gym this week — schedule a session to restart your streak.", color: "orange" });
+                  if (trendsData.trends.gym.change >= 50 && trendsData.trends.gym.value >= 3) obs.push({ emoji: "🚀", label: "Gym Momentum", text: `${trendsData.trends.gym.value} gym days this week — best week in a while!`, color: "green" });
+                  if (trendsData.trends.sleep.change <= -20 && trendsData.trends.sleep.value < 7) obs.push({ emoji: "😴", label: "Sleep Dip", text: `Sleep avg dropped ${Math.abs(trendsData.trends.sleep.change)}% vs last week — aim for 7h+.`, color: "yellow" });
+                  if (trendsData.trends.habits.change >= 20) obs.push({ emoji: "📈", label: "Habits Climbing", text: `Habit completion up ${trendsData.trends.habits.change}% vs last week.`, color: "green" });
+                  if (trendsData.trends.habits.change <= -20) obs.push({ emoji: "📉", label: "Habits Declining", text: `Habit completion down ${Math.abs(trendsData.trends.habits.change)}% vs last week.`, color: "red" });
+                  if (trendsData.streaks.gym >= 5) obs.push({ emoji: "🎯", label: "Gym Streak Active", text: `${trendsData.streaks.gym}-day gym streak — don't break it!`, color: "green" });
+                  if (obs.length === 0) obs.push({ emoji: "✅", label: "Alles im Griff", text: "No major issues detected. Stay consistent!", color: "blue" });
+                  const colorMap: Record<string, string> = { green: "bg-green-500/10 border-green-500/20", orange: "bg-orange-500/10 border-orange-500/20", yellow: "bg-yellow-500/10 border-yellow-500/20", red: "bg-red-500/10 border-red-500/20", blue: "bg-blue-500/10 border-blue-500/20" };
+                  const textMap: Record<string, string> = { green: "text-green-300", orange: "text-orange-300", yellow: "text-yellow-300", red: "text-red-300", blue: "text-blue-300" };
+                  return <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{obs.map((o, i) => (<div key={i} className={cn("p-4 rounded-2xl border backdrop-blur-xl", colorMap[o.color])}><div className="flex items-center gap-2 mb-1"><span className="text-lg">{o.emoji}</span><span className={cn("text-sm font-bold", textMap[o.color])}>{o.label}</span></div><p className="text-sm text-white/60">{o.text}</p></div>))}</div>;
+                })()}
 
                 {/* 30-Day Gym Chart */}
                 <div className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
