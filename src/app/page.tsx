@@ -1253,7 +1253,7 @@ export default function MissionControl() {
                       <Droplets className="w-5 h-5 text-cyan-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold">Wetter Friedrichshafen</h3>
+                      <h3 className="text-lg font-bold">Wetter Annweiler</h3>
                       <p className="text-xs text-white/40">3-Tage-Vorschau</p>
                     </div>
                   </div>
