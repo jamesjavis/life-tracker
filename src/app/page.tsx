@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Rocket, DollarSign, TrendingUp, Target, Zap, Globe,
   Briefcase, Wallet, ChevronRight, ExternalLink,
@@ -102,7 +102,7 @@ export default function MissionControl() {
   const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
 
   // Find last date with logged habits from history
-  const lastHabitDateStr = (() => {
+  const lastHabitDateStr = useMemo(() => {
     let last: string | null = null;
     habitHistory.weeks.forEach(week => {
       week.forEach(day => {
@@ -110,10 +110,10 @@ export default function MissionControl() {
       });
     });
     return last;
-  })();
-  const daysSinceLastHabit = lastHabitDateStr
+  }, [habitHistory]);
+  const daysSinceLastHabit = useMemo(() => lastHabitDateStr
     ? Math.floor((Date.now() - new Date(lastHabitDateStr + "T00:00:00").getTime()) / (1000 * 60 * 60 * 24))
-    : null;
+    : null, [lastHabitDateStr]);
   const [newBucketText, setNewBucketText] = useState("");
   const [bucketCategory, setBucketCategory] = useState<string>("all");
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
@@ -1193,7 +1193,7 @@ export default function MissionControl() {
                       <Droplets className="w-5 h-5 text-cyan-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold">Wetter Annweiler</h3>
+                      <h3 className="text-lg font-bold">Wetter Friedrichshafen</h3>
                       <p className="text-xs text-white/40">3-Tage-Vorschau</p>
                     </div>
                   </div>
