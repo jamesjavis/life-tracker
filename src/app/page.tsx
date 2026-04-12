@@ -365,95 +365,7 @@ export default function MissionControl() {
     fetchData();
   }, []);
 
-  // Fetch week summary
-  useEffect(() => {
-    async function loadWeekSummary() {
-      try {
-        const res = await fetch("/api/week-summary");
-        if (!res.ok) return;
-        const data = await res.json();
-        const container = document.getElementById("week-summary-container");
-        const loading = document.getElementById("week-summary-loading");
-        if (!container) return;
-        if (loading) loading.style.display = "none";
 
-        const emojiMap: Record<string, string> = {
-          habits: "📋", gym: "💪", water: "💧", sleep: "🌙", mood: "💭"
-        };
-        const colorMap: Record<string, string> = {
-          gym: "text-orange-400",
-          water: "text-cyan-400",
-          sleep: "text-indigo-400",
-          mood: "text-pink-400",
-        };
-
-        container.innerHTML = data.days.map((day: any) => {
-          const items = [];
-          if (day.habits.pct > 0) items.push(`📋 ${day.habits.done}/${day.habits.total}`);
-          if (day.gym) items.push("💪");
-          if (day.water > 0) items.push(`💧 ${day.water}`);
-          if (day.sleep) items.push(`🌙 ${day.sleep.hours}h`);
-          if (day.mood) items.push(`⚡${day.mood.energy}`);
-          if (day.nutrition.calories > 0) items.push(`🍽️${day.nutrition.calories}`);
-          if (day.weight) items.push(`⚖️${day.weight}kg`);
-
-          const completeness = Math.round((day.habits.pct / 100) * 5);
-          const bar = "●".repeat(completeness) + "○".repeat(5 - completeness);
-
-          return `
-            <div class="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-              <span class="text-xs text-white/40 w-8">${day.dayName}</span>
-              <span class="${day.habits.pct >= 75 ? "text-green-400" : day.habits.pct >= 50 ? "text-yellow-400" : "text-white/30"} text-xs font-mono w-10">${bar}</span>
-              <span class="text-xs text-white/60 flex-1">${items.length > 0 ? items.join(" ") : "—"}</span>
-              ${day.gym ? '<span class="text-xs">🔥' + (data.streaks?.gym || 0) + '</span>' : ''}
-            </div>
-          `;
-        }).join("");
-
-        // Streak badges
-        if (data.streaks?.gym > 0) {
-          container.innerHTML += `<div class="mt-2 flex gap-2"><span class="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs">💪 ${data.streaks.gym}-day gym streak</span></div>`;
-        }
-
-        // === Populate 7-Day Sparkline ===
-        const sparklineEl = document.getElementById("habit-sparkline");
-        const weekGymCount = document.getElementById("week-gym-count");
-        const weekSleepAvg = document.getElementById("week-sleep-avg");
-        const weekAvgLabel = document.getElementById("week-avg-label");
-
-        if (sparklineEl && data.days) {
-          const pcts = data.days.map((d: any) => d.habits.pct || 0);
-          const maxPct = Math.max(...pcts, 1);
-          const gymCount = data.days.filter((d: any) => d.gym).length;
-          const sleepEntries = data.days.filter((d: any) => d.sleep).map((d: any) => d.sleep.hours);
-          const sleepAvg = sleepEntries.length > 0
-            ? (sleepEntries.reduce((a: number, b: number) => a + b, 0) / sleepEntries.length).toFixed(1)
-            : null;
-          const avgPct = Math.round(pcts.reduce((a: number, b: number) => a + b, 0) / pcts.length);
-
-          sparklineEl.innerHTML = pcts.map((pct: number, i: number) => {
-            const height = Math.max(4, Math.round((pct / maxPct) * 40));
-            const color = pct >= 75 ? "bg-green-400" : pct >= 50 ? "bg-yellow-400" : "bg-white/20";
-            return `<div class="flex-1 ${color} rounded-sm transition-all" style="height:${height}px" title="${pct}%" />`;
-          }).join("");
-
-          if (weekGymCount) weekGymCount.textContent = String(gymCount);
-          if (weekSleepAvg) weekSleepAvg.textContent = sleepAvg ? `${sleepAvg}h` : "—";
-          if (weekAvgLabel) weekAvgLabel.textContent = `Ø ${avgPct}%`;
-
-          // Day labels
-          data.days.forEach((d: any, i: number) => {
-            const labelEl = document.getElementById(`sparkline-day-${i}`);
-            if (labelEl) labelEl.textContent = d.dayName;
-          });
-        }
-      } catch(e) {
-        const loading = document.getElementById("week-summary-loading");
-        if (loading) loading.textContent = "Fehler";
-      }
-    }
-    loadWeekSummary();
-  }, []);
 
   async function fetchData() {
     try {
@@ -647,6 +559,63 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load mentor tips", e);
+      }
+
+      // Populate week-summary DOM directly after all data is loaded
+      try {
+        const container = document.getElementById("week-summary-container");
+        const loadingEl = document.getElementById("week-summary-loading");
+        if (container) {
+          const res = await fetch("/api/week-summary");
+          if (!res.ok) throw new Error("week-summary failed");
+          const data = await res.json();
+          if (loadingEl) loadingEl.style.display = "none";
+          container.innerHTML = data.days.map((day: any) => {
+            const items = [];
+            if (day.habits.pct > 0) items.push(`📋 ${day.habits.done}/${day.habits.total}`);
+            if (day.gym) items.push("💪");
+            if (day.water > 0) items.push(`💧 ${day.water}`);
+            if (day.sleep) items.push(`🌙 ${day.sleep.hours}h`);
+            if (day.mood) items.push(`⚡${day.mood.energy}`);
+            if (day.nutrition.calories > 0) items.push(`🍽️${day.nutrition.calories}`);
+            if (day.weight) items.push(`⚖️${day.weight}kg`);
+            const completeness = Math.round((day.habits.pct / 100) * 5);
+            const bar = "●".repeat(completeness) + "○".repeat(5 - completeness);
+            return `<div class="flex items-center gap-3 p-2 rounded-xl bg-white/5"><span class="text-xs text-white/40 w-8">${day.dayName}</span><span class="${day.habits.pct >= 75 ? "text-green-400" : day.habits.pct >= 50 ? "text-yellow-400" : "text-white/30"} text-xs font-mono w-10">${bar}</span><span class="text-xs text-white/60 flex-1">${items.length > 0 ? items.join(" ") : "—"}</span>${day.gym ? '<span class="text-xs">🔥' + (data.streaks?.gym || 0) + "</span>" : ""}</div>`;
+          }).join("");
+          if (data.streaks?.gym > 0) {
+            container.innerHTML += `<div class="mt-2 flex gap-2"><span class="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs">💪 ${data.streaks.gym}-day gym streak</span></div>`;
+          }
+          // Sparkline
+          const sparklineEl = document.getElementById("habit-sparkline");
+          const weekGymCount = document.getElementById("week-gym-count");
+          const weekSleepAvg = document.getElementById("week-sleep-avg");
+          const weekAvgLabel = document.getElementById("week-avg-label");
+          if (sparklineEl && data.days) {
+            const pcts = data.days.map((d: any) => d.habits.pct || 0);
+            const maxPct = Math.max(...pcts, 1);
+            const gymCount = data.days.filter((d: any) => d.gym).length;
+            const sleepEntries = data.days.filter((d: any) => d.sleep).map((d: any) => d.sleep.hours);
+            const sleepAvg = sleepEntries.length > 0 ? (sleepEntries.reduce((a: number, b: number) => a + b, 0) / sleepEntries.length).toFixed(1) : null;
+            const avgPct = Math.round(pcts.reduce((a: number, b: number) => a + b, 0) / pcts.length);
+            sparklineEl.innerHTML = pcts.map((pct: number) => {
+              const height = Math.max(4, Math.round((pct / maxPct) * 40));
+              const color = pct >= 75 ? "bg-green-400" : pct >= 50 ? "bg-yellow-400" : "bg-white/20";
+              return `<div class="flex-1 ${color} rounded-sm transition-all" style="height:${height}px" title="${pct}%" />`;
+            }).join("");
+            if (weekGymCount) weekGymCount.textContent = String(gymCount);
+            if (weekSleepAvg) weekSleepAvg.textContent = sleepAvg ? `${sleepAvg}h` : "—";
+            if (weekAvgLabel) weekAvgLabel.textContent = `Ø ${avgPct}%`;
+            data.days.forEach((d: any, i: number) => {
+              const labelEl = document.getElementById(`sparkline-day-${i}`);
+              if (labelEl) labelEl.textContent = d.dayName;
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load week summary", e);
+        const loadingEl = document.getElementById("week-summary-loading");
+        if (loadingEl) loadingEl.textContent = "Fehler";
       }
     } catch (e) {
       console.error("Failed to load data", e);
