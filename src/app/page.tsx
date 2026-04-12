@@ -100,6 +100,8 @@ export default function MissionControl() {
   const [bucketList, setBucketList] = useState<any[]>(BUCKET_LIST);
   const [habitStreaks, setHabitStreaks] = useState<Record<string, { current: number; longest: number; last7: boolean[] }>>({});
   const [habitHistory, setHabitHistory] = useState<{ weeks: Array<Array<{ date: string; completion: number; completed: number; total: number }>>; stats: { totalDays: number; perfectDays: number; avgCompletion: number; longestPerfect: number } }>({ weeks: [], stats: { totalDays: 0, perfectDays: 0, avgCompletion: 0, longestPerfect: 0 } });
+  const [weekSummaryData, setWeekSummaryData] = useState<{ days: any[]; streaks: any; trends: any } | null>(null);
+  const [weekSummaryError, setWeekSummaryError] = useState(false);
 
   // Find last date with logged habits from history
   const lastHabitDateStr = useMemo(() => {
@@ -427,7 +429,25 @@ export default function MissionControl() {
     fetchData();
   }, []);
 
-
+  // Fetch week-summary with proper React state (not DOM manipulation)
+  useEffect(() => {
+    let cancelled = false;
+    async function loadWeekSummary() {
+      try {
+        const res = await fetch("/api/week-summary");
+        if (cancelled) return;
+        if (!res.ok) throw new Error("week-summary failed");
+        const data = await res.json();
+        if (cancelled) return;
+        setWeekSummaryData({ days: data.days || [], streaks: data.streaks, trends: data.trends });
+        setWeekSummaryError(false);
+      } catch {
+        if (!cancelled) setWeekSummaryError(true);
+      }
+    }
+    loadWeekSummary();
+    return () => { cancelled = true; };
+  }, []);
 
   async function fetchData() {
     try {
@@ -635,62 +655,7 @@ export default function MissionControl() {
         console.error("Failed to load mentor tips", e);
       }
 
-      // Populate week-summary DOM directly after all data is loaded
-      try {
-        const container = document.getElementById("week-summary-container");
-        const loadingEl = document.getElementById("week-summary-loading");
-        if (container) {
-          const res = await fetch("/api/week-summary");
-          if (!res.ok) throw new Error("week-summary failed");
-          const data = await res.json();
-          if (loadingEl) loadingEl.style.display = "none";
-          container.innerHTML = data.days.map((day: any) => {
-            const items = [];
-            if (day.habits.pct > 0) items.push(`📋 ${day.habits.done}/${day.habits.total}`);
-            if (day.gym) items.push("💪");
-            if (day.water > 0) items.push(`💧 ${day.water}`);
-            if (day.sleep) items.push(`🌙 ${day.sleep.hours}h`);
-            if (day.mood) items.push(`⚡${day.mood.energy}`);
-            if (day.nutrition.calories > 0) items.push(`🍽️${day.nutrition.calories}`);
-            if (day.weight) items.push(`⚖️${day.weight}kg`);
-            const completeness = Math.round((day.habits.pct / 100) * 5);
-            const bar = "●".repeat(completeness) + "○".repeat(5 - completeness);
-            return `<div class="flex items-center gap-3 p-2 rounded-xl bg-white/5"><span class="text-xs text-white/40 w-8">${day.dayName}</span><span class="${day.habits.pct >= 75 ? "text-green-400" : day.habits.pct >= 50 ? "text-yellow-400" : "text-white/30"} text-xs font-mono w-10">${bar}</span><span class="text-xs text-white/60 flex-1">${items.length > 0 ? items.join(" ") : "—"}</span>${day.gym ? '<span class="text-xs">🔥' + (data.streaks?.gym || 0) + "</span>" : ""}</div>`;
-          }).join("");
-          if (data.streaks?.gym > 0) {
-            container.innerHTML += `<div class="mt-2 flex gap-2"><span class="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs">💪 ${data.streaks.gym}-day gym streak</span></div>`;
-          }
-          // Sparkline
-          const sparklineEl = document.getElementById("habit-sparkline");
-          const weekGymCount = document.getElementById("week-gym-count");
-          const weekSleepAvg = document.getElementById("week-sleep-avg");
-          const weekAvgLabel = document.getElementById("week-avg-label");
-          if (sparklineEl && data.days) {
-            const pcts = data.days.map((d: any) => d.habits.pct || 0);
-            const maxPct = Math.max(...pcts, 1);
-            const gymCount = data.days.filter((d: any) => d.gym).length;
-            const sleepEntries = data.days.filter((d: any) => d.sleep).map((d: any) => d.sleep.hours);
-            const sleepAvg = sleepEntries.length > 0 ? (sleepEntries.reduce((a: number, b: number) => a + b, 0) / sleepEntries.length).toFixed(1) : null;
-            const avgPct = Math.round(pcts.reduce((a: number, b: number) => a + b, 0) / pcts.length);
-            sparklineEl.innerHTML = pcts.map((pct: number) => {
-              const height = Math.max(4, Math.round((pct / maxPct) * 40));
-              const color = pct >= 75 ? "bg-green-400" : pct >= 50 ? "bg-yellow-400" : "bg-white/20";
-              return `<div class="flex-1 ${color} rounded-sm transition-all" style="height:${height}px" title="${pct}%" />`;
-            }).join("");
-            if (weekGymCount) weekGymCount.textContent = String(gymCount);
-            if (weekSleepAvg) weekSleepAvg.textContent = sleepAvg ? `${sleepAvg}h` : "—";
-            if (weekAvgLabel) weekAvgLabel.textContent = `Ø ${avgPct}%`;
-            data.days.forEach((d: any, i: number) => {
-              const labelEl = document.getElementById(`sparkline-day-${i}`);
-              if (labelEl) labelEl.textContent = d.dayName;
-            });
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load week summary", e);
-        const loadingEl = document.getElementById("week-summary-loading");
-        if (loadingEl) loadingEl.textContent = "Fehler";
-      }
+
     } catch (e) {
       console.error("Failed to load data", e);
     }
@@ -1467,14 +1432,50 @@ export default function MissionControl() {
                   <Activity className="w-4 h-4 text-blue-400" />
                 </div>
                 <h3 className="text-lg font-bold">Wochenüberblick</h3>
-                <span className="text-xs text-white/30 ml-auto" id="week-summary-loading">Laden...</span>
+                {weekSummaryError && <span className="text-xs text-red-400 ml-auto">Fehler</span>}
               </div>
-              <div id="week-summary-container" className="space-y-2">
-                {/* Filled by JS fetch */}
+              <div className="space-y-2">
+                {weekSummaryData ? weekSummaryData.days.map((day: any) => {
+                  const items = [];
+                  if (day.habits.pct > 0) items.push(`📋 ${day.habits.done}/${day.habits.total}`);
+                  if (day.gym) items.push("💪");
+                  if (day.water > 0) items.push(`💧 ${day.water}`);
+                  if (day.sleep) items.push(`🌙 ${day.sleep.hours}h`);
+                  if (day.mood) items.push(`⚡${day.mood.energy}`);
+                  if (day.nutrition.calories > 0) items.push(`🍽️${day.nutrition.calories}`);
+                  if (day.weight) items.push(`⚖️${day.weight}kg`);
+                  const completeness = Math.round((day.habits.pct / 100) * 5);
+                  const bar = "●".repeat(completeness) + "○".repeat(5 - completeness);
+                  const barColor = day.habits.pct >= 75 ? "text-green-400" : day.habits.pct >= 50 ? "text-yellow-400" : "text-white/30";
+                  return (
+                    <div key={day.date} className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+                      <span className="text-xs text-white/40 w-8">{day.dayName}</span>
+                      <span className={`text-xs font-mono w-10 ${barColor}`}>{bar}</span>
+                      <span className="text-xs text-white/60 flex-1">{items.length > 0 ? items.join(" ") : "—"}</span>
+                      {day.gym && <span className="text-xs">🔥{weekSummaryData.streaks?.gym || 0}</span>}
+                    </div>
+                  );
+                }) : !weekSummaryError && (
+                  <p className="text-xs text-white/30">Laden...</p>
+                )}
+                {weekSummaryData && weekSummaryData.streaks?.gym > 0 && (
+                  <div className="mt-2 flex gap-2">
+                    <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs">💪 {weekSummaryData.streaks.gym}-day gym streak</span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Weekly Trends — 7-Day Sparkline */}
+            {(() => {
+              const days = weekSummaryData?.days || [];
+              const pcts = days.map((d: any) => d.habits?.pct || 0);
+              const maxPct = Math.max(...pcts, 1);
+              const gymCount = days.filter((d: any) => d.gym).length;
+              const sleepEntries = days.filter((d: any) => d.sleep).map((d: any) => d.sleep.hours);
+              const sleepAvg = sleepEntries.length > 0 ? (sleepEntries.reduce((a: number, b: number) => a + b, 0) / sleepEntries.length).toFixed(1) : null;
+              const avgPct = pcts.length > 0 ? Math.round(pcts.reduce((a: number, b: number) => a + b, 0) / pcts.length) : 0;
+              return (
             <div className="p-6 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-xl rounded-3xl border border-white/10">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-purple-500/20 rounded-xl">
@@ -1486,35 +1487,41 @@ export default function MissionControl() {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-xs text-white/50">Habits</p>
-                  <p className="text-xs text-white/30" id="week-avg-label">—</p>
+                  <p className="text-xs text-white/30">Ø {avgPct}%</p>
                 </div>
-                <div id="habit-sparkline" className="flex items-end gap-1 h-10">
-                  {/* Filled by JS */}
+                <div className="flex items-end gap-1 h-10">
+                  {days.length === 0 ? (
+                    <div className="text-xs text-white/20">Keine Daten</div>
+                  ) : pcts.map((pct: number, i: number) => {
+                    const height = Math.max(4, Math.round((pct / maxPct) * 40));
+                    const color = pct >= 75 ? "bg-green-400" : pct >= 50 ? "bg-yellow-400" : "bg-white/20";
+                    return (
+                      <div key={i} className={`flex-1 ${color} rounded-sm transition-all`} style={{ height: `${height}px` }} title={`${pct}%`} />
+                    );
+                  })}
                 </div>
                 <div className="flex justify-between mt-1">
-                  <span className="text-[9px] text-white/25" id="sparkline-day-6">—</span>
-                  <span className="text-[9px] text-white/25" id="sparkline-day-5">—</span>
-                  <span className="text-[9px] text-white/25" id="sparkline-day-4">—</span>
-                  <span className="text-[9px] text-white/25" id="sparkline-day-3">—</span>
-                  <span className="text-[9px] text-white/25" id="sparkline-day-2">—</span>
-                  <span className="text-[9px] text-white/25" id="sparkline-day-1">—</span>
-                  <span className="text-[9px] text-white/25" id="sparkline-day-0">—</span>
+                  {days.map((d: any, i: number) => (
+                    <span key={i} className="text-[9px] text-white/25">{d.dayName}</span>
+                  ))}
                 </div>
               </div>
               {/* Gym + Sleep row */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-white/5 rounded-xl">
                   <p className="text-xs text-white/40 mb-1">💪 Gym-Sessions</p>
-                  <p className="text-lg font-bold text-orange-400" id="week-gym-count">—</p>
+                  <p className="text-lg font-bold text-orange-400">{gymCount}</p>
                   <p className="text-[10px] text-white/25 mt-0.5">diese Woche</p>
                 </div>
                 <div className="p-3 bg-white/5 rounded-xl">
                   <p className="text-xs text-white/40 mb-1">🌙 Ø Schlaf</p>
-                  <p className="text-lg font-bold text-indigo-400" id="week-sleep-avg">—</p>
+                  <p className="text-lg font-bold text-indigo-400">{sleepAvg ? `${sleepAvg}h` : "—"}</p>
                   <p className="text-[10px] text-white/25 mt-0.5">Std/ Nacht</p>
                 </div>
               </div>
             </div>
+              );
+            })()}
 
             {/* Daily Mentor Section */}
             {mentorData.today && (
