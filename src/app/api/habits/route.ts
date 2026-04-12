@@ -40,8 +40,23 @@ export async function GET() {
 
 // POST /api/habits - Toggle or set habit
 export async function POST(req: Request) {
-  const { habitId, completed, date } = await req.json();
+  const body = await req.json();
+  const { habitId, completed, date, batch } = body;
   const data = readData();
+
+  // Batch mode: set multiple habits at once for a given date
+  if (batch && date) {
+    const dateStr = date;
+    if (!data.habits[dateStr]) data.habits[dateStr] = {};
+    for (const item of batch) {
+      data.habits[dateStr][item.habitId] = item.completed;
+    }
+    writeData(data);
+    const dayHabits = data.habits[dateStr] || {};
+    const completedCount = HABIT_DEFAULTS.filter(h => dayHabits[h.id]).length;
+    return NextResponse.json({ success: true, completedCount, total: HABIT_DEFAULTS.length });
+  }
+
   const dateStr = date || new Date().toISOString().split("T")[0];
 
   if (!data.habits[dateStr]) data.habits[dateStr] = {};
