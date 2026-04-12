@@ -342,6 +342,21 @@ export default function MissionControl() {
     currentStreak: number;
     last30: any[];
   }>({ currentDay: 0, todayReps: null, todayCompleted: false, totalDays: 0, totalReps: 0, avgReps: 0, maxReps: 0, currentStreak: 0, last30: [] });
+
+  // Retro-Log state
+  const [showRetroModal, setShowRetroModal] = useState(false);
+  const [retroDate, setRetroDate] = useState(new Date().toISOString().split("T")[0]);
+  const [retroCategory, setRetroCategory] = useState<"habits" | "sleep" | "gym" | "mood">("habits");
+  const [retroHabits, setRetroHabits] = useState<Record<string, boolean>>({});
+  const [retroSleepHours, setRetroSleepHours] = useState(7);
+  const [retroSleepQuality, setRetroSleepQuality] = useState(5);
+  const [retroGymMuscles, setRetroGymMuscles] = useState("");
+  const [retroGymExercises, setRetroGymExercises] = useState("");
+  const [retroGymNotes, setRetroGymNotes] = useState("");
+  const [retroMoodEnergy, setRetroMoodEnergy] = useState(5);
+  const [retroMoodValue, setRetroMoodValue] = useState(5);
+  const [retroMoodNote, setRetroMoodNote] = useState("");
+  const [retroSaving, setRetroSaving] = useState(false);
   const [pushupInput, setPushupInput] = useState("");
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPattern, setBreathingPattern] = useState("box");
@@ -914,6 +929,70 @@ export default function MissionControl() {
     setMoodEnergy(5);
     setMoodValue(5);
     setMoodNote("");
+  }
+
+  function openRetroLog() {
+    setRetroDate(new Date().toISOString().split("T")[0]);
+    setRetroCategory("habits");
+    setRetroHabits({});
+    setRetroSaving(false);
+    setRetroSleepHours(7);
+    setRetroSleepQuality(5);
+    setRetroGymMuscles("");
+    setRetroGymExercises("");
+    setRetroGymNotes("");
+    setRetroMoodEnergy(5);
+    setRetroMoodValue(5);
+    setRetroMoodNote("");
+    setShowRetroModal(true);
+  }
+
+  async function submitRetroLog() {
+    setRetroSaving(true);
+    const dateStr = retroDate;
+
+    try {
+      if (retroCategory === "habits") {
+        const batch = Object.entries(retroHabits).map(([habitId, completed]) => ({ habitId, completed }));
+        if (batch.length > 0) {
+          await fetch("/api/habits", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ batch, date: dateStr }),
+          });
+        }
+      } else if (retroCategory === "sleep") {
+        await fetch("/api/sleep", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "log", date: dateStr, duration: retroSleepHours, quality: retroSleepQuality }),
+        });
+      } else if (retroCategory === "gym") {
+        await fetch("/api/gym", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "log",
+            date: dateStr,
+            muscles: retroGymMuscles.split(",").map((m: string) => m.trim()).filter(Boolean),
+            exercises: retroGymExercises.split(",").map((e: string) => e.trim()).filter(Boolean),
+            notes: retroGymNotes,
+          }),
+        });
+      } else if (retroCategory === "mood") {
+        await fetch("/api/mood", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "log", date: dateStr, energy: retroMoodEnergy, mood: retroMoodValue, note: retroMoodNote }),
+        });
+      }
+    } catch (e) {
+      console.error("Retro-log failed", e);
+    }
+
+    setRetroSaving(false);
+    setShowRetroModal(false);
+    if (typeof window !== "undefined") window.location.reload();
   }
 
   async function logWellness() {
@@ -2958,6 +3037,30 @@ export default function MissionControl() {
           </div>
         </div>
         )}
+        {/* Retro-Log — Backfill missed days */}
+        <div className="p-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-cyan-500/20">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-500/20 rounded-xl">
+                <Calendar className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Retro-Log</h2>
+                <p className="text-xs text-white/40"> vergessene Tage nachholen</p>
+              </div>
+            </div>
+            <button
+              onClick={openRetroLog}
+              className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 rounded-xl text-cyan-300 text-sm font-medium transition-all"
+            >
+              + Tag wählen
+            </button>
+          </div>
+          <p className="text-xs text-white/40">
+            Datenlücke entdeckt? Trag vergangene Tage hier nach — Habits, Sleep, Gym oder Mood.
+          </p>
+        </div>
+
         {/* Pushup Challenge */}
         <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
           <div className="flex items-center justify-between mb-6">
@@ -4268,6 +4371,203 @@ export default function MissionControl() {
                   className="flex-1 py-3 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 rounded-xl font-bold text-white transition-all"
                 >
                   Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Retro-Log Modal */}
+        {showRetroModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-md p-8 bg-[#111] rounded-3xl border border-cyan-500/30 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <div className="p-2 bg-cyan-500/20 rounded-xl">
+                  <Calendar className="w-5 h-5 text-cyan-400" />
+                </div>
+                Retro-Log
+              </h3>
+
+              {/* Date Picker */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Datum</label>
+                <input
+                  type="date"
+                  value={retroDate}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={e => setRetroDate(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+                />
+              </div>
+
+              {/* Category Selector */}
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Kategorie</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {(["habits", "sleep", "gym", "mood"] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setRetroCategory(cat)}
+                      className={cn(
+                        "py-2 px-1 rounded-xl text-xs font-medium capitalize transition-all",
+                        retroCategory === cat
+                          ? "bg-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                          : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                      )}
+                    >
+                      {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : cat === "gym" ? "💪 Gym" : "💭 Mood"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Habits Form */}
+              {retroCategory === "habits" && (
+                <div className="mb-5">
+                  <label className="block text-sm text-white/50 mb-2">Erledigte Habits am {retroDate}</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {HABITS.map(h => (
+                      <button
+                        key={h.id}
+                        onClick={() => setRetroHabits(prev => ({ ...prev, [h.id]: !prev[h.id] }))}
+                        className={cn(
+                          "p-3 rounded-xl border text-sm font-medium transition-all flex flex-col items-center gap-1",
+                          retroHabits[h.id]
+                            ? "bg-green-500/20 border-green-500/30 text-green-300"
+                            : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
+                        )}
+                      >
+                        <span className="text-xl">{h.emoji}</span>
+                        <span>{h.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sleep Form */}
+              {retroCategory === "sleep" && (
+                <div className="mb-5 space-y-4">
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Schlafstunden: {retroSleepHours}h</label>
+                    <input
+                      type="range"
+                      min="3"
+                      max="12"
+                      step="0.5"
+                      value={retroSleepHours}
+                      onChange={e => setRetroSleepHours(Number(e.target.value))}
+                      className="w-full accent-cyan-500"
+                    />
+                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>3h</span><span>12h</span></div>
+                  </div>
+                  <div>\n                    <label className="block text-sm text-white/50 mb-2">Qualität: {retroSleepQuality}/5</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="1"
+                      value={retroSleepQuality}
+                      onChange={e => setRetroSleepQuality(Number(e.target.value))}
+                      className="w-full accent-cyan-500"
+                    />
+                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>5</span></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Gym Form */}
+              {retroCategory === "gym" && (
+                <div className="mb-5 space-y-4">
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Muskeln (kommagetrennt)</label>
+                    <input
+                      type="text"
+                      value={retroGymMuscles}
+                      onChange={e => setRetroGymMuscles(e.target.value)}
+                      placeholder="z.B. Brust, Trizeps"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Übungen (kommagetrennt)</label>
+                    <input
+                      type="text"
+                      value={retroGymExercises}
+                      onChange={e => setRetroGymExercises(e.target.value)}
+                      placeholder="z.B. Bankdrücken, Kurzhantel flies"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Notiz (optional)</label>
+                    <textarea
+                      value={retroGymNotes}
+                      onChange={e => setRetroGymNotes(e.target.value)}
+                      placeholder="z.B. Neuer Trainingsplan"
+                      rows={2}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50 resize-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mood Form */}
+              {retroCategory === "mood" && (
+                <div className="mb-5 space-y-4">
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Energy: {retroMoodEnergy}/10</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="1"
+                      value={retroMoodEnergy}
+                      onChange={e => setRetroMoodEnergy(Number(e.target.value))}
+                      className="w-full accent-rose-500"
+                    />
+                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>10</span></div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Stimmung: {retroMoodValue}/10</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="1"
+                      value={retroMoodValue}
+                      onChange={e => setRetroMoodValue(Number(e.target.value))}
+                      className="w-full accent-pink-500"
+                    />
+                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>10</span></div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Notiz (optional)</label>
+                    <textarea
+                      value={retroMoodNote}
+                      onChange={e => setRetroMoodNote(e.target.value)}
+                      placeholder="Wie war der Tag?"
+                      rows={2}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowRetroModal(false)}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/70 font-medium transition-all"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={submitRetroLog}
+                  disabled={retroSaving}
+                  className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 rounded-xl font-bold text-white transition-all disabled:opacity-50"
+                >
+                  {retroSaving ? "Speichern..." : "Speichern"}
                 </button>
               </div>
             </div>
