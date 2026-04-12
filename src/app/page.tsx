@@ -302,6 +302,20 @@ export default function MissionControl() {
     takenToday: number;
     total: number;
   }>({ supplements: [], takenToday: 0, total: 0 });
+
+  // Pushup Challenge tracking
+  const [pushupData, setPushupData] = useState<{
+    currentDay: number;
+    todayReps: number | null;
+    todayCompleted: boolean;
+    totalDays: number;
+    totalReps: number;
+    avgReps: number;
+    maxReps: number;
+    currentStreak: number;
+    last30: any[];
+  }>({ currentDay: 0, todayReps: null, todayCompleted: false, totalDays: 0, totalReps: 0, avgReps: 0, maxReps: 0, currentStreak: 0, last30: [] });
+  const [pushupInput, setPushupInput] = useState("");
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPattern, setBreathingPattern] = useState("box");
   const [breathingPhase, setBreathingPhase] = useState("idle");
@@ -336,6 +350,29 @@ export default function MissionControl() {
       if (res.ok) setSupplementsData(await res.json());
     } catch (e) {
       console.error("Failed to toggle supplement", e);
+    }
+  }
+
+  // Pushup Challenge logging
+  async function logPushups(reps?: number) {
+    const repsToLog = reps ?? pushupData.currentDay;
+    try {
+      const res = await fetch("/api/pushups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reps: repsToLog }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setPushupData(prev => ({
+          ...prev,
+          todayReps: repsToLog,
+          todayCompleted: true,
+          currentDay: result.currentDay,
+        }));
+      }
+    } catch (e) {
+      console.error("Failed to log pushups", e);
     }
   }
 
@@ -537,6 +574,18 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load supplements", e);
+      }
+
+      // Fetch pushup challenge
+      try {
+        const pushupsRes = await fetch("/api/pushups");
+        if (pushupsRes.ok) {
+          const pushupsResult = await pushupsRes.json();
+          setPushupData(pushupsResult);
+          if (pushupsResult.currentDay > 0) setPushupInput(String(pushupsResult.todayReps || pushupsResult.currentDay));
+        }
+      } catch (e) {
+        console.error("Failed to load pushups", e);
       }
 
       // Fetch trends
@@ -2825,6 +2874,86 @@ export default function MissionControl() {
           </div>
         </div>
         )}
+        {/* Pushup Challenge */}
+        <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-500/20 rounded-xl">
+                <Zap className="w-5 h-5 text-orange-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Liegestütze Challenge</h2>
+                <p className="text-xs text-white/40 mt-0.5">One punch man style — day N = N reps</p>
+              </div>
+            </div>
+            {pushupData.currentStreak > 0 && (
+              <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-medium">
+                🔥 {pushupData.currentStreak}-day streak
+              </span>
+            )}
+          </div>
+
+          {/* Current Day Hero */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div className="p-4 bg-gradient-to-br from-orange-500/20 to-red-500/10 rounded-2xl border border-orange-500/20 text-center">
+              <p className="text-3xl font-bold text-orange-400">Tag {pushupData.currentDay}</p>
+              <p className="text-xs text-white/40 mt-1">Current Day</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+              <p className="text-3xl font-bold text-white">{pushupData.todayReps ?? pushupData.currentDay}</p>
+              <p className="text-xs text-white/40 mt-1">Reps Today</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+              <p className="text-3xl font-bold text-white">{pushupData.totalReps.toLocaleString()}</p>
+              <p className="text-xs text-white/40 mt-1">Total Reps</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+              <p className="text-3xl font-bold text-amber-400">{pushupData.maxReps}</p>
+              <p className="text-xs text-white/40 mt-1">Max Reps</p>
+            </div>
+          </div>
+
+          {/* Quick Log */}
+          <div className="flex items-center gap-3 mb-4">
+            <input
+              type="number"
+              value={pushupInput}
+              onChange={(e) => setPushupInput(e.target.value)}
+              placeholder={`${pushupData.currentDay} (Tag ${pushupData.currentDay})`}
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-orange-500/40"
+              min="1"
+              onKeyDown={(e) => e.key === "Enter" && logPushups(Number(pushupInput))}
+            />
+            <button
+              onClick={() => logPushups(Number(pushupInput))}
+              disabled={!pushupInput}
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-all"
+            >
+              {pushupData.todayCompleted ? "Aktualisieren" : "Log ✓"}
+            </button>
+          </div>
+
+          {/* Progression Bar */}
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-white/40 mb-1">
+              <span>Tag {Math.max(1, pushupData.currentDay - 6)}</span>
+              <span>Tag {pushupData.currentDay}</span>
+            </div>
+            <div className="h-8 bg-white/5 rounded-xl overflow-hidden flex divide-x divide-white/10">
+              {(pushupData.last30 || []).slice(-7).map((entry: any, i: number) => {
+                const pct = Math.min(100, Math.round((entry.reps / (entry.day || 1)) * 100));
+                const color = entry.reps >= entry.day ? "bg-green-500" : entry.reps >= entry.day * 0.7 ? "bg-yellow-400" : "bg-red-400";
+                return (
+                  <div key={i} className="flex-1 flex flex-col justify-end" title={`Tag ${entry.day}: ${entry.reps} Reps`}>
+                    <div className={color + " opacity-80 transition-all"} style={{ height: `${pct}%` }} />
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-white/30 mt-1 text-center">Letzte 7 Tage — grün = Tag geschafft</p>
+          </div>
+        </div>
+
         {/* Projects Tab */}
         {activeTab === "projects" && (
           <div className="space-y-6">
