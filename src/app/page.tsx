@@ -114,6 +114,31 @@ export default function MissionControl() {
   const daysSinceLastHabit = useMemo(() => lastHabitDateStr
     ? Math.floor((Date.now() - new Date(lastHabitDateStr + "T00:00:00").getTime()) / (1000 * 60 * 60 * 24))
     : null, [lastHabitDateStr]);
+
+  // Gym heatmap: 16 weeks (Mon→Sun rows, columns = weeks) — computed from gymLogs
+  const gymHeatmapWeeks = useMemo(() => {
+    const weeks: { date: string; hasGym: boolean; isToday: boolean; isFuture: boolean }[][] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split("T")[0];
+    const gymSet = new Set(gymLogs);
+    const start = new Date(today);
+    const dayOfWeek = start.getDay(); // 0=Sun
+    const daysToMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    start.setDate(start.getDate() - daysToMon - 15 * 7); // 16 weeks back, start Mon
+    for (let w = 0; w < 16; w++) {
+      const week: { date: string; hasGym: boolean; isToday: boolean; isFuture: boolean }[] = [];
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + w * 7 + d);
+        const dateStr = date.toISOString().split("T")[0];
+        week.push({ date: dateStr, hasGym: gymSet.has(dateStr), isToday: dateStr === todayStr, isFuture: date > today });
+      }
+      weeks.push(week);
+    }
+    return weeks;
+  }, [gymLogs]);
+
   const [newBucketText, setNewBucketText] = useState("");
   const [bucketCategory, setBucketCategory] = useState<string>("all");
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
@@ -1150,6 +1175,58 @@ export default function MissionControl() {
                 </div>
               </div>
             )}
+
+            {/* Gym Frequency Heatmap — 16-Week GitHub-style view */}
+            <div className="p-5 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-xl rounded-2xl border border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Dumbbell className="w-4 h-4 text-orange-400" />
+                  <h3 className="text-sm font-bold">Gym — 16 Wochen</h3>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-white/40">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block"></span> Gym</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-white/5 inline-block border border-white/10"></span> Rest</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-white/5 border border-dashed border-white/10 inline-block"></span> Zukunft</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <div className="flex gap-1 min-w-max">
+                  {/* Day labels */}
+                  <div className="flex flex-col gap-1 mr-1">
+                    {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map(d => (
+                      <span key={d} className="text-[9px] text-white/25 h-4 flex items-center">{d}</span>
+                    ))}
+                  </div>
+                  {/* Weeks columns */}
+                  {gymHeatmapWeeks.map((week, wi) => (
+                    <div key={wi} className="flex flex-col gap-1">
+                      {week.map((day, di) => (
+                        <div
+                          key={di}
+                          className={cn(
+                            "w-4 h-4 rounded-sm transition-all hover:scale-125 cursor-default",
+                            day.isFuture ? "bg-white/5 border border-dashed border-white/10" :
+                            day.hasGym ? "bg-gradient-to-br from-orange-500 to-red-500 shadow-md shadow-orange-500/30" :
+                            "bg-white/5 border border-white/5"
+                          )}
+                          title={day.isFuture ? "" : `${day.date}${day.hasGym ? " ✅ Gym" : ""}`}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Month labels */}
+              <div className="flex gap-1 min-w-max mt-1 pl-6">
+                {gymHeatmapWeeks.map((week, wi) => {
+                  const firstDay = week[0];
+                  const showLabel = firstDay && (firstDay.date.slice(8) === "01" || wi === 0);
+                  return showLabel ? (
+                    <span key={wi} className="text-[9px] text-white/30 w-4 text-right">{firstDay.date.slice(5, 7)}/{firstDay.date.slice(2, 4)}</span>
+                  ) : <span key={wi} className="w-4"></span>;
+                })}
+              </div>
+            </div>
 
             {/* Quick Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
