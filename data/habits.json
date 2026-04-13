@@ -10,9 +10,9 @@
     "2026-04-06": {
       "smoothie": true,
       "meditation": true,
-      "duolingo": true,
       "yoga": true,
-      "atem": true
+      "atem": true,
+      "bauchworkout": true
     },
     "2026-04-05": {
       "yoga": true,
@@ -22,17 +22,17 @@
       "meditation": true
     },
     "2026-04-04": {
-      "duolingo": true,
       "atem": true,
       "meditation": true,
       "gym": true,
-      "pushups": true
+      "pushups": true,
+      "bauchworkout": true
     },
     "2026-04-03": {
       "lesen": true,
       "creatin": true,
       "meditation": true,
-      "duolingo": true
+      "bauchworkout": true
     },
     "2026-04-02": {
       "pushups": true,
@@ -45,7 +45,7 @@
       "pushups": true,
       "atem": true,
       "creatin": true,
-      "duolingo": true
+      "bauchworkout": true
     },
     "2026-03-31": {
       "smoothie": true,
@@ -77,19 +77,19 @@
       "atem": true
     },
     "2026-03-27": {
-      "duolingo": true,
       "smoothie": true,
       "lesen": true,
       "gym": true,
-      "yoga": true
+      "yoga": true,
+      "bauchworkout": true
     },
     "2026-03-26": {
-      "duolingo": true,
       "lesen": true,
       "creatin": true,
       "atem": true,
       "gym": true,
-      "meditation": true
+      "meditation": true,
+      "bauchworkout": true
     }
   },
   "lastReset": "2026-04-08T00:00:00.000Z"
