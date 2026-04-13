@@ -250,6 +250,7 @@ export default function MissionControl() {
   // Sleep tracking
   const [sleepEntries, setSleepEntries] = useState<any[]>([]);
   const [sleepStats, setSleepStats] = useState({ avgDuration: 0, avgQuality: 0, streak: 0 });
+  const [sleepComeback, setSleepComeback] = useState<any>(null);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [sleepHours, setSleepHours] = useState(7);
   const [sleepQuality, setSleepQuality] = useState(5);
@@ -595,6 +596,16 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load sleep", e);
+      }
+      // Fetch sleep comeback data
+      try {
+        const sleepComebackRes = await fetch("/api/sleep-comeback");
+        if (sleepComebackRes.ok) {
+          const sleepComebackData = await sleepComebackRes.json();
+          setSleepComeback(sleepComebackData);
+        }
+      } catch (e) {
+        console.error("Failed to load sleep comeback", e);
       }
       // Fetch nutrition
       try {
@@ -1233,6 +1244,55 @@ export default function MissionControl() {
                     className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-xl font-bold text-xs transition-all active:scale-95"
                   >
                     💪 Heute trainieren
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Sleep Comeback Banner — show when gap >= 7 days */}
+            {sleepComeback && sleepComeback.gapDays !== null && sleepComeback.gapDays >= 7 && (
+              <div className="p-5 rounded-2xl border bg-gradient-to-r from-indigo-500/15 to-purple-500/10 border-indigo-500/25">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2.5 rounded-xl bg-indigo-500/20 text-2xl">🌙</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-indigo-300">Sleep Comeback</h3>
+                      <span className="text-xs text-indigo-400/60 font-mono">
+                        {sleepComeback.gapDays} Tage Pause
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 mt-0.5">{sleepComeback.motivation}</p>
+                  </div>
+                </div>
+
+                {sleepComeback.comebackPlan && (
+                  <div className="bg-black/20 rounded-xl p-3 mb-3">
+                    <div className="flex items-center gap-4 text-xs text-white/50 mb-2">
+                      <span>📅 {sleepComeback.comebackPlan.targetEntries} Einträge</span>
+                      <span>⏱️ Avg: {sleepComeback.avgSleep || '?'}h/night</span>
+                      <span>📊 {sleepComeback.totalEntries} Total</span>
+                    </div>
+                    <p className="text-xs text-indigo-300/80 italic">{sleepComeback.comebackPlan.focus}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-white/40">
+                    <span className="font-mono">Letzte: {sleepComeback.lastEntry || 'N/A'}</span>
+                    {sleepComeback.lastDuration && (
+                      <span className="ml-3">| {sleepComeback.lastDuration}h</span>
+                    )}
+                    {sleepComeback.thisMonthEntries > 0 && (
+                      <span className="ml-3">| Diesen Monat: {sleepComeback.thisMonthEntries}x</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowSleepModal(true);
+                    }}
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl font-bold text-xs transition-all active:scale-95"
+                  >
+                    🌙 Jetzt loggen
                   </button>
                 </div>
               </div>
