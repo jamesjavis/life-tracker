@@ -395,6 +395,24 @@ export default function MissionControl() {
     }
   }
 
+  async function logAllSupplements() {
+    const notTaken = supplementsData.supplements.filter((s: any) => !s.taken);
+    if (notTaken.length === 0) return;
+    try {
+      await Promise.all(notTaken.map((s: any) =>
+        fetch("/api/supplements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "take", supplementId: s.id }),
+        })
+      ));
+      const res = await fetch("/api/supplements");
+      if (res.ok) setSupplementsData(await res.json());
+    } catch (e) {
+      console.error("Failed to log all supplements", e);
+    }
+  }
+
   // Pushup Challenge logging
   async function logPushups(reps?: number) {
     const repsToLog = reps ?? pushupData.currentDay;
@@ -2854,6 +2872,16 @@ export default function MissionControl() {
                 </button>
               ))}
             </div>
+
+            {/* Quick Log All — shown when not all taken */}
+            {supplementsData.takenToday < supplementsData.total && supplementsData.total > 0 && (
+              <button
+                onClick={logAllSupplements}
+                className="w-full mb-4 px-4 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 rounded-xl text-amber-300 text-sm font-medium transition-all"
+              >
+                💊 Alle {supplementsData.total - supplementsData.takenToday} fehlenden jetzt loggen
+              </button>
+            )}
 
             {/* Last 7 days mini bar */}
             {supplementsData.supplements.length > 0 && (
