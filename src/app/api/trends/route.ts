@@ -150,6 +150,11 @@ export async function GET() {
     return Math.round((lastWeight.weight! - prevWeight.weight!) * 10) / 10;
   })();
 
+  const proteinTrend = trend(
+    last7.reduce((s, d) => s + d.nutrition.protein, 0) / 7,
+    prev7.reduce((s, d) => s + d.nutrition.protein, 0) / 7
+  );
+
   const waterTrend = trend(
     last7.reduce((s, d) => s + d.water, 0) / 7,
     prev7.reduce((s, d) => s + d.water, 0) / 7
@@ -171,6 +176,7 @@ export async function GET() {
       calories: { value: last7.reduce((s, d) => s + d.nutrition.calories, 0), change: calorieTrend },
       weight: { value: last7.filter(d => d.weight !== null).pop()?.weight || null, change: weightTrend },
       water: { value: Math.round(last7.reduce((s, d) => s + d.water, 0) / 7), change: waterTrend },
+      protein: { value: Math.round(last7.reduce((s, d) => s + d.nutrition.protein, 0) / 7), change: proteinTrend },
       breathing: { value: Math.round(last7.reduce((s, d) => s + d.breathing, 0) / 7), change: breathingTrend },
     },
     generatedAt: now.toISOString(),

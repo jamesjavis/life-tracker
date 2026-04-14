@@ -3951,6 +3951,18 @@ export default function MissionControl() {
                       {trendsData.trends.weight.change !== null ? `${trendsData.trends.weight.change > 0 ? "+" : ""}${trendsData.trends.weight.change}kg vs prev week` : "No data"}
                     </p>
                   </div>
+
+                  {/* Protein */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Protein</span>
+                      <Flame className="w-4 h-4 text-red-400" />
+                    </div>
+                    <p className="text-2xl font-bold">{trendsData.trends.protein.value || 0}<span className="text-sm text-white/40">g/d</span></p>
+                    <p className={cn("text-xs font-medium mt-1", (trendsData.trends.protein?.change || 0) >= 0 ? "text-green-400" : "text-red-400")}>
+                      {(trendsData.trends.protein?.change || 0) >= 0 ? "+" : ""}{trendsData.trends.protein?.change || 0}% vs prev week
+                    </p>
+                  </div>
                 </div>
 
                 {/* AI Observations */}
