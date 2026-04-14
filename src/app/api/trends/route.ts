@@ -150,6 +150,15 @@ export async function GET() {
     return Math.round((lastWeight.weight! - prevWeight.weight!) * 10) / 10;
   })();
 
+  const waterTrend = trend(
+    last7.reduce((s, d) => s + d.water, 0) / 7,
+    prev7.reduce((s, d) => s + d.water, 0) / 7
+  );
+  const breathingTrend = trend(
+    last7.reduce((s, d) => s + d.breathing, 0) / 7,
+    prev7.reduce((s, d) => s + d.breathing, 0) / 7
+  );
+
   return NextResponse.json({
     days: dailyData,
     weeks,
@@ -161,6 +170,8 @@ export async function GET() {
       sleep: { value: Math.round((last7.filter(d => d.sleep).reduce((s, d) => s + (d.sleep?.hours || 0), 0) / (last7.filter(d => d.sleep).length || 1)) * 10) / 10, change: sleepTrend },
       calories: { value: last7.reduce((s, d) => s + d.nutrition.calories, 0), change: calorieTrend },
       weight: { value: last7.filter(d => d.weight !== null).pop()?.weight || null, change: weightTrend },
+      water: { value: Math.round(last7.reduce((s, d) => s + d.water, 0) / 7), change: waterTrend },
+      breathing: { value: Math.round(last7.reduce((s, d) => s + d.breathing, 0) / 7), change: breathingTrend },
     },
     generatedAt: now.toISOString(),
   });
