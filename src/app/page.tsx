@@ -3971,6 +3971,10 @@ export default function MissionControl() {
                   const last7 = trendsData.days.slice(-7);
                   const missing = last7.filter((d: any) => d.habits.pct === 0);
                   if (missing.length >= 3) obs.push({ emoji: "⚠️", label: "Data Gap", text: `${missing.length} of the last 7 days have no habit data — use Retro-Log to fill in.`, color: "orange" });
+                  const sleepDays = last7.filter((d: any) => d.sleep !== null);
+                  if (sleepDays.length === 0 && trendsData.trends.sleep?.value === null) obs.push({ emoji: "😴", label: "Sleep Gap", text: "No sleep logged in 7+ days — your body needs rest tracking.", color: "orange" });
+                  const moodDays = last7.filter((d: any) => d.mood !== null);
+                  if (moodDays.length === 0 && trendsData.trends.mood?.value === null) obs.push({ emoji: "🧠", label: "Mood Gap", text: "No mood entries in 7+ days — log how you're feeling.", color: "orange" });
                   if (last7.filter((d: any) => d.habits.pct === 100).length >= 3) obs.push({ emoji: "🔥", label: "Perfect Days", text: `${last7.filter((d: any) => d.habits.pct === 100).length} perfect habit days this week — keep it up!`, color: "green" });
                   if (trendsData.trends.gym.change <= -30 && trendsData.trends.gym.value === 0) obs.push({ emoji: "💪", label: "Gym Restart", text: "No gym this week — schedule a session to restart your streak.", color: "orange" });
                   if (trendsData.trends.gym.change >= 50 && trendsData.trends.gym.value >= 3) obs.push({ emoji: "🚀", label: "Gym Momentum", text: `${trendsData.trends.gym.value} gym days this week — best week in a while!`, color: "green" });
