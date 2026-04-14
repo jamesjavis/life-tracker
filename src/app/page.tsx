@@ -4020,6 +4020,7 @@ export default function MissionControl() {
                           <th className="text-center pb-3 font-medium">Mood</th>
                           <th className="text-center pb-3 font-medium">Sleep</th>
                           <th className="text-right pb-3 font-medium">Calories</th>
+                          <th className="text-right pb-3 font-medium">Protein</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -4047,6 +4048,7 @@ export default function MissionControl() {
                             </td>
                             <td className="text-center py-3 text-white/60">{week.avgSleep || "—"}h</td>
                             <td className="text-right py-3 text-white/60">{week.totalCalories.toLocaleString()} kcal</td>
+                            <td className="text-right py-3 text-white/60">{week.totalProtein ? `${week.totalProtein.toLocaleString()}g` : "—"}</td>
                           </tr>
                         ))}
                       </tbody>
