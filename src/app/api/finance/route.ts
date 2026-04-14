@@ -37,7 +37,29 @@ function writeData(data: any) {
 // GET /api/finance - Get all finance data
 export async function GET() {
   const data = readData();
-  return NextResponse.json(data);
+
+  // Computed fields
+  const netWorth = data.savings + data.crypto;
+  const monthlyCosts = data.monthlyCosts || 1000;
+  const runwayMonths = monthlyCosts > 0 ? Math.round(netWorth / monthlyCosts) : null;
+  const grantMonths = data.funding?.status === 'confirmed'
+    ? (data.funding?.amount || 0) / monthlyCosts
+    : null;
+
+  return NextResponse.json({
+    ...data,
+    computed: {
+      netWorth,
+      runwayMonths,
+      grantMonths,
+      savingsProgress: data.savingsGoals[0]
+        ? Math.round((data.savingsGoals[0].current / data.savingsGoals[0].target) * 100)
+        : null,
+      emergencyFundComplete: data.savingsGoals[0]
+        ? data.savingsGoals[0].current >= data.savingsGoals[0].target
+        : false,
+    }
+  });
 }
 
 // POST /api/finance - Add transaction or update values
