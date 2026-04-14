@@ -2639,10 +2639,10 @@ export default function MissionControl() {
                       setBreathingSeconds(elapsed);
                       const pos = elapsed % cycleSec;
                       let phase = "idle";
-                      if (pos <= pat.inhale) phase = "inhale";
-                      else if (pos <= pat.inhale + pat.hold) phase = "hold";
-                      else if (pos <= pat.inhale + pat.hold + pat.exhale) phase = "exhale";
-                      else phase = "hold2";
+                      if (pos < pat.inhale) phase = "inhale";
+                      else if (pos < pat.inhale + pat.hold) phase = "hold";
+                      else if (pos < pat.inhale + pat.hold + pat.exhale) phase = "exhale";
+                      else if (pat.hold2 && pos < pat.inhale + pat.hold + pat.exhale + pat.hold2) phase = "hold2";
                       if (elapsed > 0 && elapsed % cycleSec === 0) { rounds++; setBreathingRounds(rounds); }
                       setBreathingPhase(phase);
                     };
