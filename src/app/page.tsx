@@ -6,7 +6,7 @@ import {
   Briefcase, Wallet, ChevronRight, ExternalLink,
   Activity, Calendar, Award, Gift, CheckCircle2, Circle,
   Dumbbell, Flame, Star, TrendingDown, Cloud, CloudRain,
-  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon
+  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon, BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
@@ -4107,6 +4107,85 @@ export default function MissionControl() {
                     </div>
                   );
                 })()}
+
+                {/* 4-Week Summary Grid */}
+                <div className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-white/60" />
+                    4-Week Summary
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-white/40 text-xs border-b border-white/10">
+                          <th className="text-left pb-3 pr-4">Woche</th>
+                          <th className="text-center pb-3 px-2">🏋️ Gym</th>
+                          <th className="text-center pb-3 px-2">✅ Gewohnheiten</th>
+                          <th className="text-center pb-3 px-2">😊 Stimmung</th>
+                          <th className="text-center pb-3 px-2">😴 Schlaf</th>
+                          <th className="text-center pb-3 px-2">🔥 Kalorien</th>
+                          <th className="text-center pb-3 px-2">🥩 Protein</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...trendsData.weeks].reverse().map((week: any, wi: number) => {
+                          const prev = trendsData.weeks[trendsData.weeks.length - 1 - wi - 1];
+                          const pctColor = week.avgHabitPct >= 75 ? 'text-green-400' : week.avgHabitPct >= 50 ? 'text-yellow-400' : 'text-red-400';
+                          const moodColor = week.avgMood >= 7 ? 'text-green-400' : week.avgMood >= 5 ? 'text-yellow-400' : 'text-red-400';
+                          const sleepColor = week.avgSleep >= 7 ? 'text-green-400' : week.avgSleep >= 5 ? 'text-yellow-400' : 'text-red-400';
+                          const gymDots = Array.from({ length: 7 }, (_, di) => {
+                            const dayIdx = (trendsData.weeks.length - 1 - wi) * 7 + di;
+                            const day = trendsData.days[dayIdx];
+                            return day?.gym;
+                          });
+                          return (
+                            <tr key={wi} className="border-b border-white/5 last:border-0">
+                              <td className="py-3 pr-4 text-white/60 text-xs">Woche {week.week}</td>
+                              <td className="py-3 px-2">
+                                <div className="flex justify-center gap-0.5">
+                                  {gymDots.map((gymmed, di) => (
+                                    <div key={di} className={cn("w-3 h-3 rounded-sm", gymmed ? "bg-orange-500" : "bg-white/10")} />
+                                  ))}
+                                </div>
+                              </td>
+                              <td className={cn("py-3 px-2 text-center font-medium", pctColor)}>
+                                {week.avgHabitPct > 0 ? `${week.avgHabitPct}%` : '—'}
+                                {prev && week.avgHabitPct !== prev.avgHabitPct && (
+                                  <span className={cn("ml-1 text-xs", week.avgHabitPct > prev.avgHabitPct ? "text-green-400" : "text-red-400")}>
+                                    {week.avgHabitPct > prev.avgHabitPct ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className={cn("py-3 px-2 text-center font-medium", moodColor)}>
+                                {week.avgMood > 0 ? `${week.avgMood}/10` : '—'}
+                                {prev && week.avgMood !== prev.avgMood && (
+                                  <span className={cn("ml-1 text-xs", week.avgMood > prev.avgMood ? "text-green-400" : "text-red-400")}>
+                                    {week.avgMood > prev.avgMood ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className={cn("py-3 px-2 text-center font-medium", sleepColor)}>
+                                {week.avgSleep > 0 ? `${week.avgSleep}h` : '—'}
+                                {prev && week.avgSleep !== prev.avgSleep && (
+                                  <span className={cn("ml-1 text-xs", week.avgSleep > prev.avgSleep ? "text-green-400" : "text-red-400")}>
+                                    {week.avgSleep > prev.avgSleep ? '↑' : '↓'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-2 text-center text-white/60">
+                                {week.totalCalories > 0 ? `${(week.totalCalories/1000).toFixed(1)}k` : '—'}
+                              </td>
+                              <td className="py-3 px-2 text-center text-white/60">
+                                {week.totalProtein > 0 ? `${week.totalProtein}g` : '—'}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-white/30 mt-3">Farben: Grün = gut (≥75%/7h+/7+), Gelb = mittel, Rot = ausbaufähig. Pfeile = Woche-zu-Woche Änderung.</p>
+                </div>
 
                 {/* AI Observations */}
                 {(() => {
