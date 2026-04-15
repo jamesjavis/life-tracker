@@ -358,7 +358,7 @@ export default function MissionControl() {
   // Retro-Log state
   const [showRetroModal, setShowRetroModal] = useState(false);
   const [retroDate, setRetroDate] = useState(new Date().toISOString().split("T")[0]);
-  const [retroCategory, setRetroCategory] = useState<"habits" | "sleep" | "gym" | "mood">("habits");
+  const [retroCategory, setRetroCategory] = useState<"habits" | "sleep" | "gym" | "mood" | "water">("habits");
   const [retroHabits, setRetroHabits] = useState<Record<string, boolean>>({});
   const [retroSleepHours, setRetroSleepHours] = useState(7);
   const [retroSleepQuality, setRetroSleepQuality] = useState(5);
@@ -368,6 +368,7 @@ export default function MissionControl() {
   const [retroMoodEnergy, setRetroMoodEnergy] = useState(5);
   const [retroMoodValue, setRetroMoodValue] = useState(5);
   const [retroMoodNote, setRetroMoodNote] = useState("");
+  const [retroWater, setRetroWater] = useState(8);
   const [retroSaving, setRetroSaving] = useState(false);
   const [pushupInput, setPushupInput] = useState("");
   const [breathingActive, setBreathingActive] = useState(false);
@@ -1035,6 +1036,12 @@ export default function MissionControl() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "log", date: dateStr, energy: retroMoodEnergy, mood: retroMoodValue, note: retroMoodNote }),
+        });
+      } else if (retroCategory === "water") {
+        await fetch("/api/water", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "retro", date: dateStr, glasses: retroWater }),
         });
       }
     } catch (e) {
@@ -4597,8 +4604,8 @@ export default function MissionControl() {
               {/* Category Selector */}
               <div className="mb-5">
                 <label className="block text-sm text-white/50 mb-2">Kategorie</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {(["habits", "sleep", "gym", "mood"] as const).map(cat => (
+                <div className="grid grid-cols-5 gap-1">
+                  {(["habits", "sleep", "gym", "mood", "water"] as const).map(cat => (
                     <button
                       key={cat}
                       onClick={() => setRetroCategory(cat)}
@@ -4609,7 +4616,7 @@ export default function MissionControl() {
                           : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
                       )}
                     >
-                      {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : cat === "gym" ? "💪 Gym" : "💭 Mood"}
+                      {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : cat === "gym" ? "💪 Gym" : cat === "mood" ? "💭 Mood" : "💧 Wasser"}
                     </button>
                   ))}
                 </div>
@@ -4744,6 +4751,41 @@ export default function MissionControl() {
                       rows={2}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* Water Form */}
+              {retroCategory === "water" && (
+                <div className="mb-5 space-y-4">
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Gläser: {retroWater}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="16"
+                      step="1"
+                      value={retroWater}
+                      onChange={e => setRetroWater(Number(e.target.value))}
+                      className="w-full accent-cyan-500"
+                    />
+                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>0</span><span>16</span></div>
+                  </div>
+                  <div className="flex gap-2">
+                    {[4, 6, 8, 10].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setRetroWater(n)}
+                        className={cn(
+                          "flex-1 py-2 rounded-xl text-sm font-medium transition-all",
+                          retroWater === n
+                            ? "bg-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                            : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                        )}
+                      >
+                        {n} Gläser
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}

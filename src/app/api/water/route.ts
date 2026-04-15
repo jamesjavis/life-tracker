@@ -99,5 +99,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, dailyGoal: data.dailyGoal });
   }
 
+  if (body.action === "retro") {
+    // Retro-log water for a specific date
+    const dateStr = body.date;
+    const glasses = typeof body.glasses === "number" ? body.glasses : 0;
+    if (!dateStr) return NextResponse.json({ error: "Missing date" }, { status: 400 });
+    const entryIndex = data.entries.findIndex((e: any) => e.date === dateStr);
+    if (entryIndex >= 0) {
+      data.entries[entryIndex].glasses = glasses;
+    } else {
+      data.entries.push({ date: dateStr, glasses });
+      data.entries.sort((a: any, b: any) => a.date.localeCompare(b.date));
+    }
+    writeData(data);
+    return NextResponse.json({ success: true, date: dateStr, glasses });
+  }
+
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
