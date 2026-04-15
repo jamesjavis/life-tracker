@@ -163,6 +163,10 @@ export async function GET() {
     last7.reduce((s, d) => s + d.breathing, 0) / 7,
     prev7.reduce((s, d) => s + d.breathing, 0) / 7
   );
+  const energyTrend = trend(
+    last7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (last7.filter(d => d.mood).length || 1),
+    prev7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (prev7.filter(d => d.mood).length || 1)
+  );
 
   return NextResponse.json({
     days: dailyData,
@@ -178,6 +182,7 @@ export async function GET() {
       water: { value: Math.round(last7.reduce((s, d) => s + d.water, 0) / 7), change: waterTrend },
       protein: { value: Math.round(last7.reduce((s, d) => s + d.nutrition.protein, 0) / 7), change: proteinTrend },
       breathing: { value: Math.round(last7.reduce((s, d) => s + d.breathing, 0) / 7), change: breathingTrend },
+      energy: { value: Math.round(last7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (last7.filter(d => d.mood).length || 1)), change: energyTrend },
     },
     generatedAt: now.toISOString(),
   });
