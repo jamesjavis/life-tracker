@@ -5,14 +5,28 @@ import path from "path";
 export async function GET() {
   const dataDir = path.join(process.cwd(), "data");
   
-  // Collect all data files
+  // All tracked data files
+  const files = [
+    "bucketlist.json",
+    "finance.json",
+    "gym.json",
+    "habits.json",
+    "meals.json",
+    "mood.json",
+    "pushups.json",
+    "sleep.json",
+    "streaks.json",
+    "supplements.json",
+    "water.json",
+    "weight.json",
+    "wellness.json",
+  ];
+  
   const response: Record<string, any> = {
     exportedAt: new Date().toISOString(),
-    version: "1.0",
+    version: "1.1",
   };
 
-  const files = ["gym.json", "habits.json", "streaks.json", "bucketlist.json"];
-  
   for (const file of files) {
     const filePath = path.join(dataDir, file);
     if (fs.existsSync(filePath)) {
