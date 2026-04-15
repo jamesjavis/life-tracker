@@ -287,6 +287,17 @@ export default function MissionControl() {
     summary: any;
   } | null>(null);
 
+  // Net Worth History
+  const [networthHistory, setNetworthHistory] = useState<{
+    history: any[];
+    current: any;
+    milestones: any[];
+    monthsTo12K: number | null;
+    monthsTo25K: number | null;
+    monthsTo50K: number | null;
+    target: number;
+  } | null>(null);
+
   // Mentor Tips
   const [mentorData, setMentorData] = useState<{
     today: any;
@@ -571,6 +582,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load FI roadmap", e);
+      }
+
+      // Fetch Net Worth History
+      try {
+        const nwRes = await fetch("/api/finance/networth-history");
+        if (nwRes.ok) {
+          const nwData = await nwRes.json();
+          setNetworthHistory(nwData);
+        }
+      } catch (e) {
+        console.error("Failed to load networth history", e);
       }
 
       // Fetch weight
@@ -3876,6 +3898,184 @@ export default function MissionControl() {
               <p className="text-xs text-white/20 mt-4 text-center">
                 FI Number = 25× annual expenses (4% rule) • Assumes grant starts June 2026
               </p>
+            </div>
+
+            {/* Net Worth Journey — full chart with milestones */}
+            {networthHistory && networthHistory.history && networthHistory.history.length > 0 && (
+              <div className="p-8 bg-gradient-to-br from-violet-500/10 via-indigo-500/5 to-cyan-500/10 backdrop-blur-xl rounded-3xl border border-violet-500/20">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-violet-500/20 rounded-xl">
+                    <TrendingUp className="w-5 h-5 text-violet-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Net Worth Journey</h3>
+                    <p className="text-xs text-white/40">History + Projection · Ziel: €{networthHistory.target.toLocaleString()}</p>
+                  </div>
+                  {networthHistory.monthsTo50K !== null && (
+                    <span className="ml-auto px-3 py-1 bg-violet-500/20 text-violet-400 rounded-full text-xs font-bold">
+                      {networthHistory.monthsTo50K} Mo. bis €50K
+                    </span>
+                  )}
+                </div>
+
+                {/* Header stats row */}
+                <div className="grid grid-cols-4 gap-3 mb-6">
+                  <div className="p-3 bg-white/5 rounded-xl text-center border border-white/10">
+                    <p className="text-xs text-white/40 mb-1">Aktuell</p>
+                    <p className="text-base font-bold text-violet-400">€{(networthHistory.current.netWorth / 1000).toFixed(1)}K</p>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-xl text-center border border-white/10">
+                    <p className="text-xs text-white/40 mb-1">Sparrate</p>
+                    <p className="text-base font-bold text-green-400">€{networthHistory.current.monthlySavingsRate}/mo</p>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-xl text-center border border-white/10">
+                    <p className="text-xs text-white/40 mb-1">Sparquote</p>
+                    <p className="text-base font-bold text-cyan-400">{networthHistory.current.sparquote}%</p>
+                  </div>
+                  <div className="p-3 bg-white/5 rounded-xl text-center border border-white/10">
+                    <p className="text-xs text-white/40 mb-1">€50K in</p>
+                    <p className="text-base font-bold text-amber-400">
+                      {networthHistory.monthsTo50K !== null ? `${networthHistory.monthsTo50K} Mo.` : '—'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Milestone timeline */}
+                <div className="mb-6">
+                  <p className="text-sm text-white/50 mb-3">Meilensteine</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {networthHistory.milestones.map((m: any, idx: number) => {
+                      const colors = ["green", "blue", "purple", "amber"];
+                      const bgColors = ["bg-green-500", "bg-blue-500", "bg-purple-500", "bg-amber-500"];
+                      const textColors = ["text-green-400", "text-blue-400", "text-purple-400", "text-amber-400"];
+                      const borderColors = ["border-green-500/30", "border-blue-500/30", "border-purple-500/30", "border-amber-500/30"];
+                      const c = colors[idx];
+                      return (
+                        <div key={idx} className={`p-3 rounded-xl border ${borderColors[idx % 4]} bg-white/5`}>
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs text-white/40">{m.label}</p>
+                            {m.reached && <span className="text-green-400 text-xs">✓</span>}
+                          </div>
+                          <p className={`text-sm font-bold ${m.reached ? "text-green-400" : textColors[idx % 4]}`}>
+                            {m.reached ? "✓ " : ""}€{(m.target / 1000).toLocaleString()}K
+                          </p>
+                          {m.projectedMonth && !m.reached && (
+                            <p className="text-xs text-white/30 mt-0.5">
+                              ~{m.projectedMonth}
+                            </p>
+                          )}
+                          <div className="h-1 bg-white/10 rounded-full overflow-hidden mt-2">
+                            <div
+                              className={`h-full ${m.reached ? "bg-green-500" : `bg-gradient-to-r ${c === "green" ? "from-green-500 to-emerald-400" : c === "blue" ? "from-blue-500 to-cyan-400" : c === "purple" ? "from-purple-500 to-pink-400" : "from-amber-500 to-orange-400"}`} rounded-full`}
+                              style={{ width: `${Math.min(100, Math.round((networthHistory.current.netWorth / m.target) * 100))}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Full bar chart */}
+                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                  <div className="flex justify-between items-center mb-3">
+                    <p className="text-sm font-medium text-white/70">Net Worth Verlauf</p>
+                    <div className="flex gap-3 text-xs text-white/40">
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-violet-400 inline-block"></span> Historisch</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-indigo-400/60 inline-block"></span> Projektion</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-400 inline-block"></span> Grant</span>
+                    </div>
+                  </div>
+
+                  {/* Chart */}
+                  <div className="relative">
+                    {/* Y-axis labels */}
+                    <div className="flex text-xs text-white/30 mb-1">
+                      <div className="w-10" /> {/* spacer */}
+                      <div className="flex-1 flex justify-between pr-2">
+                        {[0, 25, 50, 75, 100].map(pct => {
+                          const val = Math.round((pct / 100) * networthHistory.target);
+                          return <span key={pct}>€{(val / 1000).toFixed(0)}K</span>;
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Bars */}
+                    <div className="flex items-end gap-0.5 h-32 relative">
+                      {/* Target line */}
+                      <div className="absolute top-0 left-0 right-0 h-px bg-amber-500/30" style={{ top: "0%" }} />
+                      <div className="absolute" style={{ top: "0%", left: "0", fontSize: "8px", color: "#f59e0b", transform: "translateY(-4px)" }}>€50K</div>
+
+                      {networthHistory.history.map((point: any, idx: number) => {
+                        const allVals = networthHistory.history.map((p: any) => p.netWorth);
+                        const maxV = Math.max(...allVals, networthHistory.target);
+                        const heightPct = (point.netWorth / maxV) * 100;
+                        const isGrant = point.isPostFunding;
+                        const isToday = !point.isProjection;
+                        return (
+                          <div key={idx} className="flex-1 group relative">
+                            <div
+                              className={`rounded-t transition-all w-full cursor-default ${isGrant ? "bg-green-500/80" : isToday ? "bg-gradient-to-t from-violet-500 to-indigo-400" : "bg-indigo-400/40 hover:bg-indigo-400/60"}`}
+                              style={{ height: `${Math.max(heightPct, 2)}%`, minHeight: "2px" }}
+                            />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-black/90 text-white px-1.5 py-0.5 rounded mb-1 z-10 text-center">
+                              <div className="font-bold">€{(point.netWorth / 1000).toFixed(1)}K</div>
+                              <div className="text-white/60 text-[9px]">{point.label}</div>
+                              {point.isProjection && <div className="text-indigo-400 text-[9px]">⏱ Proj.</div>}
+                              {point.isPostFunding && <div className="text-green-400 text-[9px]">🎉 Grant!</div>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* X-axis labels */}
+                    <div className="flex gap-0.5 mt-1">
+                      <div className="w-10" /> {/* spacer */}
+                      <div className="flex-1 flex justify-between">
+                        {(() => {
+                          const pts = networthHistory.history;
+                          if (pts.length <= 8) return pts.map((p: any) => <span key={p.month} className="text-[9px] text-white/30">{p.label}</span>);
+                          // Show every Nth label
+                          const step = Math.ceil(pts.length / 8);
+                          return pts.map((p: any, i: number) =>
+                            i % step === 0 ? <span key={p.month} className="text-[9px] text-white/30">{p.label}</span> : <span key={p.month} />
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Snapshot Button */}
+            <div className="p-6 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-cyan-500/20 rounded-xl">
+                  <Activity className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold">Net Worth Snapshot</h3>
+                  <p className="text-xs text-white/40">Aktuellen Stand speichern</p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  const res = await fetch("/api/finance/networth-history", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({}),
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setNetworthHistory((prev: any) => prev ? { ...prev, history: data.history } : null);
+                  }
+                }}
+                className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 rounded-xl font-bold text-sm text-white transition-all"
+              >
+                📊 Jetzt snapshotten
+              </button>
             </div>
           </div>
         )}
