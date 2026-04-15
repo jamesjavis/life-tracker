@@ -3935,6 +3935,40 @@ export default function MissionControl() {
                     </p>
                   </div>
 
+                  {/* Gym Monthly Adherence — Mon/Wed/Fri schedule */}
+                  {(() => {
+                    const now = new Date();
+                    const currentMonth = now.getMonth();
+                    const currentYear = now.getFullYear();
+                    const scheduledDays: string[] = [];
+                    const d = new Date(currentYear, currentMonth, 1);
+                    while (d.getMonth() === currentMonth) {
+                      const dow = d.getDay();
+                      if (dow === 1 || dow === 3 || dow === 5) {
+                        scheduledDays.push(d.toISOString().split('T')[0]);
+                      }
+                      d.setDate(d.getDate() + 1);
+                    }
+                    const completedThisMonth = trendsData.days.filter((day: any) =>
+                      day.gym && day.date.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`)
+                    ).length;
+                    const scheduledThisMonth = scheduledDays.filter(s => s <= todayStr).length;
+                    const adherencePct = scheduledThisMonth > 0 ? Math.round((completedThisMonth / scheduledThisMonth) * 100) : 0;
+                    const adhColor = adherencePct === 0 ? 'text-red-400' : adherencePct < 50 ? 'text-orange-400' : adherencePct < 75 ? 'text-yellow-400' : 'text-green-400';
+                    return (
+                      <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white/50 text-xs">Mon/Wed/Fri</span>
+                          <Target className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <p className="text-2xl font-bold">{completedThisMonth}<span className="text-sm text-white/40">/{scheduledThisMonth}</span></p>
+                        <p className={cn("text-xs font-medium mt-1", adhColor)}>
+                          {adherencePct}% adherence
+                        </p>
+                      </div>
+                    );
+                  })()}
+
                   {/* Habits */}
                   <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
                     <div className="flex items-center justify-between mb-2">
