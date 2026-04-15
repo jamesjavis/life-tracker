@@ -1524,11 +1524,14 @@ export default function MissionControl() {
                   <div className="text-2xl mb-1">💪</div>
                   <p className="text-sm font-bold text-orange-400">{gymStreak}🔥</p>
                   <p className="text-xs text-white/40">Gym Streak</p>
-                  {gymLogs.includes(todayStr) ? (
-                    <span className="mt-1 inline-block text-xs text-green-400">✓ Heute</span>
-                  ) : (
-                    <span className="mt-1 inline-block text-xs text-white/30">Offen</span>
-                  )}
+                  {(() => {
+                    const gymDays = [1, 3, 5]; // Mon, Wed, Fri
+                    const isGymDay = gymDays.includes(dayOfWeek);
+                    const doneToday = gymLogs.includes(todayStr);
+                    if (doneToday) return <span className="mt-1 inline-block text-xs text-green-400">✓ Heute ✅</span>;
+                    if (isGymDay) return <span className="mt-1 inline-block text-xs font-bold text-orange-400 animate-pulse">🎯 HEUTE GYM TAG</span>;
+                    return <span className="mt-1 inline-block text-xs text-white/30">Offen</span>;
+                  })()}
                   {gymStats && (
                     <p className={`mt-1 text-xs font-bold ${(gymStats.thisWeekSessions ?? 0) === 0 ? 'text-orange-400' : (gymStats.thisWeekSessions ?? 0) >= 2 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {gymStats.thisWeekSessions ?? 0}/2 Woche
