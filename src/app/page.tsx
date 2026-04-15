@@ -1529,6 +1529,11 @@ export default function MissionControl() {
                   ) : (
                     <span className="mt-1 inline-block text-xs text-white/30">Offen</span>
                   )}
+                  {gymStats && (
+                    <p className={`mt-1 text-xs font-bold ${(gymStats.thisWeekSessions ?? 0) === 0 ? 'text-orange-400' : (gymStats.thisWeekSessions ?? 0) >= 2 ? 'text-green-400' : 'text-yellow-400'}`}>
+                      {gymStats.thisWeekSessions ?? 0}/2 Woche
+                    </p>
+                  )}
                 </div>
 
                 {/* Energy */}
