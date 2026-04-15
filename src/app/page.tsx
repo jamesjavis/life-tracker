@@ -146,6 +146,7 @@ export default function MissionControl() {
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
   const [loading, setLoading] = useState(true);
   const [trendsData, setTrendsData] = useState<{ days: any[]; weeks: any[]; streaks: any; trends: any; generatedAt: string } | null>(null);
+  const [wellnessScore, setWellnessScore] = useState<number | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
   const [workoutDuration, setWorkoutDuration] = useState(60);
@@ -686,6 +687,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load trends", e);
+      }
+
+      // Fetch wellness score
+      try {
+        const wsRes = await fetch("/api/wellness-score");
+        if (wsRes.ok) {
+          const ws = await wsRes.json();
+          setWellnessScore(ws.score);
+        }
+      } catch (e) {
+        console.error("Failed to load wellness score", e);
       }
 
       // Fetch mentor tips
@@ -3854,6 +3866,27 @@ export default function MissionControl() {
               <div className="text-center py-20 text-white/40">Loading trends...</div>
             ) : (
               <>
+                {/* KPI Cards */}
+                {/* Wellness Score — hero card */}
+                <div className="md:col-span-3 p-5 bg-gradient-to-br from-green-500/15 to-emerald-500/10 backdrop-blur-xl rounded-2xl border border-green-500/25">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <span className="text-white/50 text-xs">Today's Wellness Score</span>
+                      <p className="text-5xl font-bold text-green-400">{wellnessScore ?? '—'}<span className="text-2xl text-white/40">/100</span></p>
+                    </div>
+                    <div className="relative w-20 h-20">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="40" cy="40" r="34" stroke="currentColor" strokeWidth="6" fill="none" className="text-white/10" />
+                        <circle cx="40" cy="40" r="34" stroke="currentColor" strokeWidth="6" fill="none" strokeDasharray={`${2 * Math.PI * 34}`} strokeDashoffset={`${2 * Math.PI * 34 * (1 - (wellnessScore ?? 0) / 100)}`} className="text-green-400 transition-all duration-700" strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg font-bold">{wellnessScore ?? '?'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-white/50">Composite: habits (30%) + gym (20%) + sleep (25%) + mood (15%) + water (10%)</p>
+                </div>
+
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {/* Gym */}
