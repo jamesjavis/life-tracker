@@ -141,6 +141,16 @@ export default function MissionControl() {
     return weeks;
   }, [gymLogs]);
 
+  // Gym rest days gap
+  const gymGapDays = useMemo(() => {
+    if (!gymLogs || gymLogs.length === 0) return null;
+    const last = gymLogs[gymLogs.length - 1];
+    const lastDate = new Date(last + "T00:00:00");
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    return Math.floor((todayDate.getTime() - lastDate.getTime()) / 86400000);
+  }, [gymLogs]);
+
   const [newBucketText, setNewBucketText] = useState("");
   const [bucketCategory, setBucketCategory] = useState<string>("all");
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
@@ -1536,6 +1546,15 @@ export default function MissionControl() {
                     <p className={`mt-1 text-xs font-bold ${(gymStats.thisWeekSessions ?? 0) === 0 ? 'text-orange-400' : (gymStats.thisWeekSessions ?? 0) >= 2 ? 'text-green-400' : 'text-yellow-400'}`}>
                       {gymStats.thisWeekSessions ?? 0}/2 Woche
                     </p>
+                  )}
+                  {gymGapDays !== null && gymGapDays >= 3 && (
+                    <div className={`mt-1.5 text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                      gymGapDays >= 10 ? 'bg-red-500/25 text-red-400' :
+                      gymGapDays >= 7 ? 'bg-orange-500/25 text-orange-400' :
+                      'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      😴 {gymGapDays}T Ruhetag
+                    </div>
                   )}
                 </div>
 
