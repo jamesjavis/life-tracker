@@ -4078,6 +4078,36 @@ export default function MissionControl() {
                   </div>
                 </div>
 
+                {/* Gym Comeback Card — show when gap >= 5 days */}
+                {(() => {
+                  const gap = gymGapDays;
+                  if (gap === null || gap < 5) return null;
+                  const dow = new Date().getDay();
+                  const nextDay = dow === 0 ? 'Mo' : dow === 1 ? 'Mi' : dow === 3 ? 'Fr' : dow === 5 ? 'Sa' : 'Mo';
+                  const nextFull = dow === 0 ? 'Montag' : dow === 1 ? 'Mittwoch' : dow === 3 ? 'Freitag' : dow === 5 ? 'Samstag' : 'Montag';
+                  return (
+                    <div className="p-6 bg-gradient-to-br from-orange-500/10 to-red-500/5 backdrop-blur-xl rounded-2xl border border-orange-500/20">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">🏋️</span>
+                            <h3 className="text-lg font-bold text-orange-300">Gym Comeback</h3>
+                          </div>
+                          <p className="text-white/40 text-sm mb-1">{gap} Tage Pause</p>
+                          <p className="text-white/60 text-sm">Letzte Session: {gymLogs?.[gymLogs.length - 1] ?? 'unbekannt'}</p>
+                          <p className="text-white/40 text-xs mt-1">Geplante Tage: Mo · Mi · Fr · Nächste: {nextFull}</p>
+                        </div>
+                        <button
+                          onClick={() => setShowWorkoutModal(true)}
+                          className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-xl font-bold text-white text-sm transition-all whitespace-nowrap"
+                        >
+                          🏋️ Quick Log Gym
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* AI Observations */}
                 {(() => {
                   const obs: { emoji: string; label: string; text: string; color: string }[] = [];
@@ -4094,6 +4124,8 @@ export default function MissionControl() {
                   if (proteinDays.length === 0 && (trendsData.trends.protein?.value === 0 || trendsData.trends.protein?.value == null)) obs.push({ emoji: "🥩", label: "Protein Gap", text: "No protein logged in 7+ days — aim for 150g+ daily.", color: "orange" });
                   if (last7.filter((d: any) => d.habits.pct === 100).length >= 3) obs.push({ emoji: "🔥", label: "Perfect Days", text: `${last7.filter((d: any) => d.habits.pct === 100).length} perfect habit days this week — keep it up!`, color: "green" });
                   if (trendsData.trends.gym.change <= -30 && trendsData.trends.gym.value === 0) obs.push({ emoji: "💪", label: "Gym Restart", text: "No gym this week — schedule a session to restart your streak.", color: "orange" });
+                  const gymGap = gymGapDays;
+                  if (gymGap !== null && gymGap >= 10) obs.push({ emoji: "🔴", label: "Gym Relapse", text: `${gymGap} Tage seit letzter Session — Deine longest Pause seit ${Object.keys(gymLogs||{}).length} Sessions.`, color: "red" });
                   if (trendsData.trends.gym.change >= 50 && trendsData.trends.gym.value >= 3) obs.push({ emoji: "🚀", label: "Gym Momentum", text: `${trendsData.trends.gym.value} gym days this week — best week in a while!`, color: "green" });
                   if (trendsData.trends.sleep.change <= -20 && trendsData.trends.sleep.value < 7) obs.push({ emoji: "😴", label: "Sleep Dip", text: `Sleep avg dropped ${Math.abs(trendsData.trends.sleep.change)}% vs last week — aim for 7h+.`, color: "yellow" });
                   if (trendsData.trends.habits.change >= 20) obs.push({ emoji: "📈", label: "Habits Climbing", text: `Habit completion up ${trendsData.trends.habits.change}% vs last week.`, color: "green" });
