@@ -4477,7 +4477,7 @@ export default function MissionControl() {
                   if (last7.filter((d: any) => d.habits.pct === 100).length >= 3) obs.push({ emoji: "🔥", label: "Perfect Days", text: `${last7.filter((d: any) => d.habits.pct === 100).length} perfect habit days this week — keep it up!`, color: "green" });
                   if (trendsData.trends.gym.change <= -30 && trendsData.trends.gym.value === 0) obs.push({ emoji: "💪", label: "Gym Restart", text: "No gym this week — schedule a session to restart your streak.", color: "orange" });
                   const gymGap = gymGapDays;
-                  if (gymGap !== null && gymGap >= 10) obs.push({ emoji: "🔴", label: "Gym Relapse", text: `${gymGap} Tage seit letzter Session — Deine longest Pause seit ${Object.keys(gymLogs||{}).length} Sessions.`, color: "red" });
+                  if (gymGap !== null && gymGap >= 10) obs.push({ emoji: "🔴", label: "Gym Relapse", text: `${gymGap} Tage seit letzter Session — Deine longest Pause seit ${gymLogs?.length ?? 0} Sessions.`, color: "red" });
                   if (trendsData.trends.gym.change >= 50 && trendsData.trends.gym.value >= 3) obs.push({ emoji: "🚀", label: "Gym Momentum", text: `${trendsData.trends.gym.value} gym days this week — best week in a while!`, color: "green" });
                   if (trendsData.trends.sleep.change <= -20 && trendsData.trends.sleep.value < 7) obs.push({ emoji: "😴", label: "Sleep Dip", text: `Sleep avg dropped ${Math.abs(trendsData.trends.sleep.change)}% vs last week — aim for 7h+.`, color: "yellow" });
                   if (trendsData.trends.habits.change >= 20) obs.push({ emoji: "📈", label: "Habits Climbing", text: `Habit completion up ${trendsData.trends.habits.change}% vs last week.`, color: "green" });
