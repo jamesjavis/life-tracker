@@ -282,6 +282,7 @@ export default function MissionControl() {
   const [txType, setTxType] = useState<"income" | "expense">("expense");
   const [txCategory, setTxCategory] = useState("other");
   const [txDescription, setTxDescription] = useState("");
+  const [txDate, setTxDate] = useState(new Date().toISOString().split('T')[0]);
 
   // FI Roadmap data from API
   const [roadmapData, setRoadmapData] = useState<{
@@ -3518,13 +3519,22 @@ export default function MissionControl() {
                   <option value="crypto">Crypto</option>
                 </select>
               </div>
-              <input
-                type="text"
-                placeholder="Beschreibung (optional)"
-                value={txDescription}
-                onChange={e => setTxDescription(e.target.value)}
-                className="mt-3 w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
-              />
+              <div className="flex gap-3 mt-3">
+                <input
+                  type="date"
+                  value={txDate}
+                  onChange={e => setTxDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-indigo-500/50 [color-scheme:dark]"
+                />
+                <input
+                  type="text"
+                  placeholder="Beschreibung (optional)"
+                  value={txDescription}
+                  onChange={e => setTxDescription(e.target.value)}
+                  className="flex-[2] px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
+                />
+              </div>
               <button
                 onClick={async () => {
                   const amount = parseFloat(txAmount);
@@ -3538,7 +3548,8 @@ export default function MissionControl() {
                       type: txType,
                       category: txCategory,
                       amount,
-                      description: txDescription
+                      description: txDescription,
+                      date: txDate
                     }),
                   });
                   
@@ -3547,6 +3558,7 @@ export default function MissionControl() {
                     setFinances(data.data);
                     setTxAmount("");
                     setTxDescription("");
+                    setTxDate(new Date().toISOString().split('T')[0]);
                   }
                 }}
                 className="mt-3 w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl font-bold text-white transition-all"
