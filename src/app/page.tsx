@@ -1426,7 +1426,7 @@ export default function MissionControl() {
                 },
                 {
                   label: "Funding Chance",
-                  value: "TBD",
+                  value: finances.funding.amount > 0 ? `€${(finances.funding.amount/1000).toFixed(0)}K/mo` : "Pending",
                   target: finances.funding.expected,
                   icon: Target,
                   color: "from-purple-500 to-pink-500",
@@ -4305,6 +4305,37 @@ export default function MissionControl() {
                           : "0%"}
                       </span>
                     </div>
+                    {/* 7-Day Consistency Grid */}
+                    {supplementsData && supplementsData.supplements.length > 0 && (() => {
+                      const allLast7 = supplementsData.supplements.map((s: any) => s.last7Days || 0);
+                      const avgLast7 = allLast7.reduce((a: number, b: number) => a + b, 0) / allLast7.length;
+                      const bestStreak = Math.max(...supplementsData.supplements.map((s: any) => s.streak || 0));
+                      const dots = Array.from({ length: 7 }, (_, i) => ({
+                        filled: avgLast7 >= (6 - i),
+                        label: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][i]
+                      }));
+                      return (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] text-white/30">7-Tage Konsistenz</span>
+                            {bestStreak > 0 && (
+                              <span className="text-[10px] text-orange-400">🔥 {bestStreak}d Streak</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {dots.map((d, i) => (
+                              <div key={i} className="flex flex-col items-center gap-0.5 flex-1">
+                                <div className={cn(
+                                  "w-full h-2.5 rounded-sm transition-all",
+                                  d.filled ? "bg-gradient-to-r from-violet-500 to-purple-400" : "bg-white/10"
+                                )} />
+                                <span className="text-[9px] text-white/30">{d.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
