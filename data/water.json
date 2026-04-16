@@ -2,6 +2,10 @@
   "dailyGoal": 8,
   "entries": [
     {
+      "date": "2026-04-16",
+      "glasses": 6
+    },
+    {
       "date": "2026-04-08",
       "glasses": 6
     },
@@ -58,5 +62,5 @@
       "glasses": 6
     }
   ],
-  "lastUpdated": "2026-04-08"
+  "lastUpdated": "2026-04-16T14:45:00.000Z"
 }
