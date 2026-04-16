@@ -52,12 +52,23 @@ export async function GET() {
     else break;
   }
   
+  // Find last entry date and days since
+  const sortedAll = [...data.entries].sort((a: any, b: any) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const lastEntry = sortedAll[0]?.date || null;
+  const daysSinceLastEntry = lastEntry
+    ? Math.floor((new Date(today).getTime() - new Date(lastEntry).getTime()) / 86400000)
+    : null;
+
   return NextResponse.json({
     dailyGoal: data.dailyGoal,
     todayGlasses: currentGlasses,
     todayProgress: Math.round((currentGlasses / data.dailyGoal) * 100),
     weeklyAvg,
     streak,
+    lastEntry,
+    daysSinceLastEntry,
     recentEntries: data.entries.slice(-7).reverse()
   });
 }

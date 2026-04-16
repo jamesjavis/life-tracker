@@ -246,8 +246,10 @@ export default function MissionControl() {
     todayProgress: number;
     weeklyAvg: number;
     streak: number;
+    lastEntry: string | null;
+    daysSinceLastEntry: number | null;
     recentEntries: any[];
-  }>({ dailyGoal: 8, todayGlasses: 0, todayProgress: 0, weeklyAvg: 0, streak: 0, recentEntries: [] });
+  }>({ dailyGoal: 8, todayGlasses: 0, todayProgress: 0, weeklyAvg: 0, streak: 0, lastEntry: null, daysSinceLastEntry: null, recentEntries: [] });
 
   // Nutrition tracking
   const [nutritionData, setNutritionData] = useState<{
@@ -1540,13 +1542,35 @@ export default function MissionControl() {
                 </div>
 
                 {/* Water */}
-                <div className="p-3 bg-white/5 rounded-xl text-center">
+                <div className="p-3 bg-white/5 rounded-xl text-center relative">
                   <div className="text-2xl mb-1">💧</div>
                   <p className="text-sm font-bold text-cyan-400">{waterData.todayGlasses}/{waterData.dailyGoal}</p>
                   <p className="text-xs text-white/40">Water</p>
                   <div className="h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
                     <div className="h-full bg-cyan-500 rounded-full transition-all" style={{ width: `${Math.min(waterData.todayProgress, 100)}%` }} />
                   </div>
+                  {/* Gap badge — show when 7+ days since last entry */}
+                  {(waterData.daysSinceLastEntry ?? 0) >= 7 && (
+                    <div className="mt-2">
+                      <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full ${(waterData.daysSinceLastEntry ?? 0) >= 14 ? 'bg-red-500/20 text-red-300' : 'bg-orange-500/20 text-orange-300'}`}>
+                        ⏸ {waterData.daysSinceLastEntry}T Pause
+                      </span>
+                    </div>
+                  )}
+                  {/* Neustart shortcut — show when 7+ days gap AND nothing logged today */}
+                  {((waterData.daysSinceLastEntry ?? 0) >= 7) && waterData.todayGlasses === 0 && (
+                    <button
+                      onClick={() => {
+                        fetch("/api/water", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "add" }) })
+                          .then(r => r.json())
+                          .then(() => setWaterData((prev: any) => ({ ...prev, todayGlasses: (prev.todayGlasses || 0) + 1, todayProgress: Math.round(((prev.todayGlasses || 0) + 1) / prev.dailyGoal * 100) })))
+                          .catch(console.error);
+                      }}
+                      className="mt-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-medium underline underline-offset-2"
+                    >
+                      🚀 Neustart
+                    </button>
+                  )}
                 </div>
 
                 {/* Sleep */}
