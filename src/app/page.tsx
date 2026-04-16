@@ -6,7 +6,7 @@ import {
   Briefcase, Wallet, ChevronRight, ExternalLink,
   Activity, Calendar, Award, Gift, CheckCircle2, Circle,
   Dumbbell, Flame, Star, TrendingDown, Cloud, CloudRain,
-  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon, BarChart3
+  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon, BarChart3, Pill
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
@@ -4280,6 +4280,31 @@ export default function MissionControl() {
                     <p className={cn("text-xs font-medium mt-1", (trendsData.trends.energy?.change || 0) >= 0 ? "text-green-400" : "text-red-400")}>
                       {(trendsData.trends.energy?.change || 0) >= 0 ? "+" : ""}{trendsData.trends.energy?.change || 0}% vs prev week
                     </p>
+                  </div>
+
+                  {/* Supplements */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Supplements</span>
+                      <Pill className="w-4 h-4 text-violet-400" />
+                    </div>
+                    <p className="text-2xl font-bold">
+                      {supplementsData ? `${supplementsData.takenToday}/${supplementsData.total}` : "—"}
+                      <span className="text-sm text-white/40">taken</span>
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-500"
+                          style={{ width: `${supplementsData && supplementsData.total > 0 ? (supplementsData.takenToday / supplementsData.total) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-white/40">
+                        {supplementsData && supplementsData.total > 0
+                          ? `${Math.round((supplementsData.takenToday / supplementsData.total) * 100)}%`
+                          : "0%"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
