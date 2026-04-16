@@ -59,8 +59,9 @@ export async function GET() {
       netWorth: currentNetWorth,
     };
     // Only auto-add if we already have history or it's been > 20 days this month
+    // Also fire if history is empty (first snapshot) or it's the 1st of the month
     const dayOfMonth = today.getDate();
-    if (lastEntryMonth !== null || dayOfMonth >= 20) {
+    if (lastEntryMonth !== null || history.length === 0 || dayOfMonth <= 2) {
       history.push(newEntry);
       writeHistory(history);
     }

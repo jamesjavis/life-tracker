@@ -50,7 +50,9 @@ export async function GET() {
   const streak = (() => {
     let s = 0;
     let check = new Date(today);
+    // Count consecutive gym days starting today
     while (logs.includes(check.toISOString().split("T")[0])) { s++; check.setDate(check.getDate() - 1); }
+    // If no gym today, check if yesterday started a streak
     if (s === 0) {
       const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
       check = new Date(yesterday);

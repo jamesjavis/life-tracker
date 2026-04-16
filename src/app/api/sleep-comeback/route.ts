@@ -28,8 +28,12 @@ export async function GET() {
     ? [...entries].sort((a: any, b: any) => b.date.localeCompare(a.date))[0]
     : null;
 
-  const gapDays = lastEntry
-    ? Math.round((today.getTime() - new Date(lastEntry.date).getTime()) / (1000 * 60 * 60 * 24))
+  const lastEntryDate = lastEntry?.date || null;
+  const lastDuration = lastEntry?.duration || null;
+  const lastQuality = lastEntry?.quality || null;
+
+  const gapDays = lastEntryDate
+    ? Math.round((today.getTime() - new Date(lastEntryDate).getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   const avgSleep = entries.length > 0
