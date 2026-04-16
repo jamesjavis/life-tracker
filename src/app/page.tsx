@@ -277,6 +277,12 @@ export default function MissionControl() {
     savingsGoals: []
   });
 
+  // Transaction form state
+  const [txAmount, setTxAmount] = useState("");
+  const [txType, setTxType] = useState<"income" | "expense">("expense");
+  const [txCategory, setTxCategory] = useState("other");
+  const [txDescription, setTxDescription] = useState("");
+
   // FI Roadmap data from API
   const [roadmapData, setRoadmapData] = useState<{
     current: any;
@@ -3484,19 +3490,22 @@ export default function MissionControl() {
                   type="number"
                   step="0.01"
                   min="0"
-                  id="quick-amount"
                   placeholder="Betrag (€)"
+                  value={txAmount}
+                  onChange={e => setTxAmount(e.target.value)}
                   className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-lg font-bold placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
                 />
                 <select
-                  id="quick-type"
+                  value={txType}
+                  onChange={e => setTxType(e.target.value as "income" | "expense")}
                   className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/70 focus:outline-none focus:border-indigo-500/50"
                 >
                   <option value="expense">− Expense</option>
                   <option value="income">+ Income</option>
                 </select>
                 <select
-                  id="quick-category"
+                  value={txCategory}
+                  onChange={e => setTxCategory(e.target.value)}
                   className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/70 focus:outline-none focus:border-indigo-500/50"
                 >
                   <option value="other">Other</option>
@@ -3511,18 +3520,14 @@ export default function MissionControl() {
               </div>
               <input
                 type="text"
-                id="quick-description"
                 placeholder="Beschreibung (optional)"
+                value={txDescription}
+                onChange={e => setTxDescription(e.target.value)}
                 className="mt-3 w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/50"
               />
               <button
                 onClick={async () => {
-                  const amountEl = document.getElementById('quick-amount') as HTMLInputElement;
-                  const typeEl = document.getElementById('quick-type') as HTMLSelectElement;
-                  const categoryEl = document.getElementById('quick-category') as HTMLSelectElement;
-                  const descEl = document.getElementById('quick-description') as HTMLInputElement;
-                  
-                  const amount = parseFloat(amountEl.value);
+                  const amount = parseFloat(txAmount);
                   if (isNaN(amount) || amount <= 0) return;
                   
                   const res = await fetch("/api/finance", {
@@ -3530,18 +3535,18 @@ export default function MissionControl() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                       action: "addTransaction",
-                      type: typeEl.value,
-                      category: categoryEl.value,
+                      type: txType,
+                      category: txCategory,
                       amount,
-                      description: descEl.value
+                      description: txDescription
                     }),
                   });
                   
                   if (res.ok) {
                     const data = await res.json();
                     setFinances(data.data);
-                    amountEl.value = '';
-                    descEl.value = '';
+                    setTxAmount("");
+                    setTxDescription("");
                   }
                 }}
                 className="mt-3 w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl font-bold text-white transition-all"
