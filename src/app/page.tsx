@@ -264,6 +264,8 @@ export default function MissionControl() {
   const [sleepEntries, setSleepEntries] = useState<any[]>([]);
   const [sleepStats, setSleepStats] = useState({ avgDuration: 0, avgQuality: 0, streak: 0 });
   const [sleepComeback, setSleepComeback] = useState<any>(null);
+  const [moodComeback, setMoodComeback] = useState<any>(null);
+  const [habitsComeback, setHabitsComeback] = useState<any>(null);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [sleepHours, setSleepHours] = useState(7);
   const [sleepQuality, setSleepQuality] = useState(5);
@@ -649,6 +651,26 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load sleep comeback", e);
+      }
+      // Fetch mood comeback data
+      try {
+        const moodComebackRes = await fetch("/api/mood-comeback");
+        if (moodComebackRes.ok) {
+          const moodComebackData = await moodComebackRes.json();
+          setMoodComeback(moodComebackData);
+        }
+      } catch (e) {
+        console.error("Failed to load mood comeback", e);
+      }
+      // Fetch habits comeback data
+      try {
+        const habitsComebackRes = await fetch("/api/habits-comeback");
+        if (habitsComebackRes.ok) {
+          const habitsComebackData = await habitsComebackRes.json();
+          setHabitsComeback(habitsComebackData);
+        }
+      } catch (e) {
+        console.error("Failed to load habits comeback", e);
       }
       // Fetch nutrition
       try {
@@ -1407,6 +1429,106 @@ export default function MissionControl() {
                     className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl font-bold text-xs transition-all active:scale-95"
                   >
                     🌙 Jetzt loggen
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Mood Comeback Banner — show when gap >= 7 days */}
+            {moodComeback && moodComeback.gapDays !== null && moodComeback.gapDays >= 7 && (
+              <div className="p-5 rounded-2xl border bg-gradient-to-r from-yellow-500/15 to-amber-500/10 border-yellow-500/25">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2.5 rounded-xl bg-yellow-500/20 text-2xl">💭</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-yellow-300">Mood Comeback</h3>
+                      <span className="text-xs text-yellow-400/60 font-mono">
+                        {moodComeback.gapDays} Tage Pause
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 mt-0.5">{moodComeback.motivation}</p>
+                  </div>
+                </div>
+
+                {moodComeback.comebackPlan && (
+                  <div className="bg-black/20 rounded-xl p-3 mb-3">
+                    <div className="flex items-center gap-4 text-xs text-white/50 mb-2">
+                      <span>📅 {moodComeback.comebackPlan.targetEntries} Einträge</span>
+                      <span>😊 Avg: {moodComeback.avgMood || '?'}/10 Mood</span>
+                      <span>⚡ Avg: {moodComeback.avgEnergy || '?'}/10 Energy</span>
+                      <span>📊 {moodComeback.totalEntries} Total</span>
+                    </div>
+                    <p className="text-xs text-yellow-300/80 italic">{moodComeback.comebackPlan.focus}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-white/40">
+                    <span className="font-mono">Letzte: {moodComeback.lastEntry || 'N/A'}</span>
+                    {moodComeback.lastMood && (
+                      <span className="ml-3">| 😊{moodComeback.lastMood}/10 ⚡{moodComeback.lastEnergy}/10</span>
+                    )}
+                    {moodComeback.thisMonthEntries > 0 && (
+                      <span className="ml-3">| Diesen Monat: {moodComeback.thisMonthEntries}x</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowMoodModal ? setShowMoodModal(true) : setActiveTab("tracker");
+                    }}
+                    className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 rounded-xl font-bold text-xs transition-all active:scale-95"
+                  >
+                    💭 Jetzt loggen
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Habits Comeback Banner — show when gap >= 7 days */}
+            {habitsComeback && habitsComeback.gapDays !== null && habitsComeback.gapDays >= 7 && (
+              <div className="p-5 rounded-2xl border bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border-emerald-500/25">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-2xl">✅</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-emerald-300">Habits Comeback</h3>
+                      <span className="text-xs text-emerald-400/60 font-mono">
+                        {habitsComeback.gapDays} Tage Pause
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 mt-0.5">{habitsComeback.motivation}</p>
+                  </div>
+                </div>
+
+                {habitsComeback.comebackPlan && (
+                  <div className="bg-black/20 rounded-xl p-3 mb-3">
+                    <div className="flex items-center gap-4 text-xs text-white/50 mb-2">
+                      <span>🔥 Streak: {habitsComeback.currentStreak} Tage</span>
+                      <span>📊 {habitsComeback.completionRate}% Completion</span>
+                      <span>📅 Avg: {habitsComeback.avgPerDay}/9 Habits</span>
+                      <span>🏆 Best: {habitsComeback.longestStreak} Tage</span>
+                    </div>
+                    <p className="text-xs text-emerald-300/80 italic">{habitsComeback.comebackPlan.focus}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-white/40">
+                    <span className="font-mono">Letzte: {habitsComeback.lastEntry || 'N/A'}</span>
+                    {habitsComeback.todayCompleted > 0 && (
+                      <span className="ml-3">| Heute: {habitsComeback.todayCompleted}/9 ✅</span>
+                    )}
+                    {habitsComeback.thisMonthActiveDays > 0 && (
+                      <span className="ml-3">| Diesen Monat: {habitsComeback.thisMonthActiveDays} Tage</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setActiveTab("tracker");
+                    }}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl font-bold text-xs transition-all active:scale-95"
+                  >
+                    ✅ Jetzt loggen
                   </button>
                 </div>
               </div>
