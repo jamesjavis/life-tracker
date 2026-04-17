@@ -35,7 +35,7 @@ export async function GET() {
     : null;
 
   // Calculate completion rate over last 30 days
-  const last30Days: { date: string; completed: number; total: number }[] = [];
+  const last30Days: { date: string; completed: number; total: number; hasData: boolean }[] = [];
   for (let i = 0; i < 30; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
