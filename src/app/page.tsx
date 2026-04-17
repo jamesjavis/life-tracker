@@ -1440,6 +1440,58 @@ export default function MissionControl() {
                   </div>
                 )}
 
+                {/* Missed Sleep — Daily backfill */}
+                {(() => {
+                  if (!sleepComeback?.lastEntry) return null;
+                  const lastDate = new Date(sleepComeback.lastEntry + "T00:00:00");
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const missed: { date: string; label: string }[] = [];
+                  const check = new Date(lastDate);
+                  check.setDate(check.getDate() + 1);
+                  while (check <= today) {
+                    const dateStr = check.toISOString().split("T")[0];
+                    if (!sleepEntries.find((e: any) => e.date === dateStr)) {
+                      missed.push({
+                        date: dateStr,
+                        label: new Date(check).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" }),
+                      });
+                    }
+                    check.setDate(check.getDate() + 1);
+                  }
+                  if (missed.length === 0) return null;
+                  const avgSleep = sleepComeback.avgSleep || 7;
+                  return (
+                    <div className="mb-3 p-3 bg-black/20 rounded-xl">
+                      <p className="text-xs text-indigo-300/70 mb-2 font-medium">Verpasste Nächte — schnell nachholen:</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {missed.map(m => (
+                          <button
+                            key={m.date}
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/sleep", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ action: "log", date: m.date, duration: avgSleep, quality: 7 }),
+                                });
+                                if (res.ok) {
+                                  const data = await res.json();
+                                  setSleepEntries((prev: any[]) => [...prev, data.entry]);
+                                  setSleepComeback((prev: any) => prev ? { ...prev, gapDays: 0 } : prev);
+                                }
+                              } catch {}
+                            }}
+                            className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/40 border border-indigo-500/30 rounded-lg text-xs font-medium text-indigo-200 transition-all active:scale-95"
+                          >
+                            🌙 {m.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="flex items-center justify-between">
                   <div className="text-xs text-white/40">
                     <span className="font-mono">Letzte: {sleepComeback.lastEntry || 'N/A'}</span>
@@ -1703,8 +1755,14 @@ export default function MissionControl() {
                 },
                 {
                   label: "Funding Chance",
-                  value: finances.funding.amount > 0 ? `€${(finances.funding.amount/1000).toFixed(0)}K/mo` : "Pending",
-                  target: finances.funding.expected,
+                  value: finances.funding.status === 'confirmed'
+                    ? `€${(finances.funding.amount / 1000).toFixed(0)}K/mo`
+                    : finances.funding.amount > 0
+                    ? `Pending`
+                    : "None",
+                  target: finances.funding.expected
+                    ? `Expected ${finances.funding.expected}`
+                    : "—",
                   icon: Target,
                   color: "from-purple-500 to-pink-500",
                 },
@@ -2224,7 +2282,7 @@ export default function MissionControl() {
                     </div>
                     <p className="text-sm text-white/50">
                       €12.000/mo Grant<br />
-                      <span className="text-amber-400">Antwort: {FINANCES.funding.expected}</span>
+                      <span className="text-amber-400">Antwort: {finances.funding?.expected ?? 'May/June 2026'}</span>
                     </p>
                   </div>
                 </div>
