@@ -45,7 +45,7 @@ export async function GET() {
     : 0;
 
   // Per-supplement streaks
-  const supplementStats = supplements.map(s => {
+  const supplementStats = supplements.map((s: any) => {
     const sLog = log.filter((e: any) => e.supplementId === s.id);
     const sDates = [...new Set(sLog.map((e: any) => e.date))].sort().reverse();
     const lastDate = sDates[0] || null;
@@ -61,7 +61,7 @@ export async function GET() {
       for (const d of sDates) {
         if (d === checkDate) {
           streak++;
-          const prev = new Date(new Date(checkDate).getTime() - 86400000).toISOString().split("T")[0];
+          const prev: string = new Date(new Date(checkDate).getTime() - 86400000).toISOString().split("T")[0];
           checkDate = prev;
         } else break;
       }
@@ -103,7 +103,7 @@ export async function GET() {
     return `🚨 ${gapDays} Tage ohne Tracking! Deine Supplements verdienen Aufmerksamkeit.`;
   })();
 
-  const takenTodayCount = supplementStats.filter(s => s.takenToday).length;
+  const takenTodayCount = supplementStats.filter((s: any) => s.takenToday).length;
 
   const comebackPlan = gapDays !== null && gapDays >= 2
     ? {
