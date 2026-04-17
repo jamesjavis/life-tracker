@@ -828,6 +828,23 @@ export default function MissionControl() {
     setShowWorkoutModal(true);
   }
 
+  async function quickLogGym() {
+    const today = new Date().toISOString().split("T")[0];
+    if (gymLogs.includes(today)) return;
+    await fetch("/api/gym", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: today, completed: true }),
+    });
+    // Refresh gym data
+    const res = await fetch("/api/gym");
+    if (res.ok) {
+      const data = await res.json();
+      setGymLogs(data.logs || []);
+      setGymStreak(data.streak || 0);
+    }
+  }
+
   async function confirmGymLog() {
     const today = new Date().toISOString().split("T")[0];
     if (gymLogs.includes(today)) return;
@@ -1783,7 +1800,17 @@ export default function MissionControl() {
                     const isGymDay = gymDays.includes(dayOfWeek);
                     const doneToday = gymLogs.includes(todayStr);
                     if (doneToday) return <span className="mt-1 inline-block text-xs text-green-400">✓ Heute ✅</span>;
-                    if (isGymDay) return <span className="mt-1 inline-block text-xs font-bold text-orange-400 animate-pulse">🎯 HEUTE GYM TAG</span>;
+                    if (isGymDay) return (
+                      <div className="mt-1 flex flex-col items-center gap-1">
+                        <span className="text-xs font-bold text-orange-400 animate-pulse">🎯 HEUTE GYM TAG</span>
+                        <button
+                          onClick={quickLogGym}
+                          className="bg-green-600 hover:bg-green-500 active:bg-green-400 text-white text-xs font-bold px-3 py-1 rounded-lg transition-all w-full"
+                        >
+                          ✓ Quick Log
+                        </button>
+                      </div>
+                    );
                     return <span className="mt-1 inline-block text-xs text-white/30">Offen</span>;
                   })()}
                   {gymStats && (
