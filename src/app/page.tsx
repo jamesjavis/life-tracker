@@ -266,6 +266,7 @@ export default function MissionControl() {
   const [sleepComeback, setSleepComeback] = useState<any>(null);
   const [moodComeback, setMoodComeback] = useState<any>(null);
   const [habitsComeback, setHabitsComeback] = useState<any>(null);
+  const [supplementsComeback, setSupplementsComeback] = useState<any>(null);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [sleepHours, setSleepHours] = useState(7);
   const [sleepQuality, setSleepQuality] = useState(5);
@@ -671,6 +672,16 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load habits comeback", e);
+      }
+      // Fetch supplements comeback
+      try {
+        const supplementsComebackRes = await fetch("/api/supplements-comeback");
+        if (supplementsComebackRes.ok) {
+          const supplementsComebackData = await supplementsComebackRes.json();
+          setSupplementsComeback(supplementsComebackData);
+        }
+      } catch (e) {
+        console.error("Failed to load supplements comeback", e);
       }
       // Fetch nutrition
       try {
@@ -1546,6 +1557,76 @@ export default function MissionControl() {
                     className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-xl font-bold text-xs transition-all active:scale-95"
                   >
                     ✅ Jetzt loggen
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Supplements Comeback Banner — show when gap >= 2 days or not logged today */}
+            {supplementsComeback && (supplementsComeback.gapDays === null || supplementsComeback.gapDays >= 2 || supplementsComeback.takenToday < supplementsComeback.total) && (
+              <div className="p-5 rounded-2xl border bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border-amber-500/25">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2.5 rounded-xl bg-amber-500/20 text-2xl">💊</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-amber-300">Supplements Comeback</h3>
+                      <span className="text-xs text-amber-400/60 font-mono">
+                        {supplementsComeback.gapDays === 0
+                          ? `Heute ✅`
+                          : supplementsComeback.gapDays === 1
+                          ? `Gestern`
+                          : supplementsComeback.gapDays != null
+                          ? `${supplementsComeback.gapDays} Tage Lücke`
+                          : `Keine Daten`}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/60 mt-0.5">{supplementsComeback.motivation}</p>
+                  </div>
+                </div>
+
+                {supplementsComeback.comebackPlan && (
+                  <div className="bg-black/20 rounded-xl p-3 mb-3">
+                    <p className="text-xs text-amber-300/80 italic">{supplementsComeback.comebackPlan.focus}</p>
+                  </div>
+                )}
+
+                {/* Per-supplement quick status */}
+                {supplementsComeback.supplementStats && supplementsComeback.supplementStats.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {supplementsComeback.supplementStats.map((s: any) => (
+                      <div
+                        key={s.id}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border",
+                          s.takenToday
+                            ? "bg-green-500/20 border-green-500/30 text-green-300"
+                            : s.gapDays !== null && s.gapDays >= 2
+                            ? "bg-red-500/15 border-red-500/30 text-red-300"
+                            : "bg-white/5 border-white/10 text-white/50"
+                        )}
+                      >
+                        <span>{s.emoji}</span>
+                        <span>{s.name}</span>
+                        {s.takenToday ? <span>✅</span> : s.gapDays !== null && s.gapDays >= 2 ? <span>⏸</span> : null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-white/40">
+                    <span className="font-mono">
+                      {supplementsComeback.takenToday}/{supplementsComeback.total} heute
+                    </span>
+                    {supplementsComeback.complianceRate !== undefined && supplementsComeback.complianceRate > 0 && (
+                      <span className="ml-3">{supplementsComeback.complianceRate}% Letzte 7 Tage</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("tracker")}
+                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 rounded-xl font-bold text-xs transition-all active:scale-95"
+                  >
+                    💊 Supplements loggen
                   </button>
                 </div>
               </div>
