@@ -1593,6 +1593,14 @@ export default function MissionControl() {
                   <div className="h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
                     <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${completedPercentage}%` }} />
                   </div>
+                  {completedCount < HABITS.length && (
+                    <button
+                      onClick={openRetroLog}
+                      className="mt-2 text-xs text-orange-400 hover:text-orange-300 underline"
+                    >
+                      Lücken füllen →
+                    </button>
+                  )}
                 </div>
 
                 {/* Water */}
