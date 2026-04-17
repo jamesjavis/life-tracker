@@ -1290,6 +1290,60 @@ export default function MissionControl() {
                   </div>
                 )}
 
+                {/* Missed Sessions — Mon/Wed/Fri backfill */}
+                {(() => {
+                  if (!gymComeback?.lastSession) return null;
+                  const lastDate = new Date(gymComeback.lastSession + "T00:00:00");
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const missed: { date: string; label: string }[] = [];
+                  const check = new Date(lastDate);
+                  check.setDate(check.getDate() + 1);
+                  while (check <= today) {
+                    const dow = check.getDay();
+                    if (dow === 1 || dow === 3 || dow === 5) {
+                      const dateStr = check.toISOString().split("T")[0];
+                      if (!gymLogs.includes(dateStr)) {
+                        const d = new Date(check);
+                        missed.push({
+                          date: dateStr,
+                          label: d.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" }),
+                        });
+                      }
+                    }
+                    check.setDate(check.getDate() + 1);
+                  }
+                  if (missed.length === 0) return null;
+                  return (
+                    <div className="mb-3 p-3 bg-black/20 rounded-xl">
+                      <p className="text-xs text-orange-300/70 mb-2 font-medium">Verpasste Sessions — schnell nachholen:</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {missed.map(m => (
+                          <button
+                            key={m.date}
+                            onClick={async () => {
+                              try {
+                                const res = await fetch("/api/gym", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ date: m.date, muscles: ["Retro-Log"], exercises: [], notes: "" }),
+                                });
+                                if (res.ok) {
+                                  setGymLogs(prev => [...prev, m.date]);
+                                  setGymComeback((prev: any) => prev ? { ...prev, gapDays: 0 } : prev);
+                                }
+                              } catch {}
+                            }}
+                            className="px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/30 rounded-lg text-xs font-medium text-orange-200 transition-all active:scale-95"
+                          >
+                            📅 {m.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <div className="flex items-center justify-between">
                   <div className="text-xs text-white/40">
                     <span className="font-mono">Letzte: {gymComeback.lastSession}</span>
