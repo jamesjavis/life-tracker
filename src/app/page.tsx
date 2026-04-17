@@ -393,6 +393,14 @@ export default function MissionControl() {
   const [retroMoodNote, setRetroMoodNote] = useState("");
   const [retroWater, setRetroWater] = useState(8);
   const [retroSaving, setRetroSaving] = useState(false);
+  const [retroBulkMode, setRetroBulkMode] = useState(false);
+  const [retroBulkCategory, setRetroBulkCategory] = useState<"habits" | "sleep" | "mood">("habits");
+  const [retroBulkHabits, setRetroBulkHabits] = useState<Record<string, boolean>>({});
+  const [retroBulkSleepH, setRetroBulkSleepH] = useState(7);
+  const [retroBulkSleepQ, setRetroBulkSleepQ] = useState(5);
+  const [retroBulkMoodE, setRetroBulkMoodE] = useState(6);
+  const [retroBulkMoodV, setRetroBulkMoodV] = useState(6);
+  const [retroBulkEndDate, setRetroBulkEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [pushupInput, setPushupInput] = useState("");
   const [breathingActive, setBreathingActive] = useState(false);
   const [breathingPattern, setBreathingPattern] = useState("box");
@@ -1082,54 +1090,94 @@ export default function MissionControl() {
 
   async function submitRetroLog() {
     setRetroSaving(true);
-    const dateStr = retroDate;
 
     try {
-      if (retroCategory === "habits") {
-        const batch = Object.entries(retroHabits).map(([habitId, completed]) => ({ habitId, completed }));
-        if (batch.length > 0) {
-          await fetch("/api/habits", {
+      if (retroBulkMode) {
+        // Bulk mode: iterate through date range
+        const start = new Date(retroDate + "T00:00:00");
+        const end = new Date(retroBulkEndDate + "T00:00:00");
+        const dates: string[] = [];
+        const cur = new Date(start);
+        while (cur <= end) {
+          dates.push(cur.toISOString().split("T")[0]);
+          cur.setDate(cur.getDate() + 1);
+        }
+
+        for (const dateStr of dates) {
+          if (retroBulkCategory === "habits") {
+            const batch = Object.entries(retroBulkHabits).map(([habitId, completed]) => ({ habitId, completed }));
+            if (batch.length > 0) {
+              await fetch("/api/habits", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ batch, date: dateStr }),
+              });
+            }
+          } else if (retroBulkCategory === "sleep") {
+            await fetch("/api/sleep", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "log", date: dateStr, duration: retroBulkSleepH, quality: retroBulkSleepQ }),
+            });
+          } else if (retroBulkCategory === "mood") {
+            await fetch("/api/mood", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "log", date: dateStr, energy: retroBulkMoodE, mood: retroBulkMoodV, note: "Bulk Retro-Log" }),
+            });
+          }
+        }
+      } else {
+        // Single mode
+        const dateStr = retroDate;
+        if (retroCategory === "habits") {
+          const batch = Object.entries(retroHabits).map(([habitId, completed]) => ({ habitId, completed }));
+          if (batch.length > 0) {
+            await fetch("/api/habits", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ batch, date: dateStr }),
+            });
+          }
+        } else if (retroCategory === "sleep") {
+          await fetch("/api/sleep", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ batch, date: dateStr }),
+            body: JSON.stringify({ action: "log", date: dateStr, duration: retroSleepHours, quality: retroSleepQuality }),
+          });
+        } else if (retroCategory === "gym") {
+          await fetch("/api/gym", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "log",
+              date: dateStr,
+              muscles: retroGymMuscles.split(",").map((m: string) => m.trim()).filter(Boolean),
+              exercises: retroGymExercises.split(",").map((e: string) => e.trim()).filter(Boolean),
+              notes: retroGymNotes,
+            }),
+          });
+        } else if (retroCategory === "mood") {
+          await fetch("/api/mood", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "log", date: dateStr, energy: retroMoodEnergy, mood: retroMoodValue, note: retroMoodNote }),
+          });
+        } else if (retroCategory === "water") {
+          await fetch("/api/water", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "retro", date: dateStr, glasses: retroWater }),
           });
         }
-      } else if (retroCategory === "sleep") {
-        await fetch("/api/sleep", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "log", date: dateStr, duration: retroSleepHours, quality: retroSleepQuality }),
-        });
-      } else if (retroCategory === "gym") {
-        await fetch("/api/gym", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "log",
-            date: dateStr,
-            muscles: retroGymMuscles.split(",").map((m: string) => m.trim()).filter(Boolean),
-            exercises: retroGymExercises.split(",").map((e: string) => e.trim()).filter(Boolean),
-            notes: retroGymNotes,
-          }),
-        });
-      } else if (retroCategory === "mood") {
-        await fetch("/api/mood", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "log", date: dateStr, energy: retroMoodEnergy, mood: retroMoodValue, note: retroMoodNote }),
-        });
-      } else if (retroCategory === "water") {
-        await fetch("/api/water", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "retro", date: dateStr, glasses: retroWater }),
-        });
       }
     } catch (e) {
       console.error("Retro-log failed", e);
     }
 
     setRetroSaving(false);
+    setRetroBulkMode(false);
+    setRetroBulkHabits({});
     setShowRetroModal(false);
     if (typeof window !== "undefined") window.location.reload();
   }
@@ -5386,14 +5434,182 @@ export default function MissionControl() {
         {showRetroModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="w-full max-w-md p-8 bg-[#111] rounded-3xl border border-cyan-500/30 shadow-2xl max-h-[90vh] overflow-y-auto">
-              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+              <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                 <div className="p-2 bg-cyan-500/20 rounded-xl">
                   <Calendar className="w-5 h-5 text-cyan-400" />
                 </div>
                 Retro-Log
               </h3>
 
-              {/* Date Picker */}
+              {/* Mode Toggle */}
+              <div className="flex gap-2 mb-5">
+                <button
+                  onClick={() => { setRetroBulkMode(false); setRetroDate(new Date().toISOString().split("T")[0]); }}
+                  className={cn(
+                    "flex-1 py-2 rounded-xl text-sm font-medium transition-all",
+                    !retroBulkMode
+                      ? "bg-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                      : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                  )}
+                >
+                  📅 Einzeltag
+                </button>
+                <button
+                  onClick={() => setRetroBulkMode(true)}
+                  className={cn(
+                    "flex-1 py-2 rounded-xl text-sm font-medium transition-all",
+                    retroBulkMode
+                      ? "bg-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                      : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                  )}
+                >
+                  📆 Bereich
+                </button>
+              </div>
+
+              {/* SINGLE MODE: Date Picker */}
+              {!retroBulkMode && (
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Datum</label>
+                <input
+                  type="date"
+                  value={retroDate}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={e => setRetroDate(e.target.value)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+                />
+              </div>
+              )}
+
+              {/* BULK MODE: Date Range + Category */}
+              {retroBulkMode && (
+              <div className="mb-5 space-y-4">
+                <div>
+                  <label className="block text-sm text-white/50 mb-2">Zeitraum</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="date"
+                      value={retroDate}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={e => setRetroDate(e.target.value)}
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+                    />
+                    <span className="text-white/30">→</span>
+                    <input
+                      type="date"
+                      value={retroBulkEndDate || new Date().toISOString().split("T")[0]}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={e => setRetroBulkEndDate(e.target.value)}
+                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-500/50"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-white/50 mb-2">Kategorie</label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(["habits", "sleep", "mood"] as const).map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setRetroBulkCategory(cat)}
+                        className={cn(
+                          "py-2 px-1 rounded-xl text-xs font-medium capitalize transition-all",
+                          retroBulkCategory === cat
+                            ? "bg-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                            : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                        )}
+                      >
+                        {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : "💭 Mood"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Bulk Habits */}
+                {retroBulkCategory === "habits" && (
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Standards für fehlende Tage — aktiviert = gemacht</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {HABITS.map(h => (
+                        <button
+                          key={h.id}
+                          onClick={() => setRetroBulkHabits(prev => ({ ...prev, [h.id]: !prev[h.id] }))}
+                          className={cn(
+                            "p-3 rounded-xl border text-sm font-medium transition-all flex flex-col items-center gap-1",
+                            retroBulkHabits[h.id]
+                              ? "bg-green-500/20 border-green-500/30 text-green-300"
+                              : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
+                          )}
+                        >
+                          <span className="text-xl">{h.emoji}</span>
+                          <span>{h.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-white/30 mt-2">Alle angehakten Habits werden für jeden Tag im Zeitraum eingetragen.</p>
+                  </div>
+                )}
+                {/* Bulk Sleep */}
+                {retroBulkCategory === "sleep" && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-white/50 mb-2">Schlafstunden: {retroBulkSleepH}h</label>
+                      <input type="range" min="3" max="12" step="0.5" value={retroBulkSleepH}
+                        onChange={e => setRetroBulkSleepH(Number(e.target.value))}
+                        className="w-full accent-cyan-500" />
+                      <div className="flex justify-between text-xs text-white/30 mt-1"><span>3h</span><span>12h</span></div>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-white/50 mb-2">Qualität: {retroBulkSleepQ}/5</label>
+                      <input type="range" min="1" max="5" step="1" value={retroBulkSleepQ}
+                        onChange={e => setRetroBulkSleepQ(Number(e.target.value))}
+                        className="w-full accent-cyan-500" />
+                      <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>5</span></div>
+                    </div>
+                    <p className="text-xs text-white/30">Dieselben Werte werden für jeden Tag im Zeitraum eingetragen.</p>
+                  </div>
+                )}
+                {/* Bulk Mood */}
+                {retroBulkCategory === "mood" && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-white/50 mb-2">Energy: {retroBulkMoodE}/10</label>
+                      <input type="range" min="1" max="10" step="1" value={retroBulkMoodE}
+                        onChange={e => setRetroBulkMoodE(Number(e.target.value))}
+                        className="w-full accent-rose-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-white/50 mb-2">Stimmung: {retroBulkMoodV}/10</label>
+                      <input type="range" min="1" max="10" step="1" value={retroBulkMoodV}
+                        onChange={e => setRetroBulkMoodV(Number(e.target.value))}
+                        className="w-full accent-pink-500" />
+                    </div>
+                    <p className="text-xs text-white/30">Dieselben Werte werden für jeden Tag im Zeitraum eingetragen.</p>
+                  </div>
+                )}
+              </div>
+              )}
+
+              {/* SINGLE MODE: Category Selector */}
+              {!retroBulkMode && (
+              <div className="mb-5">
+                <label className="block text-sm text-white/50 mb-2">Kategorie</label>
+                <div className="grid grid-cols-5 gap-1">
+                  {(["habits", "sleep", "gym", "mood", "water"] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setRetroCategory(cat)}
+                      className={cn(
+                        "py-2 px-1 rounded-xl text-xs font-medium capitalize transition-all",
+                        retroCategory === cat
+                          ? "bg-cyan-500/30 border border-cyan-500/50 text-cyan-300"
+                          : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
+                      )}
+                    >
+                      {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : cat === "gym" ? "💪 Gym" : cat === "mood" ? "💭 Mood" : "💧 Wasser"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              )}
               <div className="mb-5">
                 <label className="block text-sm text-white/50 mb-2">Datum</label>
                 <input
