@@ -2079,6 +2079,60 @@ export default function MissionControl() {
               </div>
             </div>
 
+            {/* Breathing Quick-Log — One-tap sessions from overview */}
+            <div className="p-5 bg-gradient-to-br from-cyan-500/8 to-blue-500/8 backdrop-blur-xl rounded-2xl border border-cyan-500/15">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-cyan-500/20 rounded-xl">
+                    <Wind className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-cyan-300">Breathing</h3>
+                    <p className="text-xs text-white/40">
+                      {breathingData.stats.streak > 0
+                        ? `${breathingData.stats.streak}🔥 Streak`
+                        : "No streak yet"}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-white/50">
+                    {breathingData.stats.todayCount > 0
+                      ? `${breathingData.stats.todayCount} session${breathingData.stats.todayCount > 1 ? 's' : ''} today`
+                      : "Keine heute"}
+                  </p>
+                  {breathingData.stats.avgDuration > 0 && (
+                    <p className="text-xs text-white/30">Ø {breathingData.stats.avgDuration}s/session</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick-log presets */}
+              <div className="flex gap-2">
+                {[
+                  { label: "3 min", sec: 180 },
+                  { label: "5 min", sec: 300 },
+                  { label: "10 min", sec: 600 },
+                ].map(({ label, sec }) => (
+                  <button
+                    key={label}
+                    onClick={async () => {
+                      await fetch("/api/breathing", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ action: "log", duration: sec, rounds: 1, pattern: "box" })
+                      });
+                      const res = await fetch("/api/breathing");
+                      if (res.ok) setBreathingData(await res.json());
+                    }}
+                    className="flex-1 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 active:bg-cyan-500/40 border border-cyan-500/25 rounded-xl text-xs font-bold text-cyan-300 transition-all active:scale-95"
+                  >
+                    🫁 {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Weekly Summary — 7-Day Overview */}
             <div className="p-6 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-xl rounded-3xl border border-white/10">
               <div className="flex items-center gap-3 mb-4">
