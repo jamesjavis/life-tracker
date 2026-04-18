@@ -443,9 +443,21 @@
       "day": 74,
       "reps": 74,
       "timestamp": "2026-04-15T09:00:00.000Z"
+    },
+    {
+      "date": "2026-04-16",
+      "day": 75,
+      "reps": 75,
+      "timestamp": "2026-04-16T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-17",
+      "day": 76,
+      "reps": 76,
+      "timestamp": "2026-04-17T10:00:00.000Z"
     }
   ],
   "startDate": "2026-02-01",
-  "currentDay": 74,
+  "currentDay": 76,
   "note": "Backfilled 72 days \u2014 Feb 1 (1 rep) to Apr 12 (72 reps). Pattern: reps = day number."
 }
