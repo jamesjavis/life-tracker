@@ -19,7 +19,7 @@ function score(data: any) {
   const sleepEntries = data.sleep?.entries || [];
   const last7sleep = sleepEntries.slice(-7);
   const sleepHours = last7sleep.map((e: any) => e.duration || 0);
-  const avgSleep = sleepHours.length > 0 ? sleepHours.reduce((a, b) => a + b, 0) / sleepHours.length : 0;
+  const avgSleep = sleepHours.length > 0 ? sleepHours.reduce((a: number, b: number) => a + b, 0) / sleepHours.length : 0;
   const sleepQuality = last7sleep.length > 0
     ? last7sleep.reduce((s: number, e: any) => s + (e.quality || 0), 0) / last7sleep.length
     : 0;
