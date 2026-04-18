@@ -4773,6 +4773,36 @@ export default function MissionControl() {
                   </div>
                 </div>
 
+                {/* Meditation KPI Card — show when meditation data exists */}
+                {wellnessData.meditation.entries.length > 0 && (() => {
+                  const entries = wellnessData.meditation.entries;
+                  const today = new Date().toISOString().split('T')[0];
+                  const last7 = entries.slice(0, 7);
+                  const prev7 = entries.slice(7, 14);
+                  const avgLast = last7.length > 0 ? Math.round(last7.reduce((s: number, e: any) => s + (e.minutes || 0), 0) / last7.length) : 0;
+                  const avgPrev = prev7.length > 0 ? Math.round(prev7.reduce((s: number, e: any) => s + (e.minutes || 0), 0) / prev7.length) : 0;
+                  const medTrend = avgPrev > 0 ? Math.round(((avgLast - avgPrev) / avgPrev) * 100) : (avgLast > 0 ? 100 : 0);
+                  const todayEntry = entries.find((e: any) => e.date === today);
+                  return (
+                    <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white/50 text-xs">Meditation</span>
+                        <span className="text-lg">🧘</span>
+                      </div>
+                      <p className="text-2xl font-bold">{avgLast}<span className="text-sm text-white/40">min/d</span></p>
+                      <p className={cn("text-xs font-medium mt-1", medTrend >= 0 ? "text-green-400" : "text-red-400")}>
+                        {medTrend >= 0 ? "+" : ""}{medTrend}% vs prev week
+                      </p>
+                      {todayEntry && (
+                        <p className="text-xs text-green-400 mt-0.5">✅ Heute: {todayEntry.minutes} min</p>
+                      )}
+                      {!todayEntry && wellnessData.meditation.stats.streak >= 1 && (
+                        <p className="text-xs text-orange-400 mt-0.5">⚠️ Streak risk: nicht heute</p>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Gym Comeback Card — show when gap >= 5 days */}
                 {(() => {
                   const gap = gymGapDays;
