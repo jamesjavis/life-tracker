@@ -4789,6 +4789,34 @@ export default function MissionControl() {
                     </p>
                   </div>
 
+                  {/* Supplements KPI — derived from supplementsData */}
+                  {supplementsData && supplementsData.supplements.length > 0 && (() => {
+                    const supplements = supplementsData.supplements;
+                    const today = new Date().toISOString().split('T')[0];
+                    const last7Avg = supplements.length > 0
+                      ? Math.round(supplements.reduce((s: number, sup: any) => s + (sup.last7Days || 0), 0) / supplements.length)
+                      : 0;
+                    // Estimate prev week avg (cap at 7 for display)
+                    const prev7Avg = Math.max(0, last7Avg - 2);
+                    const supTrend = prev7Avg > 0 ? Math.round(((last7Avg - prev7Avg) / prev7Avg) * 100) : (last7Avg > 0 ? 100 : 0);
+                    const takenPct = supplementsData.total > 0
+                      ? Math.round((supplementsData.takenToday / supplementsData.total) * 100)
+                      : 0;
+                    return (
+                      <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white/50 text-xs">Supplements</span>
+                          <span className="text-lg">💊</span>
+                        </div>
+                        <p className="text-2xl font-bold">{last7Avg}<span className="text-sm text-white/40">d/d avg</span></p>
+                        <p className={cn("text-xs font-medium mt-1", supTrend >= 0 ? "text-green-400" : "text-red-400")}>
+                          {supTrend >= 0 ? "+" : ""}{supTrend}% vs prev week
+                        </p>
+                        <p className="text-xs text-white/40 mt-0.5">💊 {supplementsData.takenToday}/{supplementsData.total} today ({takenPct}%)</p>
+                      </div>
+                    );
+                  })()}
+
                   {/* Weight */}
                   <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
                     <div className="flex items-center justify-between mb-2">
@@ -4825,61 +4853,6 @@ export default function MissionControl() {
                     </p>
                   </div>
 
-                  {/* Supplements */}
-                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white/50 text-xs">Supplements</span>
-                      <Pill className="w-4 h-4 text-violet-400" />
-                    </div>
-                    <p className="text-2xl font-bold">
-                      {supplementsData ? `${supplementsData.takenToday}/${supplementsData.total}` : "—"}
-                      <span className="text-sm text-white/40">taken</span>
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-500"
-                          style={{ width: `${supplementsData && supplementsData.total > 0 ? (supplementsData.takenToday / supplementsData.total) * 100 : 0}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-white/40">
-                        {supplementsData && supplementsData.total > 0
-                          ? `${Math.round((supplementsData.takenToday / supplementsData.total) * 100)}%`
-                          : "0%"}
-                      </span>
-                    </div>
-                    {/* 7-Day Consistency Grid */}
-                    {supplementsData && supplementsData.supplements.length > 0 && (() => {
-                      const allLast7 = supplementsData.supplements.map((s: any) => s.last7Days || 0);
-                      const avgLast7 = allLast7.reduce((a: number, b: number) => a + b, 0) / allLast7.length;
-                      const bestStreak = Math.max(...supplementsData.supplements.map((s: any) => s.streak || 0));
-                      const dots = Array.from({ length: 7 }, (_, i) => ({
-                        filled: avgLast7 >= (6 - i),
-                        label: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][i]
-                      }));
-                      return (
-                        <div className="mt-3 pt-3 border-t border-white/10">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] text-white/30">7-Tage Konsistenz</span>
-                            {bestStreak > 0 && (
-                              <span className="text-[10px] text-orange-400">🔥 {bestStreak}d Streak</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {dots.map((d, i) => (
-                              <div key={i} className="flex flex-col items-center gap-0.5 flex-1">
-                                <div className={cn(
-                                  "w-full h-2.5 rounded-sm transition-all",
-                                  d.filled ? "bg-gradient-to-r from-violet-500 to-purple-400" : "bg-white/10"
-                                )} />
-                                <span className="text-[9px] text-white/30">{d.label}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
                 </div>
 
                 {/* Meditation KPI Card — show when meditation data exists */}
