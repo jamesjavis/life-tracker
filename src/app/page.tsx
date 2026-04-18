@@ -4857,6 +4857,51 @@ export default function MissionControl() {
                   );
                 })()}
 
+                {/* Pushup KPI Card — always show if pushupData loaded */}
+                {pushupData.currentDay > 0 && (() => {
+                  const today = new Date().toISOString().split('T')[0];
+                  const todayDone = pushupData.todayCompleted;
+                  const pushupTrendVal = trendsData?.trends?.pushups;
+                  const missedDays = Math.max(0, (() => {
+                    const lastEntry = pushupData.last30?.[0];
+                    if (!lastEntry) return 0;
+                    const lastDate = new Date(lastEntry.date + "T00:00:00");
+                    const now = new Date();
+                    now.setHours(0,0,0,0);
+                    return Math.floor((now.getTime() - lastDate.getTime()) / (1000*60*60*24)) - 1;
+                  })());
+                  return (
+                    <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white/50 text-xs">Push-up Challenge</span>
+                        <span className="text-lg">💨</span>
+                      </div>
+                      <p className="text-2xl font-bold">Tag {pushupData.currentDay}<span className="text-sm text-white/40"> — {pushupData.todayReps ?? pushupData.currentDay} reps</span></p>
+                      {todayDone ? (
+                        <p className="text-xs text-green-400 mt-0.5">✅ Heute gemacht</p>
+                      ) : (
+                        <p className="text-xs text-orange-400 mt-0.5">⚠️ Heute noch nicht</p>
+                      )}
+                      {missedDays > 0 && (
+                        <p className="text-xs text-red-400 mt-0.5">⚠️ {missedDays} Tag(e) verpasst</p>
+                      )}
+                      {pushupTrendVal && (
+                        <p className={cn("text-xs font-medium mt-1", pushupTrendVal.change >= 0 ? "text-green-400" : "text-red-400")}>
+                          {pushupTrendVal.change >= 0 ? "+" : ""}{pushupTrendVal.change}% vs prev week ({pushupTrendVal.value}/7d)
+                        </p>
+                      )}
+                      {!todayDone && (
+                        <button
+                          onClick={() => { setPushupInput(String(pushupData.currentDay)); logPushups(); }}
+                          className="mt-3 w-full py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl text-white text-xs font-bold transition-all"
+                        >
+                          💨 Tag {pushupData.currentDay} jetzt loggen
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Gym Comeback Card — show when gap >= 5 days */}
                 {(() => {
                   const gap = gymGapDays;

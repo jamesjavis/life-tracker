@@ -52,6 +52,11 @@ export async function GET() {
   const breathingRaw = readJson("breathing.json");
   const breathingSessions = breathingRaw?.sessions || [];
 
+  // Pushups
+  const pushupsRaw = readJson("pushups.json");
+  const pushupEntries = pushupsRaw?.entries || [];
+  const pushupSet = new Set(pushupEntries.map((e: any) => e.date));
+
   const TOTAL_HABITS = 9;
 
   const dailyData = days.map((day) => {
@@ -80,6 +85,7 @@ export async function GET() {
       },
       weight: weightEntry?.weight || null,
       breathing: breathingDay.length > 0 ? breathingDay.reduce((s: number, b: any) => s + (b.minutes || 0), 0) : 0,
+      pushups: pushupSet.has(day) ? 1 : 0,
     };
   });
 
@@ -163,6 +169,10 @@ export async function GET() {
     last7.reduce((s, d) => s + d.breathing, 0) / 7,
     prev7.reduce((s, d) => s + d.breathing, 0) / 7
   );
+  const pushupTrend = trend(
+    last7.reduce((s, d) => s + d.pushups, 0),
+    prev7.reduce((s, d) => s + d.pushups, 0)
+  );
   const energyTrend = trend(
     last7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (last7.filter(d => d.mood).length || 1),
     prev7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (prev7.filter(d => d.mood).length || 1)
@@ -182,6 +192,7 @@ export async function GET() {
       water: { value: Math.round(last7.reduce((s, d) => s + d.water, 0) / 7), change: waterTrend },
       protein: { value: Math.round(last7.reduce((s, d) => s + d.nutrition.protein, 0) / 7), change: proteinTrend },
       breathing: { value: Math.round(last7.reduce((s, d) => s + d.breathing, 0) / 7), change: breathingTrend },
+      pushups: { value: last7.reduce((s, d) => s + d.pushups, 0), change: pushupTrend },
       energy: { value: Math.round(last7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (last7.filter(d => d.mood).length || 1)), change: energyTrend },
     },
     generatedAt: now.toISOString(),
