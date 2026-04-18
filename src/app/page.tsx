@@ -157,6 +157,7 @@ export default function MissionControl() {
   const [loading, setLoading] = useState(true);
   const [trendsData, setTrendsData] = useState<{ days: any[]; weeks: any[]; streaks: any; trends: any; generatedAt: string } | null>(null);
   const [wellnessScore, setWellnessScore] = useState<number | null>(null);
+  const [healthInsights, setHealthInsights] = useState<{score: number; breakdown: Record<string,number>; insights: any[]; generatedAt: string} | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
   const [workoutDuration, setWorkoutDuration] = useState(60);
@@ -781,6 +782,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load wellness score", e);
+      }
+
+      // Fetch health insights
+      try {
+        const hiRes = await fetch("/api/health-insights");
+        if (hiRes.ok) {
+          const hi = await hiRes.json();
+          setHealthInsights(hi);
+        }
+      } catch (e) {
+        console.error("Failed to load health insights", e);
       }
 
       // Fetch mentor tips
@@ -4613,6 +4625,49 @@ export default function MissionControl() {
                   </div>
                   <p className="text-xs text-white/50">Composite: habits (30%) + gym (20%) + sleep (25%) + mood (15%) + water (10%)</p>
                 </div>
+
+                {/* Health Insights — category breakdown */}
+                {healthInsights && (
+                  <div className="md:col-span-3 p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-white/50 text-xs uppercase tracking-wider">Health Insights — {healthInsights.score}/100</span>
+                      <span className="text-xs text-white/30">{new Date(healthInsights.generatedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {Object.entries(healthInsights.breakdown).map(([cat, score]) => {
+                        const icons: Record<string, string> = { sleep: '😴', mood: '😊', gym: '💪', habits: '✅', water: '💧', nutrition: '🍎' };
+                        const colors: Record<string, string> = {
+                          sleep: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                          mood: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                          gym: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                          habits: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                          water: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                          nutrition: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                        };
+                        return (
+                          <div key={cat} className="flex items-center gap-2">
+                            <span>{icons[cat] || '•'}</span>
+                            <span className="text-white/50 text-xs capitalize">{cat}</span>
+                            <span className={cn("text-sm font-bold ml-auto", colors[cat] || 'text-white')}>{score}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {healthInsights.insights.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-white/10">
+                        {healthInsights.insights.slice(0, 3).map((ins: any, i: number) => (
+                          <div key={i} className="flex items-start gap-2 mb-2">
+                            <span className="text-sm mt-0.5">{ins.icon}</span>
+                            <div>
+                              <p className="text-xs text-white/70">{ins.headline}</p>
+                              <p className="text-xs text-white/40">{ins.detail}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
