@@ -102,7 +102,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const avgSleep = last7sleep.length > 0
     ? last7sleep.reduce((s: number, e: any) => s + (e.duration || 0), 0) / last7sleep.length
     : 0;
-  const lastSleepEntry = sleepEntries[sleepEntries.length - 1];
+  const lastSleepEntry = sleepEntries[0]; // newest-first storage
   const daysSinceSleep = lastSleepEntry
     ? Math.floor((now.getTime() - new Date(lastSleepEntry.date + "T00:00:00").getTime()) / 86400000)
     : null;
@@ -188,7 +188,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const avgEnergy = last7mood.length > 0
     ? last7mood.reduce((s: number, e: any) => s + (e.energy || 0), 0) / last7mood.length
     : 0;
-  const lastMoodEntry = moodEntries[moodEntries.length - 1];
+  const lastMoodEntry = moodEntries[0]; // newest-first storage
   const daysSinceMood = lastMoodEntry
     ? Math.floor((now.getTime() - new Date(lastMoodEntry.date + "T00:00:00").getTime()) / 86400000)
     : null;
@@ -264,7 +264,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const avgWater = last7water.length > 0
     ? last7water.reduce((s: number, e: any) => s + (e.glasses || 0), 0) / last7water.length
     : 0;
-  const lastWaterEntry = waterEntries[waterEntries.length - 1];
+  const lastWaterEntry = waterEntries[0]; // newest-first storage
   const daysSinceWater = lastWaterEntry
     ? Math.floor((now.getTime() - new Date(lastWaterEntry.date + "T00:00:00").getTime()) / 86400000)
     : null;
@@ -317,8 +317,8 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === WEIGHT ===
   const weightEntries = data.weight?.entries || [];
-  const lastWeight = weightEntries[weightEntries.length - 1];
-  const prevWeight = weightEntries.length >= 2 ? weightEntries[weightEntries.length - 2] : null;
+  const lastWeight = weightEntries[0]; // newest-first storage
+  const prevWeight = weightEntries.length >= 2 ? weightEntries[1] : null;
   const daysSinceWeight = lastWeight
     ? Math.floor((now.getTime() - new Date(lastWeight.date + "T00:00:00").getTime()) / 86400000)
     : null;
