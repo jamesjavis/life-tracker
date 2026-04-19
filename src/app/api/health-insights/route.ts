@@ -67,7 +67,7 @@ function score(data: any) {
 
   // === HYDRATION (10 points) ===
   const waterEntries = data.water?.entries || [];
-  const last7water = waterEntries.slice(0, 7); // newest-first storage
+  const last7water = waterEntries.slice(-7); // oldest-first storage
   const avgWater = last7water.length > 0
     ? last7water.reduce((s: number, e: any) => s + (e.glasses || 0), 0) / last7water.length
     : 0;
@@ -260,11 +260,11 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === WATER ===
   const waterEntries = data.water?.entries || [];
-  const last7water = waterEntries.slice(0, 7); // newest-first storage
+  const last7water = waterEntries.slice(-7); // oldest-first storage
   const avgWater = last7water.length > 0
     ? last7water.reduce((s: number, e: any) => s + (e.glasses || 0), 0) / last7water.length
     : 0;
-  const lastWaterEntry = waterEntries[0]; // newest-first storage
+  const lastWaterEntry = waterEntries[waterEntries.length - 1]; // oldest-first storage
   const daysSinceWater = lastWaterEntry
     ? Math.floor((now.getTime() - new Date(lastWaterEntry.date + "T00:00:00").getTime()) / 86400000)
     : null;
@@ -317,8 +317,8 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === WEIGHT ===
   const weightEntries = data.weight?.entries || [];
-  const lastWeight = weightEntries[0]; // newest-first storage
-  const prevWeight = weightEntries.length >= 2 ? weightEntries[1] : null;
+  const lastWeight = weightEntries[weightEntries.length - 1]; // oldest-first storage
+  const prevWeight = weightEntries.length >= 2 ? weightEntries[weightEntries.length - 2] : null;
   const daysSinceWeight = lastWeight
     ? Math.floor((now.getTime() - new Date(lastWeight.date + "T00:00:00").getTime()) / 86400000)
     : null;
