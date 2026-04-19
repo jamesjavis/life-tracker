@@ -1,48 +1,14 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { storage } from "@/lib/storage";
 
 export async function GET() {
-  const dataDir = path.join(process.cwd(), "data");
-  
-  // All tracked data files
-  const files = [
-    "bucketlist.json",
-    "finance.json",
-    "gym.json",
-    "habits.json",
-    "meals.json",
-    "mood.json",
-    "pushups.json",
-    "sleep.json",
-    "streaks.json",
-    "supplements.json",
-    "water.json",
-    "weight.json",
-    "wellness.json",
-  ];
-  
-  const response: Record<string, any> = {
-    exportedAt: new Date().toISOString(),
-    version: "1.1",
-  };
-
-  for (const file of files) {
-    const filePath = path.join(dataDir, file);
-    if (fs.existsSync(filePath)) {
-      try {
-        const content = fs.readFileSync(filePath, "utf-8");
-        const key = file.replace(".json", "");
-        response[key] = JSON.parse(content);
-      } catch (e) {
-        response[file] = { error: "Failed to parse" };
-      }
-    }
+  const keys = ["bucketlist", "finance", "gym", "habits", "meals", "mood", "pushups", "sleep", "streaks", "supplements", "water", "weight", "wellness"];
+  const result: Record<string, any> = { exportedAt: new Date().toISOString(), version: "1.2" };
+  for (const key of keys) {
+    const data = await storage.get(key);
+    if (data !== null) result[key] = data;
   }
-
-  return NextResponse.json(response, {
-    headers: {
-      "Content-Disposition": `attachment; filename="life-tracker-backup-${new Date().toISOString().split("T")[0]}.json"`,
-    },
+  return NextResponse.json(result, {
+    headers: { "Content-Disposition": `attachment; filename="life-tracker-backup-${new Date().toISOString().split("T")[0]}.json"` },
   });
 }

@@ -1,29 +1,11 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { storage } from "@/lib/storage";
 
-const DATA_FILE = path.join(process.cwd(), "data", "meals.json");
-
-function ensureDataDir() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-}
-
-function readData() {
-  ensureDataDir();
-  if (!fs.existsSync(DATA_FILE)) return { meals: [], dailyGoals: { protein: 150, carbs: 250, calories: 2200 }, lastReset: null };
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-}
-
-function writeData(data: any) {
-  ensureDataDir();
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
+const DEFAULT_DATA = { meals: [], dailyGoals: { protein: 150, carbs: 250, calories: 2200 }, lastReset: null };
 
 export async function GET() {
-  const data = readData();
+  const data = (await storage.get("meals")) ?? DEFAULT_DATA;
   const today = new Date().toISOString().split("T")[0];
-  
   const todayMeals = data.meals.filter((m: any) => m.date === today);
   const dailyNutrition = todayMeals.reduce((acc: any, m: any) => {
     acc.protein += m.protein || 0;
@@ -56,7 +38,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { action, meal } = await req.json();
-  const data = readData();
+  const data = (await storage.get("meals")) ?? DEFAULT_DATA;
 
   if (action === "add") {
     data.meals.push({
@@ -69,13 +51,13 @@ export async function POST(req: Request) {
       carbs: Number(meal.carbs) || 0,
       fat: Number(meal.fat) || 0,
     });
-    writeData(data);
+    await storage.set("meals", data);
     return NextResponse.json({ success: true });
   }
 
   if (action === "updateGoals") {
     data.dailyGoals = { ...data.dailyGoals, ...meal };
-    writeData(data);
+    await storage.set("meals", data);
     return NextResponse.json({ success: true });
   }
 
