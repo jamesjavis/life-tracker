@@ -17,7 +17,7 @@ function score(data: any) {
 
   // === SLEEP (25 points) ===
   const sleepEntries = data.sleep?.entries || [];
-  const last7sleep = sleepEntries.slice(-7);
+  const last7sleep = sleepEntries.slice(0, 7); // newest-first storage
   const sleepHours = last7sleep.map((e: any) => e.duration || 0);
   const avgSleep = sleepHours.length > 0 ? sleepHours.reduce((a: number, b: number) => a + b, 0) / sleepHours.length : 0;
   const sleepQuality = last7sleep.length > 0
@@ -29,7 +29,7 @@ function score(data: any) {
 
   // === MOOD (20 points) ===
   const moodEntries = data.mood?.entries || [];
-  const last7mood = moodEntries.slice(-7);
+  const last7mood = moodEntries.slice(0, 7); // newest-first storage
   const avgMood = last7mood.length > 0
     ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length
     : 0;
@@ -67,7 +67,7 @@ function score(data: any) {
 
   // === HYDRATION (10 points) ===
   const waterEntries = data.water?.entries || [];
-  const last7water = waterEntries.slice(-7);
+  const last7water = waterEntries.slice(0, 7); // newest-first storage
   const avgWater = last7water.length > 0
     ? last7water.reduce((s: number, e: any) => s + (e.glasses || 0), 0) / last7water.length
     : 0;
@@ -77,7 +77,7 @@ function score(data: any) {
 
   // === NUTRITION (10 points) ===
   const mealsEntries = data.meals?.entries || [];
-  const last7meals = mealsEntries.slice(-7);
+  const last7meals = mealsEntries.slice(0, 7); // newest-first storage
   const avgCalories = last7meals.length > 0
     ? last7meals.reduce((s: number, m: any) => s + (m.calories || 0), 0) / last7meals.length
     : 0;
@@ -98,7 +98,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === SLEEP ===
   const sleepEntries = data.sleep?.entries || [];
-  const last7sleep = sleepEntries.slice(-7);
+  const last7sleep = sleepEntries.slice(0, 7); // newest-first storage
   const avgSleep = last7sleep.length > 0
     ? last7sleep.reduce((s: number, e: any) => s + (e.duration || 0), 0) / last7sleep.length
     : 0;
@@ -181,7 +181,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === MOOD ===
   const moodEntries = data.mood?.entries || [];
-  const last7mood = moodEntries.slice(-7);
+  const last7mood = moodEntries.slice(0, 7); // newest-first storage
   const avgMood = last7mood.length > 0
     ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length
     : 0;
@@ -260,7 +260,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === WATER ===
   const waterEntries = data.water?.entries || [];
-  const last7water = waterEntries.slice(-7);
+  const last7water = waterEntries.slice(0, 7); // newest-first storage
   const avgWater = last7water.length > 0
     ? last7water.reduce((s: number, e: any) => s + (e.glasses || 0), 0) / last7water.length
     : 0;
@@ -289,7 +289,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === NUTRITION ===
   const mealsEntries = data.meals?.entries || [];
-  const last7meals = mealsEntries.slice(-7);
+  const last7meals = mealsEntries.slice(0, 7); // newest-first storage
   const avgCalories = last7meals.length > 0
     ? last7meals.reduce((s: number, m: any) => s + (m.calories || 0), 0) / last7meals.length
     : 0;
