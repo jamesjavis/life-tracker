@@ -60,6 +60,13 @@
         "minutes": 25,
         "sessions": 1,
         "type": "mindfulness"
+      },
+      {
+        "date": "2026-04-19",
+        "minutes": 5,
+        "type": "mindfulness",
+        "completed": true,
+        "timestamp": "2026-04-19T23:44:42.096905"
       }
     ],
     "goals": {
@@ -128,5 +135,5 @@
     ],
     "dailyLimit": 120
   },
-  "lastUpdated": "2026-04-08"
+  "lastUpdated": "2026-04-19T23:44:42.096920"
 }

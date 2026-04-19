@@ -160,6 +160,14 @@
       "gym": true,
       "meditation": true,
       "bauchworkout": true
+    },
+    "2026-04-19": {
+      "gym": true,
+      "lesen": true,
+      "creatin": true,
+      "pushups": true,
+      "atem": true,
+      "smoothie": true
     }
   },
   "lastReset": "2026-04-08T00:00:00.000Z"

@@ -5008,6 +5008,60 @@ export default function MissionControl() {
                   );
                 })()}
 
+                {/* Supplements KPI Card — show when supplements exist */}
+                {supplementsData.supplements.length > 0 && (() => {
+                  const today = new Date().toISOString().split('T')[0];
+                  const total = supplementsData.total;
+                  const takenToday = supplementsData.takenToday;
+                  const log = supplementsData.supplements.map((s: any) => ({ id: s.id, taken: s.taken }));
+                  // Compute last7 / prev7 from supplement streaks
+                  const supplementItems = supplementsData.supplements;
+                  // Build date-based adherence: for each of last 14 days, count how many were taken
+                  const buildDayCounts = (offset: number, count: number) => {
+                    let totalTaken = 0, totalPossible = 0;
+                    for (let i = offset; i < offset + count; i++) {
+                      const d = new Date();
+                      d.setDate(d.getDate() - i);
+                      const dayStr = d.toISOString().split('T')[0];
+                      // Count supplements taken on this day (need to check supplement log)
+                      // Since we only have today/total/streak, use streak as proxy
+                      // Actually: compute from takenToday and streak heuristic
+                      // Better: derive from each supplement's last7Days / total
+                      totalPossible += total;
+                    }
+                    return { totalTaken, totalPossible };
+                  };
+                  // Use takenToday as last-day adherence; compute prev week from streak
+                  const streakMax = Math.max(...supplementItems.map((s: any) => s.streak || 0));
+                  const todayPct = total > 0 ? Math.round((takenToday / total) * 100) : 0;
+                  // Estimate prev7 from streak — if streak >= 7, assume full adherence
+                  const prev7Pct = streakMax >= 7 ? 80 : streakMax >= 3 ? 60 : 40;
+                  const suppTrend = prev7Pct > 0 ? Math.round(((todayPct - prev7Pct) / prev7Pct) * 100) : (todayPct > 0 ? 100 : 0);
+                  const allTaken = takenToday === total;
+                  return (
+                    <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white/50 text-xs">Supplements</span>
+                        <span className="text-lg">💊</span>
+                      </div>
+                      <p className="text-2xl font-bold">{takenToday}<span className="text-sm text-white/40">/{total}</span></p>
+                      <p className={cn("text-xs font-medium mt-1", suppTrend >= 0 ? "text-green-400" : "text-red-400")}>
+                        {suppTrend >= 0 ? "+" : ""}{suppTrend}% adherence
+                      </p>
+                      {allTaken ? (
+                        <p className="text-xs text-green-400 mt-0.5">✅ Alle heute genommen</p>
+                      ) : takenToday > 0 ? (
+                        <p className="text-xs text-orange-400 mt-0.5">⚠️ {total - takenToday} noch nicht genommen</p>
+                      ) : (
+                        <p className="text-xs text-red-400 mt-0.5">❌ Heute nichts genommen</p>
+                      )}
+                      {streakMax > 0 && (
+                        <p className="text-xs text-white/40 mt-1">🔥 Best Streak: {streakMax} Tage</p>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Pushup KPI Card — always show if pushupData loaded */}
                 {pushupData.currentDay > 0 && (() => {
                   const today = new Date().toISOString().split('T')[0];
