@@ -23,7 +23,7 @@ function score(data: any) {
   const sleepQuality = last7sleep.length > 0
     ? last7sleep.reduce((s: number, e: any) => s + (e.quality || 0), 0) / last7sleep.length
     : 0;
-  const sleepScore = Math.min(avgSleep / 8, 1) * 12.5 + Math.min(sleepQuality / 5, 1) * 12.5;
+  const sleepScore = Math.min(avgSleep / 8, 1) * 12.5 + Math.min(sleepQuality / 10, 1) * 12.5;
   scores.sleep = Math.round(sleepScore);
   total += 25;
 
