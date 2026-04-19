@@ -4909,10 +4909,47 @@ export default function MissionControl() {
                       <span className="text-white/50 text-xs">Weight</span>
                       <Activity className="w-4 h-4 text-blue-400" />
                     </div>
-                    <p className="text-2xl font-bold">{trendsData.trends.weight.value || "—"}<span className="text-sm text-white/40">kg</span></p>
-                    <p className={cn("text-xs font-medium mt-1", (trendsData.trends.weight.change || 0) <= 0 ? "text-green-400" : "text-red-400")}>
-                      {trendsData.trends.weight.change !== null ? `${trendsData.trends.weight.change > 0 ? "+" : ""}${trendsData.trends.weight.change}kg vs prev week` : "No data"}
-                    </p>
+                    <div className="flex items-end justify-between gap-2">
+                      <div>
+                        <p className="text-2xl font-bold">{trendsData.trends.weight.value || "—"}<span className="text-sm text-white/40">kg</span></p>
+                        <p className={cn("text-xs font-medium mt-0.5", (trendsData.trends.weight.change || 0) <= 0 ? "text-green-400" : "text-red-400")}>
+                          {trendsData.trends.weight.change !== null ? `${trendsData.trends.weight.change > 0 ? "+" : ""}${trendsData.trends.weight.change}kg vs prev week` : "No data"}
+                        </p>
+                        {weightEntries.length > 0 && (() => {
+                          const last = weightEntries[weightEntries.length - 1]?.weight;
+                          const delta = last ? last - weightGoal : null;
+                          return delta !== null ? (
+                            <p className={cn("text-xs font-medium mt-0.5", delta <= 0 ? "text-green-400" : "text-orange-400")}>
+                              {delta > 0 ? `+${delta.toFixed(1)}kg → Ziel` : `${delta.toFixed(1)}kg ✅`}
+                            </p>
+                          ) : null;
+                        })()}
+                      </div>
+                      {/* Mini Sparkline — last 14 weight entries */}
+                      {weightEntries.length >= 2 && (() => {
+                        const recent = weightEntries.slice(-14);
+                        const weights = recent.map(e => e.weight);
+                        const minW = Math.min(...weights);
+                        const maxW = Math.max(...weights);
+                        const range = maxW - minW || 1;
+                        return (
+                          <div className="flex items-end gap-px h-10 w-20">
+                            {recent.map((entry, i) => {
+                              const height = ((entry.weight - minW) / range) * 100;
+                              const isLast = i === recent.length - 1;
+                              return (
+                                <div key={i} className="flex-1 group relative">
+                                  <div
+                                    className={cn("rounded-t transition-colors", isLast ? "bg-blue-400" : "bg-blue-500/50 hover:bg-blue-400/70")}
+                                    style={{ height: `${Math.max(height, 10)}%` }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
 
                   {/* Protein */}
