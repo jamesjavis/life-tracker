@@ -4671,12 +4671,21 @@ export default function MissionControl() {
                   const breakdown = healthInsights.breakdown;
                   const worst = Object.entries(breakdown).sort(([,a],[,b]) => (a as number) - (b as number))[0];
                   const [worstCat, worstScore] = worst;
+                  // Dynamic gym action based on gap + today
+                  const dow = new Date().getDay();
+                  const isGymDay = dow === 1 || dow === 3 || dow === 5 || dow === 6;
+                  const SCHEDULED = [1, 3, 5, 6];
+                  const DAY_FULL: Record<number, string> = { 1: 'Montag', 3: 'Mittwoch', 5: 'Freitag', 6: 'Samstag' };
+                  const nextScheduled = SCHEDULED.find(d => d > dow) ?? SCHEDULED[0];
+                  const gymAction = isGymDay
+                    ? `Gym-Tag! ${gymGapDays != null && gymGapDays >= 5 ? `— ${gymGapDays}Tage-Pause` : ''}`
+                    : `Nächster: ${DAY_FULL[nextScheduled]}`;
                   const priorityConfig: Record<string, { icon: string; label: string; action: string; color: string; bg: string }> = {
-                    gym:       { icon: '🏋️', label: 'Gym',            action: '16-Tage-Pause — morgen ist Mo 20.4!',      color: 'text-red-400',    bg: 'from-red-500/20 to-orange-500/20 border-red-500/30' },
-                    habits:    { icon: '✅', label: 'Gewohnheiten',    action: 'Heute nur 5/9 Gewohnheiten — aufholen!',    color: 'text-orange-400', bg: 'from-orange-500/20 to-yellow-500/20 border-orange-500/30' },
+                    gym:       { icon: '🏋️', label: 'Gym',            action: gymAction,                                  color: 'text-red-400',    bg: 'from-red-500/20 to-orange-500/20 border-red-500/30' },
+                    habits:    { icon: '✅', label: 'Gewohnheiten',    action: `Heute nur ${Object.values(habits).filter(Boolean).length}/${HABITS.length} Gewohnheiten — aufholen!`, color: 'text-orange-400', bg: 'from-orange-500/20 to-yellow-500/20 border-orange-500/30' },
                     sleep:     { icon: '😴', label: 'Schlaf',          action: 'Letzter Eintrag vor 10+ Tagen — nachholen!', color: 'text-yellow-400', bg: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30' },
                     mood:      { icon: '😊', label: 'Stimmung',       action: 'Stimmung nicht geloggt — wie fühlst du dich?', color: 'text-yellow-400', bg: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30' },
-                    water:     { icon: '💧', label: 'Wasser',          action: 'Wasserstand niedrig — 8 Gläser heute?',      color: 'text-blue-400',   bg: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30' },
+                    water:     { icon: '💧', label: 'Wasser',          action: `${waterData.todayGlasses}/${waterData.dailyGoal} Gläser heute`,      color: 'text-blue-400',   bg: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30' },
                     nutrition: { icon: '🍎', label: 'Ernährung',      action: 'Keine Mahlzeiten geloggt diese Woche',        color: 'text-green-400',  bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' },
                   };
                   const info = priorityConfig[worstCat] || { icon: '✅', label: 'Alles gut', action: 'Keine Aktion nötig', color: 'text-green-400', bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' };
