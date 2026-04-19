@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       bedtime: bedtime || null,
       wakeup: wakeup || null,
       duration: duration || 0,
-      quality: quality || 5,
+      quality: quality || 7,
       notes: notes || "",
       createdAt: new Date().toISOString()
     };

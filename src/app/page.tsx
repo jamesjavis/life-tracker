@@ -271,7 +271,7 @@ export default function MissionControl() {
   const [supplementsComeback, setSupplementsComeback] = useState<any>(null);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [sleepHours, setSleepHours] = useState(7);
-  const [sleepQuality, setSleepQuality] = useState(5);
+  const [sleepQuality, setSleepQuality] = useState(7);
   const [sleepNotes, setSleepNotes] = useState("");
 
   // Financial data
@@ -386,7 +386,7 @@ export default function MissionControl() {
   const [retroCategory, setRetroCategory] = useState<"habits" | "sleep" | "gym" | "mood" | "water">("habits");
   const [retroHabits, setRetroHabits] = useState<Record<string, boolean>>({});
   const [retroSleepHours, setRetroSleepHours] = useState(7);
-  const [retroSleepQuality, setRetroSleepQuality] = useState(5);
+  const [retroSleepQuality, setRetroSleepQuality] = useState(7);
   const [retroGymMuscles, setRetroGymMuscles] = useState("");
   const [retroGymExercises, setRetroGymExercises] = useState("");
   const [retroGymNotes, setRetroGymNotes] = useState("");
@@ -399,7 +399,7 @@ export default function MissionControl() {
   const [retroBulkCategory, setRetroBulkCategory] = useState<"habits" | "sleep" | "gym" | "mood">("habits");
   const [retroBulkHabits, setRetroBulkHabits] = useState<Record<string, boolean>>({});
   const [retroBulkSleepH, setRetroBulkSleepH] = useState(7);
-  const [retroBulkSleepQ, setRetroBulkSleepQ] = useState(5);
+  const [retroBulkSleepQ, setRetroBulkSleepQ] = useState(7);
   const [retroBulkMoodE, setRetroBulkMoodE] = useState(6);
   const [retroBulkMoodV, setRetroBulkMoodV] = useState(6);
   const [retroBulkGymDays, setRetroBulkGymDays] = useState<Record<string, boolean>>({});
@@ -5798,11 +5798,11 @@ export default function MissionControl() {
                       <div className="flex justify-between text-xs text-white/30 mt-1"><span>3h</span><span>12h</span></div>
                     </div>
                     <div>
-                      <label className="block text-sm text-white/50 mb-2">Qualität: {retroBulkSleepQ}/5</label>
-                      <input type="range" min="1" max="5" step="1" value={retroBulkSleepQ}
+                      <label className="block text-sm text-white/50 mb-2">Qualität: {retroBulkSleepQ}/10</label>
+                      <input type="range" min="1" max="10" step="1" value={retroBulkSleepQ}
                         onChange={e => setRetroBulkSleepQ(Number(e.target.value))}
                         className="w-full accent-cyan-500" />
-                      <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>5</span></div>
+                      <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>10</span></div>
                     </div>
                     <p className="text-xs text-white/30">Dieselben Werte werden für jeden Tag im Zeitraum eingetragen.</p>
                   </div>
@@ -5947,17 +5947,17 @@ export default function MissionControl() {
                     />
                     <div className="flex justify-between text-xs text-white/30 mt-1"><span>3h</span><span>12h</span></div>
                   </div>
-                  <div>\n                    <label className="block text-sm text-white/50 mb-2">Qualität: {retroSleepQuality}/5</label>
+                  <div>\n                    <label className="block text-sm text-white/50 mb-2">Qualität: {retroSleepQuality}/10</label>
                     <input
                       type="range"
                       min="1"
-                      max="5"
+                      max="10"
                       step="1"
                       value={retroSleepQuality}
                       onChange={e => setRetroSleepQuality(Number(e.target.value))}
                       className="w-full accent-cyan-500"
                     />
-                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>5</span></div>
+                    <div className="flex justify-between text-xs text-white/30 mt-1"><span>1</span><span>10</span></div>
                   </div>
                 </div>
               )}
