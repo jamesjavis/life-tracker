@@ -5003,8 +5003,14 @@ export default function MissionControl() {
                   const gap = gymGapDays;
                   if (gap === null || gap < 5) return null;
                   const dow = new Date().getDay();
-                  const nextDay = dow === 0 ? 'Mo' : dow === 1 ? 'Mi' : dow === 3 ? 'Fr' : dow === 5 ? 'Sa' : 'Mo';
-                  const nextFull = dow === 0 ? 'Montag' : dow === 1 ? 'Mittwoch' : dow === 3 ? 'Freitag' : dow === 5 ? 'Samstag' : 'Montag';
+                  // Gym schedule: Mo(1) · Mi(3) · Fr(5) · Sa(6)
+                  // Returns the NEXT scheduled gym day from today
+                  const SCHEDULED = [1, 3, 5, 6];
+                  const DAY_LABELS: Record<number, string> = { 0: 'So', 1: 'Mo', 2: 'Di', 3: 'Mi', 4: 'Do', 5: 'Fr', 6: 'Sa' };
+                  const DAY_FULL: Record<number, string> = { 0: 'Sonntag', 1: 'Montag', 2: 'Dienstag', 3: 'Mittwoch', 4: 'Donnerstag', 5: 'Freitag', 6: 'Samstag' };
+                  const nextScheduled = SCHEDULED.find(d => d > dow) ?? SCHEDULED[0];
+                  const nextDay = dow === 1 || dow === 3 || dow === 5 || dow === 6 ? DAY_LABELS[dow] + ' (heute!)' : DAY_LABELS[nextScheduled];
+                  const nextFull = dow === 1 || dow === 3 || dow === 5 || dow === 6 ? DAY_FULL[dow] + ' (heute!)' : DAY_FULL[nextScheduled];
                   return (
                     <div className="p-6 bg-gradient-to-br from-orange-500/10 to-red-500/5 backdrop-blur-xl rounded-2xl border border-orange-500/20">
                       <div className="flex items-start justify-between gap-4">
