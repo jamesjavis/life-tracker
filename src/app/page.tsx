@@ -236,6 +236,7 @@ export default function MissionControl() {
   const [weightGoal, setWeightGoal] = useState(75.0);
   const [weightTrend, setWeightTrend] = useState(0);
   const [weightBMI, setWeightBMI] = useState<number | null>(null);
+  const [weightGapDays, setWeightGapDays] = useState<number | null>(null);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [weightValue, setWeightValue] = useState("");
   const [weightNotes, setWeightNotes] = useState("");
@@ -395,12 +396,13 @@ export default function MissionControl() {
   const [retroWater, setRetroWater] = useState(8);
   const [retroSaving, setRetroSaving] = useState(false);
   const [retroBulkMode, setRetroBulkMode] = useState(false);
-  const [retroBulkCategory, setRetroBulkCategory] = useState<"habits" | "sleep" | "mood">("habits");
+  const [retroBulkCategory, setRetroBulkCategory] = useState<"habits" | "sleep" | "gym" | "mood">("habits");
   const [retroBulkHabits, setRetroBulkHabits] = useState<Record<string, boolean>>({});
   const [retroBulkSleepH, setRetroBulkSleepH] = useState(7);
   const [retroBulkSleepQ, setRetroBulkSleepQ] = useState(5);
   const [retroBulkMoodE, setRetroBulkMoodE] = useState(6);
   const [retroBulkMoodV, setRetroBulkMoodV] = useState(6);
+  const [retroBulkGymDays, setRetroBulkGymDays] = useState<Record<string, boolean>>({});
   const [retroBulkEndDate, setRetroBulkEndDate] = useState(new Date().toISOString().split("T")[0]);
   const [pushupInput, setPushupInput] = useState("");
   const [breathingActive, setBreathingActive] = useState(false);
@@ -625,6 +627,17 @@ export default function MissionControl() {
           setWeightGoal(weightData.goal || 75.0);
           setWeightTrend(weightData.trend || 0);
           setWeightBMI(weightData.bmi || null);
+          // Compute weight gap days
+          const lastEntry = weightData.entries?.[weightData.entries.length - 1];
+          if (lastEntry) {
+            const lastDate = new Date(lastEntry.date + "T00:00:00");
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const gap = Math.floor((today.getTime() - lastDate.getTime()) / 86400000);
+            setWeightGapDays(gap);
+          } else {
+            setWeightGapDays(null);
+          }
         }
       } catch (e) {
         console.error("Failed to load weight", e);
@@ -1089,6 +1102,11 @@ export default function MissionControl() {
     setRetroCategory("habits");
     setRetroHabits({});
     setRetroSaving(false);
+    setRetroBulkMode(false);
+    setRetroBulkCategory("habits");
+    setRetroBulkHabits({});
+    setRetroBulkGymDays({});
+    setRetroBulkEndDate(new Date().toISOString().split("T")[0]);
     setRetroSleepHours(7);
     setRetroSleepQuality(5);
     setRetroGymMuscles("");
@@ -1137,6 +1155,17 @@ export default function MissionControl() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ action: "log", date: dateStr, energy: retroBulkMoodE, mood: retroBulkMoodV, note: "Bulk Retro-Log" }),
             });
+          } else if (retroBulkCategory === "gym") {
+            const dow = new Date(dateStr + "T00:00:00").getDay();
+            const dayMap: Record<number, string> = { 1: "Montag", 3: "Mittwoch", 5: "Freitag" };
+            const dayLabel = dayMap[dow];
+            if (dayLabel && retroBulkGymDays[dayLabel]) {
+              await fetch("/api/gym", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date: dateStr, completed: true }),
+              });
+            }
           }
         }
       } else {
@@ -1190,6 +1219,7 @@ export default function MissionControl() {
     setRetroSaving(false);
     setRetroBulkMode(false);
     setRetroBulkHabits({});
+    setRetroBulkGymDays({});
     setShowRetroModal(false);
     if (typeof window !== "undefined") window.location.reload();
   }
@@ -2817,6 +2847,16 @@ export default function MissionControl() {
               >
                 Gewicht loggen
               </button>
+
+              {/* Weight Gap Warning */}
+              {(weightGapDays ?? 0) >= 7 && (
+                <div className="mt-3 p-3 bg-amber-500/15 border border-amber-500/25 rounded-xl">
+                  <p className="text-xs text-amber-300 font-medium">
+                    ⚠️ Letztes Gewicht vor {weightGapDays} Tagen ({weightEntries[weightEntries.length - 1]?.weight} kg)
+                  </p>
+                  <p className="text-xs text-amber-200/60 mt-1">Wöchentliches Wiegen zeigt Trends. Ziel: 75 kg.</p>
+                </div>
+              )}
 
               {/* Recent Entries */}
               {weightEntries.length > 0 && (
@@ -4627,8 +4667,33 @@ export default function MissionControl() {
                 </div>
 
                 {/* Health Insights — category breakdown */}
-                {healthInsights && (
+                {healthInsights && (() => {
+                  const breakdown = healthInsights.breakdown;
+                  const worst = Object.entries(breakdown).sort(([,a],[,b]) => (a as number) - (b as number))[0];
+                  const [worstCat, worstScore] = worst;
+                  const priorityConfig: Record<string, { icon: string; label: string; action: string; color: string; bg: string }> = {
+                    gym:       { icon: '🏋️', label: 'Gym',            action: '16-Tage-Pause — morgen ist Mo 20.4!',      color: 'text-red-400',    bg: 'from-red-500/20 to-orange-500/20 border-red-500/30' },
+                    habits:    { icon: '✅', label: 'Gewohnheiten',    action: 'Heute nur 5/9 Gewohnheiten — aufholen!',    color: 'text-orange-400', bg: 'from-orange-500/20 to-yellow-500/20 border-orange-500/30' },
+                    sleep:     { icon: '😴', label: 'Schlaf',          action: 'Letzter Eintrag vor 10+ Tagen — nachholen!', color: 'text-yellow-400', bg: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30' },
+                    mood:      { icon: '😊', label: 'Stimmung',       action: 'Stimmung nicht geloggt — wie fühlst du dich?', color: 'text-yellow-400', bg: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30' },
+                    water:     { icon: '💧', label: 'Wasser',          action: 'Wasserstand niedrig — 8 Gläser heute?',      color: 'text-blue-400',   bg: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30' },
+                    nutrition: { icon: '🍎', label: 'Ernährung',      action: 'Keine Mahlzeiten geloggt diese Woche',        color: 'text-green-400',  bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' },
+                  };
+                  const info = priorityConfig[worstCat] || { icon: '✅', label: 'Alles gut', action: 'Keine Aktion nötig', color: 'text-green-400', bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' };
+                  const showPriority = (worstScore as number) < 75;
+                  return (
                   <div className="md:col-span-3 p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    {showPriority && (
+                      <div className={cn("mb-4 p-3 rounded-xl bg-gradient-to-r border", info.bg)}>
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{info.icon}</span>
+                          <div>
+                            <p className={cn("text-sm font-bold", info.color)}>🔥 HEUTE: {info.label} — dein #1 Health Priority</p>
+                            <p className="text-xs text-white/60">{info.action}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-white/50 text-xs uppercase tracking-wider">Health Insights — {healthInsights.score}/100</span>
                       <span className="text-xs text-white/30">{new Date(healthInsights.generatedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -4667,7 +4732,8 @@ export default function MissionControl() {
                       </div>
                     )}
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -4751,6 +4817,7 @@ export default function MissionControl() {
                     <p className={cn("text-xs font-medium mt-1", (trendsData.trends.sleep.change || 0) >= 0 ? "text-green-400" : "text-red-400")}>
                       {(trendsData.trends.sleep.change || 0) >= 0 ? "+" : ""}{trendsData.trends.sleep.change || 0}% vs prev week
                     </p>
+                    <p className="text-xs text-white/40 mt-0.5">😴 Streak: {sleepStats.streak > 0 ? `${sleepStats.streak}🔥` : "—"}</p>
                   </div>
 
                   {/* Calories */}
@@ -4775,6 +4842,7 @@ export default function MissionControl() {
                     <p className={cn("text-xs font-medium mt-1", (trendsData.trends.water?.change || 0) >= 0 ? "text-green-400" : "text-red-400")}>
                       {(trendsData.trends.water?.change || 0) >= 0 ? "+" : ""}{trendsData.trends.water?.change || 0}% vs prev week
                     </p>
+                    <p className="text-xs text-white/40 mt-0.5">💧 Streak: {waterData.streak > 0 ? `${waterData.streak}🔥` : "—"}</p>
                   </div>
 
                   {/* Breathing */}
@@ -5664,7 +5732,7 @@ export default function MissionControl() {
                 <div>
                   <label className="block text-sm text-white/50 mb-2">Kategorie</label>
                   <div className="grid grid-cols-3 gap-1">
-                    {(["habits", "sleep", "mood"] as const).map(cat => (
+                    {(["habits", "sleep", "gym", "mood"] as const).map(cat => (
                       <button
                         key={cat}
                         onClick={() => setRetroBulkCategory(cat)}
@@ -5675,7 +5743,7 @@ export default function MissionControl() {
                             : "bg-white/5 border border-white/10 text-white/50 hover:border-white/20"
                         )}
                       >
-                        {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : "💭 Mood"}
+                        {cat === "habits" ? "🏋️ Habits" : cat === "sleep" ? "😴 Sleep" : cat === "gym" ? "💪 Gym (Mo/Mi/Fr)" : "💭 Mood"}
                       </button>
                     ))}
                   </div>
@@ -5740,6 +5808,31 @@ export default function MissionControl() {
                         className="w-full accent-pink-500" />
                     </div>
                     <p className="text-xs text-white/30">Dieselben Werte werden für jeden Tag im Zeitraum eingetragen.</p>
+                  </div>
+                )}
+                {/* Bulk Gym */}
+                {retroBulkCategory === "gym" && (
+                  <div>
+                    <label className="block text-sm text-white/50 mb-2">Gym-Sessions — aktiviert = gemacht</label>
+                    <p className="text-xs text-white/30 mb-3">Für jeden aktivierten Tag wird eine Gym-Session geloggt.</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {["Montag", "Mittwoch", "Freitag"].map(day => (
+                        <button
+                          key={day}
+                          onClick={() => setRetroBulkGymDays(prev => ({ ...prev, [day]: !prev[day] }))}
+                          className={cn(
+                            "p-3 rounded-xl border text-sm font-medium transition-all flex flex-col items-center gap-1",
+                            retroBulkGymDays[day]
+                              ? "bg-orange-500/20 border-orange-500/30 text-orange-300"
+                              : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
+                          )}
+                        >
+                          <span className="text-xl">💪</span>
+                          <span>{day}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-white/30 mt-2">Pro aktiviertem Tag wird eine Session geloggt.</p>
                   </div>
                 )}
               </div>
