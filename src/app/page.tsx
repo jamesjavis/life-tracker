@@ -2025,7 +2025,7 @@ export default function MissionControl() {
                   <p className="text-sm font-bold text-orange-400">{gymStreak}🔥</p>
                   <p className="text-xs text-white/40">Gym Streak</p>
                   {(() => {
-                    const gymDays = [1, 3, 5]; // Mon, Wed, Fri
+                    const gymDays = [1, 3, 5, 6]; // Mon, Wed, Fri, Sat
                     const isGymDay = gymDays.includes(dayOfWeek);
                     const doneToday = gymLogs.includes(todayStr);
                     if (doneToday) return <span className="mt-1 inline-block text-xs text-green-400">✓ Heute ✅</span>;
@@ -2040,7 +2040,11 @@ export default function MissionControl() {
                         </button>
                       </div>
                     );
-                    return <span className="mt-1 inline-block text-xs text-white/30">Offen</span>;
+                    // Show next gym day count
+                    const nextDay = gymDays.find(d => d > dayOfWeek) ?? gymDays[0];
+                    const daysUntil = nextDay > dayOfWeek ? nextDay - dayOfWeek : 7 - dayOfWeek + nextDay;
+                    const DAY_LABELS: Record<number, string> = { 0: 'So', 1: 'Mo', 2: 'Di', 3: 'Mi', 4: 'Do', 5: 'Fr', 6: 'Sa' };
+                    return <span className="mt-1 inline-block text-xs text-white/40">{DAY_LABELS[nextDay]} in {daysUntil}T</span>;
                   })()}
                   {gymStats && (
                     <p className={`mt-1 text-xs font-bold ${(gymStats.thisWeekSessions ?? 0) === 0 ? 'text-orange-400' : (gymStats.thisWeekSessions ?? 0) >= 2 ? 'text-green-400' : 'text-yellow-400'}`}>
