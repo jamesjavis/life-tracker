@@ -92,9 +92,35 @@ function score(data: any) {
   return { scores, total: Object.values(scores).reduce((a, b) => a + b, 0) };
 }
 
+// Berlin timezone helpers to avoid UTC/local mismatch
+function getBerlinDate(): Date {
+  // Returns current date in Berlin timezone (UTC+2 CEST / UTC+1 CET)
+  const offset = 2 * 60; // default to CEST (summer)
+  const d = new Date();
+  return new Date(d.getTime() + offset * 60 * 1000 - d.getTimezoneOffset() * 60 * 1000);
+}
+
+function parseBerlinDate(dateStr: string): Date {
+  // Parse "2026-04-18" as Berlin local midnight
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0);
+}
+
+function formatBerlinDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function daysBetween(date: Date, now: Date): number {
+  return Math.floor((now.getTime() - date.getTime()) / 86400000);
+}
+
 function generateInsights(data: any, scores: Record<string, number>) {
   const insights: { category: string; icon: string; headline: string; detail: string; priority: "high" | "medium" | "low" }[] = [];
-  const now = new Date();
+  const now = getBerlinDate();
+  const todayStr = now.toISOString().split("T")[0]; // "2026-04-19"
 
   // === SLEEP ===
   const sleepEntries = data.sleep?.entries || [];
@@ -104,7 +130,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
     : 0;
   const lastSleepEntry = sleepEntries[0]; // newest-first storage
   const daysSinceSleep = lastSleepEntry
-    ? Math.floor((now.getTime() - new Date(lastSleepEntry.date + "T00:00:00").getTime()) / 86400000)
+    ? daysBetween(parseBerlinDate(lastSleepEntry.date), now)
     : null;
 
   if (daysSinceSleep === null || daysSinceSleep >= 7) {
@@ -137,17 +163,15 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const gymLogs: string[] = data.gym?.logs || [];
   let lastGymGap = null;
   for (let i = 1; i < 30; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dayStr = d.toISOString().split("T")[0];
+    const d = new Date(now.getTime() - i * 86400000);
+    const dayStr = formatBerlinDate(d);
     if (gymLogs.includes(dayStr)) { lastGymGap = i; break; }
   }
 
   const gymDaysLast14 = [];
   for (let i = 0; i < 14; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dayStr = d.toISOString().split("T")[0];
+    const d = new Date(now.getTime() - i * 86400000);
+    const dayStr = formatBerlinDate(d);
     if (gymLogs.includes(dayStr)) gymDaysLast14.push(dayStr);
   }
 
@@ -190,7 +214,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
     : 0;
   const lastMoodEntry = moodEntries[0]; // newest-first storage
   const daysSinceMood = lastMoodEntry
-    ? Math.floor((now.getTime() - new Date(lastMoodEntry.date + "T00:00:00").getTime()) / 86400000)
+    ? daysBetween(parseBerlinDate(lastMoodEntry.date), now)
     : null;
 
   if (daysSinceMood === null || daysSinceMood >= 7) {
@@ -221,12 +245,10 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   // === HABITS ===
   const habitsMap = data.habits?.habits || {};
-  const today = new Date().toISOString().split("T")[0];
-  const todayHabits = habitsMap[today] || {};
+  const todayHabits = habitsMap[todayStr] || {};
   const doneToday = Object.values(todayHabits).filter(Boolean).length;
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const yesterday = new Date(now.getTime() - 86400000);
+  const yesterdayStr = formatBerlinDate(yesterday);
   const yesterdayHabits = habitsMap[yesterdayStr] || {};
   const doneYesterday = Object.values(yesterdayHabits).filter(Boolean).length;
 
@@ -266,7 +288,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
     : 0;
   const lastWaterEntry = waterEntries[waterEntries.length - 1]; // oldest-first storage
   const daysSinceWater = lastWaterEntry
-    ? Math.floor((now.getTime() - new Date(lastWaterEntry.date + "T00:00:00").getTime()) / 86400000)
+    ? daysBetween(parseBerlinDate(lastWaterEntry.date), now)
     : null;
 
   if (daysSinceWater === null || daysSinceWater >= 5) {
@@ -320,7 +342,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const lastWeight = weightEntries[weightEntries.length - 1]; // oldest-first storage
   const prevWeight = weightEntries.length >= 2 ? weightEntries[weightEntries.length - 2] : null;
   const daysSinceWeight = lastWeight
-    ? Math.floor((now.getTime() - new Date(lastWeight.date + "T00:00:00").getTime()) / 86400000)
+    ? daysBetween(parseBerlinDate(lastWeight.date), now)
     : null;
 
   if (lastWeight && (daysSinceWeight === null || daysSinceWeight >= 14)) {
