@@ -2044,7 +2044,12 @@ export default function MissionControl() {
                     const nextDay = gymDays.find(d => d > dayOfWeek) ?? gymDays[0];
                     const daysUntil = nextDay > dayOfWeek ? nextDay - dayOfWeek : 7 - dayOfWeek + nextDay;
                     const DAY_LABELS: Record<number, string> = { 0: 'So', 1: 'Mo', 2: 'Di', 3: 'Mi', 4: 'Do', 5: 'Fr', 6: 'Sa' };
-                    return <span className="mt-1 inline-block text-xs text-white/40">{DAY_LABELS[nextDay]} in {daysUntil}T</span>;
+                    // Show absolute date instead of relative "in Xd"
+                    const nextDate = new Date();
+                    nextDate.setDate(nextDate.getDate() + daysUntil);
+                    const dd = nextDate.getDate();
+                    const mm = nextDate.getMonth() + 1;
+                    return <span className="mt-1 inline-block text-xs text-white/40">{DAY_LABELS[nextDay]} {dd}.{mm}</span>;
                   })()}
                   {gymStats && (
                     <p className={`mt-1 text-xs font-bold ${(gymStats.thisWeekSessions ?? 0) === 0 ? 'text-orange-400' : (gymStats.thisWeekSessions ?? 0) >= 2 ? 'text-green-400' : 'text-yellow-400'}`}>
