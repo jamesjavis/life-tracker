@@ -47,7 +47,7 @@ function score(data: any) {
   scores.water = Math.round(Math.min(avgWater / 8, 1) * 10);
   total += 10;
   const mealsEntries = data.meals?.entries || [];
-  const last7meals = mealsEntries.slice(0, 7);
+  const last7meals = mealsEntries.slice(-7);
   const avgCalories = last7meals.length > 0 ? last7meals.reduce((s: number, m: any) => s + (m.calories || 0), 0) / last7meals.length : 0;
   scores.nutrition = avgCalories >= 1500 && avgCalories <= 2800 ? 10 : avgCalories < 1500 ? 5 : 7;
   total += 10;
@@ -135,7 +135,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   }
 
   const mealsEntries = data.meals?.entries || [];
-  const last7meals = mealsEntries.slice(0, 7);
+  const last7meals = mealsEntries.slice(-7);
   const avgProtein = last7meals.length > 0 ? last7meals.reduce((s: number, m: any) => s + (m.protein || 0), 0) / last7meals.length : 0;
   const avgCalories = last7meals.length > 0 ? last7meals.reduce((s: number, m: any) => s + (m.calories || 0), 0) / last7meals.length : 0;
 

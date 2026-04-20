@@ -109,6 +109,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ year, month, income, expenses, net: income - expenses, transactionCount: monthlyTransactions.length, transactions: monthlyTransactions });
   }
 
+  if (body.action === "deleteTransaction") {
+    const txIndex = data.transactions.findIndex((t: any) => t.id === body.id);
+    if (txIndex === -1) return NextResponse.json({ success: false, error: "Transaction not found" }, { status: 404 });
+    data.transactions.splice(txIndex, 1);
+    await storage.set("finance", data);
+    return NextResponse.json({ success: true, data });
+  }
+
   // Default: update finance values
   if (body.savings !== undefined) data.savings = body.savings;
   if (body.crypto !== undefined) data.crypto = body.crypto;
