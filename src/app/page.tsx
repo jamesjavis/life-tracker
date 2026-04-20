@@ -157,6 +157,7 @@ export default function MissionControl() {
   const [newBucketCategory, setNewBucketCategory] = useState<string>("other");
   const [loading, setLoading] = useState(true);
   const [trendsData, setTrendsData] = useState<{ days: any[]; weeks: any[]; streaks: any; trends: any; generatedAt: string } | null>(null);
+  const [financeData, setFinanceData] = useState<{savings: number; crypto: number; monthlyCosts: number; netWorth: number; runwayMonths: number | null; funding: any; computed: any} | null>(null);
   const [wellnessScore, setWellnessScore] = useState<number | null>(null);
   const [healthInsights, setHealthInsights] = useState<{score: number; breakdown: Record<string,number>; insights: any[]; generatedAt: string} | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
@@ -787,6 +788,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load trends", e);
+      }
+
+      // Fetch finance data
+      try {
+        const finRes = await fetch("/api/finance");
+        if (finRes.ok) {
+          const fin = await finRes.json();
+          setFinanceData(fin);
+        }
+      } catch (e) {
+        console.error("Failed to load finance", e);
       }
 
       // Fetch wellness score
@@ -2028,7 +2040,7 @@ export default function MissionControl() {
                   <p className="text-sm font-bold text-orange-400">{gymStreak}🔥</p>
                   <p className="text-xs text-white/40">Gym Streak</p>
                   {(() => {
-                    const gymDays = [1, 3, 5, 6]; // Mon, Wed, Fri, Sat
+                    const gymDays = [1, 3, 5]; // Mon, Wed, Fri (17 sessions each in 52-entry history, 0 Sat)
                     const isGymDay = gymDays.includes(dayOfWeek);
                     const doneToday = gymLogs.includes(todayStr);
                     if (doneToday) return <span className="mt-1 inline-block text-xs text-green-400">✓ Heute ✅</span>;
@@ -4845,9 +4857,9 @@ export default function MissionControl() {
                   const [worstCat, worstScore] = worst;
                   // Dynamic gym action based on gap + today
                   const dow = new Date().getDay();
-                  const isGymDay = dow === 1 || dow === 3 || dow === 5 || dow === 6;
-                  const SCHEDULED = [1, 3, 5, 6];
-                  const DAY_FULL: Record<number, string> = { 1: 'Montag', 3: 'Mittwoch', 5: 'Freitag', 6: 'Samstag' };
+                  const isGymDay = dow === 1 || dow === 3 || dow === 5;
+                  const SCHEDULED = [1, 3, 5];
+                  const DAY_FULL: Record<number, string> = { 1: 'Montag', 3: 'Mittwoch', 5: 'Freitag' };
                   const nextScheduled = SCHEDULED.find(d => d > dow) ?? SCHEDULED[0];
                   const gymAction = isGymDay
                     ? `Gym-Tag! ${gymGapDays != null && gymGapDays >= 5 ? `— ${gymGapDays}Tage-Pause` : ''}`
@@ -5075,7 +5087,7 @@ export default function MissionControl() {
                           )}
                           {!hasMeals && (
                             <button
-                              onClick={() => setActiveTab("nutrition")}
+                              onClick={() => setActiveTab("tracker")}
                               className="mt-3 w-full py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/10 hover:from-green-500/30 hover:to-emerald-500/20 border border-green-500/30 rounded-xl text-green-400 text-xs font-medium transition-all"
                             >
                               🍽️ Mahlzeiten loggen
@@ -5087,6 +5099,33 @@ export default function MissionControl() {
                         </>
                       );
                     })()}
+                  </div>
+
+                  {/* Finance Overview — pulled directly from /api/finance */}
+                  <div className="p-5 bg-gradient-to-br from-yellow-500/10 to-amber-500/5 backdrop-blur-xl rounded-2xl border border-yellow-500/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">Net Worth</span>
+                      <DollarSign className="w-4 h-4 text-yellow-400" />
+                    </div>
+                    <p className="text-2xl font-bold text-yellow-400">
+                      {financeData ? `€${(financeData.netWorth || 0).toLocaleString()}` : "—"}
+                    </p>
+                    {financeData?.runwayMonths != null && (
+                      <p className={cn("text-xs font-medium mt-1",
+                        financeData.runwayMonths >= 6 ? "text-green-400" :
+                        financeData.runwayMonths >= 3 ? "text-yellow-400" : "text-red-400"
+                      )}>
+                        💰 {financeData.runwayMonths} Mo. Runway
+                      </p>
+                    )}
+                    {financeData?.funding && (
+                      <p className="text-xs text-yellow-200/50 mt-0.5">
+                        {financeData.funding.status === "confirmed" ? "✅ " : "⏳ "}{financeData.funding.amount?.toLocaleString()}€ ({financeData.funding.expected})
+                      </p>
+                    )}
+                    <p className="text-xs text-white/30 mt-1">
+                      €{(financeData?.savings || 0).toLocaleString()} sp + €{(financeData?.crypto || 0).toLocaleString()} crypto
+                    </p>
                   </div>
 
                   {/* Water */}
@@ -5353,12 +5392,12 @@ export default function MissionControl() {
                   const dow = new Date().getDay();
                   // Gym schedule: Mo(1) · Mi(3) · Fr(5) · Sa(6)
                   // Returns the NEXT scheduled gym day from today
-                  const SCHEDULED = [1, 3, 5, 6];
+                  const SCHEDULED = [1, 3, 5]; // Mon, Wed, Fri
                   const DAY_LABELS: Record<number, string> = { 0: 'So', 1: 'Mo', 2: 'Di', 3: 'Mi', 4: 'Do', 5: 'Fr', 6: 'Sa' };
-                  const DAY_FULL: Record<number, string> = { 0: 'Sonntag', 1: 'Montag', 2: 'Dienstag', 3: 'Mittwoch', 4: 'Donnerstag', 5: 'Freitag', 6: 'Samstag' };
+                  const DAY_FULL: Record<number, string> = { 1: 'Montag', 3: 'Mittwoch', 5: 'Freitag' };
                   const nextScheduled = SCHEDULED.find(d => d > dow) ?? SCHEDULED[0];
-                  const nextDay = dow === 1 || dow === 3 || dow === 5 || dow === 6 ? DAY_LABELS[dow] + ' (heute!)' : DAY_LABELS[nextScheduled];
-                  const nextFull = dow === 1 || dow === 3 || dow === 5 || dow === 6 ? DAY_FULL[dow] + ' (heute!)' : DAY_FULL[nextScheduled];
+                  const nextDay = dow === 1 || dow === 3 || dow === 5 ? DAY_LABELS[dow] + ' (heute!)' : DAY_LABELS[nextScheduled];
+                  const nextFull = dow === 1 || dow === 3 || dow === 5 ? DAY_FULL[dow] + ' (heute!)' : DAY_FULL[nextScheduled];
                   return (
                     <div className="p-6 bg-gradient-to-br from-orange-500/10 to-red-500/5 backdrop-blur-xl rounded-2xl border border-orange-500/20">
                       <div className="flex items-start justify-between gap-4">
