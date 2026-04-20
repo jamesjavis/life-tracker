@@ -7,7 +7,17 @@
     "amount": 12000,
     "expected": "May/June 2026"
   },
-  "transactions": [],
+  "transactions": [
+    { "type": "expense", "category": "food", "amount": 320, "description": "Groceries + food", "date": "2026-04-01" },
+    { "type": "expense", "category": "utilities", "amount": 145, "description": "Rent + utilities", "date": "2026-04-03" },
+    { "type": "income", "category": "freelance", "amount": 1800, "description": "Client payment", "date": "2026-04-05" },
+    { "type": "expense", "category": "transport", "amount": 89, "description": "Transport", "date": "2026-04-08" },
+    { "type": "expense", "category": "entertainment", "amount": 65, "description": "Entertainment", "date": "2026-04-11" },
+    { "type": "income", "category": "freelance", "amount": 1500, "description": "Design project", "date": "2026-04-12" },
+    { "type": "expense", "category": "food", "amount": 280, "description": "Groceries + food", "date": "2026-04-15" },
+    { "type": "expense", "category": "health", "amount": 95, "description": "Supplements + health", "date": "2026-04-18" },
+    { "type": "expense", "category": "food", "amount": 150, "description": "Groceries", "date": "2026-04-19" }
+  ],
   "savingsGoals": [
     {
       "id": "1",
@@ -22,5 +32,5 @@
       "current": 0
     }
   ],
-  "lastUpdated": "2026-04-17T13:13:50.924991+00:00"
+  "lastUpdated": "2026-04-20T08:47:00.000Z"
 }
