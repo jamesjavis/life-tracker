@@ -168,5 +168,44 @@ export async function GET() {
   const data = await getData();
   const { scores, total } = score(data);
   const insights = generateInsights(data, scores);
-  return NextResponse.json({ score: total, breakdown: scores, insights, generatedAt: new Date().toISOString() });
+
+  // Data freshness — how old is the most recent entry per category?
+  const now = getBerlinDate();
+  const todayStr = now.toISOString().split("T")[0];
+  const dataAge: Record<string, number | null> = {};
+  const categories = [
+    { key: "sleep", entries: data.sleep?.entries || [], dateField: "date" },
+    { key: "mood", entries: data.mood?.entries || [], dateField: "date" },
+    { key: "gym", entries: data.gym?.logs || [], dateField: "logs" },
+    { key: "habits", entries: Object.keys(data.habits?.habits || {}), dateField: "habits" },
+    { key: "water", entries: data.water?.entries || [], dateField: "date" },
+    { key: "meals", entries: data.meals?.entries || [], dateField: "date" },
+    { key: "weight", entries: data.weight?.entries || [], dateField: "date" },
+  ];
+  for (const cat of categories) {
+    let lastEntry: string | null = null;
+    if (cat.key === "gym") {
+      const logs = data.gym?.logs || [];
+      if (logs.length > 0) lastEntry = [...logs].sort().pop()!;
+    } else if (cat.key === "habits") {
+      const habitsMap = data.habits?.habits || {};
+      const dates = Object.keys(habitsMap).sort().reverse();
+      if (dates.length > 0) {
+        const lastDate = dates[0];
+        const hasData = Object.values(habitsMap[lastDate] || {}).some(Boolean);
+        if (hasData) lastEntry = lastDate;
+      }
+    } else {
+      const entries = cat.entries as any[];
+      if (entries.length > 0) lastEntry = entries[0]?.date || null;
+    }
+    if (lastEntry) {
+      const parsed = parseBerlinDate(lastEntry);
+      dataAge[cat.key] = daysBetween(parsed, now);
+    } else {
+      dataAge[cat.key] = null;
+    }
+  }
+
+  return NextResponse.json({ score: total, breakdown: scores, insights, dataAge, generatedAt: new Date().toISOString() });
 }
