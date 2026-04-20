@@ -5023,6 +5023,72 @@ export default function MissionControl() {
                     </p>
                   </div>
 
+                  {/* Nutrition Today — today's macros + goal progress */}
+                  <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/50 text-xs">🍽️ Nutrition Today</span>
+                      <span className="text-lg">🍎</span>
+                    </div>
+                    {(() => {
+                      const todayCals = nutritionData?.dailyNutrition?.calories || 0;
+                      const todayPro = nutritionData?.dailyNutrition?.protein || 0;
+                      const goalCals = nutritionData?.dailyGoals?.calories || 2200;
+                      const goalPro = nutritionData?.dailyGoals?.protein || 150;
+                      const calPct = goalCals > 0 ? Math.round((todayCals / goalCals) * 100) : 0;
+                      const proPct = goalPro > 0 ? Math.round((todayPro / goalPro) * 100) : 0;
+                      const hasMeals = nutritionData?.todayMeals && nutritionData.todayMeals.length > 0;
+                      const daysSince = (() => {
+                        if (!trendsData?.days?.length) return null;
+                        const withMeals = trendsData.days.filter((d: any) => d.nutrition.calories > 0);
+                        if (!withMeals.length) return null;
+                        const last = withMeals[withMeals.length - 1];
+                        const lastDate = new Date(last.date + "T12:00:00");
+                        const now = new Date();
+                        return Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+                      })();
+                      return (
+                        <>
+                          <div className="space-y-2">
+                            {/* Calories row */}
+                            <div>
+                              <div className="flex justify-between text-xs mb-0.5">
+                                <span className="text-white/40">🔥 kcal</span>
+                                <span className={cn(todayCals > 0 ? "text-orange-400" : "text-white/30")}>{todayCals > 0 ? todayCals : "—"} <span className="text-white/30">/ {goalCals}</span></span>
+                              </div>
+                              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                <div className={cn("h-full rounded-full transition-all", calPct >= 100 ? "bg-green-400" : calPct >= 50 ? "bg-orange-400" : "bg-red-400")} style={{ width: `${Math.min(calPct, 100)}%` }} />
+                              </div>
+                            </div>
+                            {/* Protein row */}
+                            <div>
+                              <div className="flex justify-between text-xs mb-0.5">
+                                <span className="text-white/40">🥩 Protein</span>
+                                <span className={cn(todayPro > 0 ? "text-red-400" : "text-white/30")}>{todayPro > 0 ? todayPro : "—"}g <span className="text-white/30">/ {goalPro}g</span></span>
+                              </div>
+                              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                <div className={cn("h-full rounded-full transition-all", proPct >= 100 ? "bg-green-400" : proPct >= 50 ? "bg-orange-400" : "bg-red-400")} style={{ width: `${Math.min(proPct, 100)}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                          {daysSince !== null && daysSince >= 5 && (
+                            <p className="text-xs text-red-400 mt-2">⚠️ {daysSince}T Lücke — nicht geloggt</p>
+                          )}
+                          {!hasMeals && (
+                            <button
+                              onClick={() => setActiveTab("nutrition")}
+                              className="mt-3 w-full py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/10 hover:from-green-500/30 hover:to-emerald-500/20 border border-green-500/30 rounded-xl text-green-400 text-xs font-medium transition-all"
+                            >
+                              🍽️ Mahlzeiten loggen
+                            </button>
+                          )}
+                          {hasMeals && (
+                            <p className="text-xs text-green-400 mt-2">✅ {nutritionData.todayMeals.length} Mahlzeit(n) heute</p>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+
                   {/* Water */}
                   <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
                     <div className="flex items-center justify-between mb-2">
