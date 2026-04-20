@@ -1444,7 +1444,7 @@ export default function MissionControl() {
                   check.setDate(check.getDate() + 1);
                   while (check <= today) {
                     const dow = check.getDay();
-                    if (dow === 1 || dow === 3 || dow === 5) {
+                    if (dow === 1 || dow === 3 || dow === 5 || dow === 6) {
                       const dateStr = check.toISOString().split("T")[0];
                       if (!gymLogs.includes(dateStr)) {
                         const d = new Date(check);
