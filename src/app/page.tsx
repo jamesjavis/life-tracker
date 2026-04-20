@@ -6,7 +6,8 @@ import {
   Briefcase, Wallet, ChevronRight, ExternalLink,
   Activity, Calendar, Award, Gift, CheckCircle2, Circle,
   Dumbbell, Flame, Star, TrendingDown, Cloud, CloudRain,
-  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon, BarChart3, Pill
+  CloudSnow, Sun, CloudLightning, Wind, Droplets, Moon, BarChart3, Pill,
+  Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
@@ -290,6 +291,8 @@ export default function MissionControl() {
   const [txCategory, setTxCategory] = useState("other");
   const [txDescription, setTxDescription] = useState("");
   const [txDate, setTxDate] = useState(new Date().toISOString().split('T')[0]);
+  const [txFilterMonth, setTxFilterMonth] = useState("all");
+  const [txFilterType, setTxFilterType] = useState<"all" | "income" | "expense">("all");
 
   // FI Roadmap data from API
   const [roadmapData, setRoadmapData] = useState<{
@@ -4104,6 +4107,166 @@ export default function MissionControl() {
               </button>
             </div>
 
+            {/* Monthly Cash Flow Summary */}
+            {(() => {
+              const now = new Date();
+              const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+              const currentMonthTx = finances.transactions.filter((t: any) => {
+                if (!t.date) return false;
+                return t.date.slice(0, 7) === currentMonthKey;
+              });
+              const income = currentMonthTx.filter((t: any) => t.type === 'income').reduce((s: number, t: any) => s + t.amount, 0);
+              const expenses = currentMonthTx.filter((t: any) => t.type === 'expense').reduce((s: number, t: any) => s + t.amount, 0);
+              const net = income - expenses;
+              const currentMonthLabel = now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+              return (
+                <div className="p-6 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/10">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="p-2 bg-green-500/20 rounded-xl">
+                      <TrendingUp className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold">Cash Flow</h3>
+                      <p className="text-xs text-white/40">{currentMonthLabel}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20 text-center">
+                      <p className="text-xs text-white/40 mb-1">Income</p>
+                      <p className="text-xl font-bold text-green-400">{income > 0 ? `+€${income.toLocaleString()}` : '—'}</p>
+                    </div>
+                    <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20 text-center">
+                      <p className="text-xs text-white/40 mb-1">Expenses</p>
+                      <p className="text-xl font-bold text-red-400">{expenses > 0 ? `-€${expenses.toLocaleString()}` : '—'}</p>
+                    </div>
+                    <div className={`p-4 rounded-xl border text-center ${net >= 0 ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                      <p className="text-xs text-white/40 mb-1">Net</p>
+                      <p className={`text-xl font-bold ${net >= 0 ? 'text-green-400' : 'text-red-400'}`}>{net !== 0 ? (net > 0 ? `+€${net.toLocaleString()}` : `-€${Math.abs(net).toLocaleString()}`) : '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Full Transaction History */}
+            <div className="p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-500/20 rounded-xl">
+                    <Clock className="w-5 h-5 text-indigo-400" />
+                  </div>
+                  <h3 className="text-xl font-bold">Transaction History</h3>
+                  {finances.transactions.length > 0 && (
+                    <span className="px-2 py-0.5 bg-white/10 rounded-full text-xs text-white/40">{finances.transactions.length} total</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-3 mb-5">
+                {/* Type filter */}
+                <div className="flex bg-white/5 rounded-xl overflow-hidden border border-white/10">
+                  {(['all', 'income', 'expense'] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setTxFilterType(f)}
+                      className={`px-4 py-2 text-sm font-medium transition-all ${txFilterType === f ? 'bg-indigo-500/40 text-white' : 'text-white/40 hover:text-white/70'}`}
+                    >
+                      {f === 'all' ? 'All' : f === 'income' ? '+ Income' : '− Expense'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Month filter */}
+                <select
+                  value={txFilterMonth}
+                  onChange={e => setTxFilterMonth(e.target.value)}
+                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white/70 text-sm focus:outline-none focus:border-indigo-500/50"
+                >
+                  <option value="all">All months</option>
+                  {(() => {
+                    const months = [];
+                    const now = new Date();
+                    for (let i = 0; i < 12; i++) {
+                      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                      const label = d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+                      months.push(<option key={key} value={key}>{label}</option>);
+                    }
+                    return months;
+                  })()}
+                </select>
+              </div>
+
+              {/* Transaction list */}
+              {finances.transactions.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-white/30 mb-2">No transactions yet</p>
+                  <p className="text-xs text-white/20">Add your first transaction above to start tracking</p>
+                </div>
+              ) : (
+                (() => {
+                  const filtered = finances.transactions
+                    .filter((t: any) => txFilterType === 'all' || t.type === txFilterType)
+                    .filter((t: any) => txFilterMonth === 'all' || (t.date && t.date.slice(0, 7) === txFilterMonth))
+                    .slice()
+                    .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="text-center py-10">
+                        <p className="text-white/30">No transactions match your filters</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                      {filtered.map((tx: any) => (
+                        <div key={tx.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/[0.07] transition-colors group">
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold",
+                              tx.type === 'income' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                            )}>
+                              {tx.type === 'income' ? '+' : '−'}
+                            </div>
+                            <div>
+                              <p className="font-medium text-white/90">{tx.description || tx.category}</p>
+                              <p className="text-xs text-white/40">
+                                {new Date(tx.date + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })} • <span className="capitalize">{tx.category}</span>
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className={cn("font-bold text-base", tx.type === 'income' ? 'text-green-400' : 'text-red-400')}>
+                              {tx.type === 'income' ? '+' : '−'}€{tx.amount.toLocaleString()}
+                            </div>
+                            <button
+                              onClick={async () => {
+                                const res = await fetch('/api/finance', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ action: 'deleteTransaction', id: tx.id }),
+                                });
+                                if (res.ok) {
+                                  const d = await res.json();
+                                  setFinances(d.data);
+                                }
+                              }}
+                              className="opacity-0 group-hover:opacity-100 px-2 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 text-xs rounded-lg transition-all"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+
             {/* Monthly Spending by Category */}
             <div className="p-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl rounded-3xl border border-cyan-500/20">
               <div className="flex items-center gap-3 mb-6">
@@ -4695,7 +4858,17 @@ export default function MissionControl() {
                     sleep:     { icon: '😴', label: 'Schlaf',          action: 'Letzter Eintrag vor 10+ Tagen — nachholen!', color: 'text-yellow-400', bg: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30' },
                     mood:      { icon: '😊', label: 'Stimmung',       action: 'Stimmung nicht geloggt — wie fühlst du dich?', color: 'text-yellow-400', bg: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30' },
                     water:     { icon: '💧', label: 'Wasser',          action: `${waterData.todayGlasses}/${waterData.dailyGoal} Gläser heute`,      color: 'text-blue-400',   bg: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30' },
-                    nutrition: { icon: '🍎', label: 'Ernährung',      action: 'Keine Mahlzeiten geloggt diese Woche',        color: 'text-green-400',  bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' },
+                    nutrition: { icon: '🍎', label: 'Ernährung',      action: (() => {
+                      const todayCals = nutritionData?.dailyNutrition?.calories || 0;
+                      const todayPro = nutritionData?.dailyNutrition?.protein || 0;
+                      const weekCals = trendsData?.trends?.calories?.value;
+                      const weekPro = trendsData?.trends?.protein?.value;
+                      const hasMeals = weekCals && weekCals > 0;
+                      if (!hasMeals) return 'Keine Mahlzeiten geloggt diese Woche';
+                      const calStr = todayCals > 0 ? `${todayCals} kcal` : '0 kcal';
+                      const proStr = todayPro > 0 ? `${todayPro}g P` : '0g P';
+                      return `Heute: ${calStr} · ${proStr}`;
+                    })(),                                                     color: 'text-green-400',  bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' },
                   };
                   const info = priorityConfig[worstCat] || { icon: '✅', label: 'Alles gut', action: 'Keine Aktion nötig', color: 'text-green-400', bg: 'from-green-500/20 to-emerald-500/20 border-green-500/30' };
                   const showPriority = (worstScore as number) < 75;
