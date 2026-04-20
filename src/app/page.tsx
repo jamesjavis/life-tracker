@@ -4949,7 +4949,7 @@ export default function MissionControl() {
                     const d = new Date(currentYear, currentMonth, 1);
                     while (d.getMonth() === currentMonth) {
                       const dow = d.getDay();
-                      if (dow === 1 || dow === 3 || dow === 5) {
+                      if (dow === 1 || dow === 3 || dow === 5 || dow === 6) {
                         scheduledDays.push(d.toISOString().split('T')[0]);
                       }
                       d.setDate(d.getDate() + 1);
