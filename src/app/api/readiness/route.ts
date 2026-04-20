@@ -1,0 +1,84 @@
+import { NextResponse } from "next/server";
+import { storage } from "@/lib/storage";
+
+const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
+const WATER_GOAL = 8;
+const SLEEP_GOAL_H = 7;
+const SLEEP_GOAL_Q = 7;
+const CALORIE_GOAL = 2100;
+
+export async function GET() {
+  const today = new Date().toISOString().split("T")[0];
+
+  const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw] = await Promise.all([
+    storage.get("habits"),
+    storage.get("water"),
+    storage.get("sleep"),
+    storage.get("mood"),
+    storage.get("meals"),
+    storage.get("gym"),
+  ]);
+
+  // ── Habits (30 pts) ──────────────────────────────────────────────
+  const todayHabits = (habitsRaw?.habits?.[today]) || {};
+  const completedHabits = HABIT_IDS.filter(id => todayHabits[id]).length;
+  const habitsScore = Math.round((completedHabits / HABIT_IDS.length) * 30);
+
+  // ── Water (20 pts) ───────────────────────────────────────────────
+  const waterToday = (waterRaw?.entries || []).find((e: any) => e.date === today);
+  const waterGlasses = waterToday?.glasses ?? 0;
+  const waterScore = Math.round(Math.min(waterGlasses / WATER_GOAL, 1) * 20);
+
+  // ── Sleep (30 pts) ───────────────────────────────────────────────
+  const sleepEntries = sleepRaw?.entries || [];
+  // sleep: newest-first [0]=most-recent
+  const todaySleep = sleepEntries.find((e: any) => e.date === today);
+  const lastSleep = sleepEntries[0];
+  const sleepDuration = todaySleep?.duration ?? lastSleep?.duration ?? 0;
+  const sleepQuality = todaySleep?.quality ?? lastSleep?.quality ?? 0;
+  const sleepDurationScore = sleepDuration >= SLEEP_GOAL_H ? 15 : Math.round((sleepDuration / SLEEP_GOAL_H) * 15);
+  const sleepQualityScore = sleepQuality >= SLEEP_GOAL_Q ? 15 : Math.round((sleepQuality / 10) * 15);
+  const sleepScore = sleepDurationScore + sleepQualityScore;
+
+  // ── Nutrition (20 pts) ───────────────────────────────────────────
+  const mealEntries = mealsRaw?.entries || [];
+  const todayMeals = mealEntries.filter((e: any) => e.date === today);
+  const todayCalories = todayMeals.reduce((s: number, e: any) => s + (e.calories ?? 0), 0);
+  const todayProtein = todayMeals.reduce((s: number, e: any) => s + (e.protein ?? 0), 0);
+  const nutritionScore = Math.round(Math.min(todayCalories / CALORIE_GOAL, 1) * 20);
+
+  // ── Gym bonus (0 or bonus pts) ──────────────────────────────────
+  const gymLogs = gymRaw?.logs || [];
+  const gymToday = gymLogs.includes(today);
+  const gymScore = gymToday ? 10 : 0;
+
+  const total = habitsScore + waterScore + sleepScore + nutritionScore + gymScore;
+  const max = 110; // 100 base + 10 gym bonus
+
+  // ── Mood / Energy ───────────────────────────────────────────────
+  const moodEntries = moodRaw?.entries || [];
+  const todayMood = moodEntries.find((e: any) => e.date === today);
+  const lastMood = moodEntries[0];
+  const energy = todayMood?.energy ?? lastMood?.energy ?? 0;
+  const mood = todayMood?.mood ?? lastMood?.mood ?? 0;
+
+  // ── Overall label ────────────────────────────────────────────────
+  const pct = Math.round((total / max) * 100);
+  const label = pct >= 85 ? "green" : pct >= 65 ? "yellow" : pct >= 40 ? "orange" : "red";
+
+  return NextResponse.json({
+    score: total,
+    max,
+    percentage: pct,
+    label,
+    breakdown: {
+      habits: { score: habitsScore, max: 30, done: completedHabits, total: HABIT_IDS.length },
+      water: { score: waterScore, max: 20, glasses: waterGlasses, goal: WATER_GOAL },
+      sleep: { score: sleepScore, max: 30, duration: sleepDuration, quality: sleepQuality },
+      nutrition: { score: nutritionScore, max: 20, calories: todayCalories, protein: todayProtein },
+      gym: { score: gymScore, max: 10, done: gymToday },
+    },
+    mood: { energy, mood },
+    today,
+  });
+}
