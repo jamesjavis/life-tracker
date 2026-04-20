@@ -159,7 +159,7 @@ export default function MissionControl() {
   const [trendsData, setTrendsData] = useState<{ days: any[]; weeks: any[]; streaks: any; trends: any; generatedAt: string } | null>(null);
   const [financeData, setFinanceData] = useState<{savings: number; crypto: number; monthlyCosts: number; netWorth: number; runwayMonths: number | null; funding: any; computed: any} | null>(null);
   const [wellnessScore, setWellnessScore] = useState<number | null>(null);
-  const [healthInsights, setHealthInsights] = useState<{score: number; breakdown: Record<string,number>; insights: any[]; generatedAt: string} | null>(null);
+  const [healthInsights, setHealthInsights] = useState<{score: number; breakdown: Record<string,number>; insights: any[]; dataAge?: Record<string,number|null>; generatedAt: string} | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
   const [workoutDuration, setWorkoutDuration] = useState(60);
@@ -4912,11 +4912,23 @@ export default function MissionControl() {
                           water: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
                           nutrition: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
                         };
+                        const age = healthInsights.dataAge?.[cat];
+                        const ageLabel = age !== null && age !== undefined
+                          ? age === 0 ? 'heute'
+                          : age === 1 ? 'gestern'
+                          : `${age}d`
+                          : null;
+                        const isStale = age !== null && age !== undefined && age >= 5;
                         return (
                           <div key={cat} className="flex items-center gap-2">
                             <span>{icons[cat] || '•'}</span>
                             <span className="text-white/50 text-xs capitalize">{cat}</span>
                             <span className={cn("text-sm font-bold ml-auto", colors[cat] || 'text-white')}>{score}</span>
+                            {ageLabel && (
+                              <span className={cn("text-xs font-mono", isStale ? "text-orange-400" : "text-white/30")}>
+                                {ageLabel}
+                              </span>
+                            )}
                           </div>
                         );
                       })}
