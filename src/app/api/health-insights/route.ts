@@ -53,7 +53,7 @@ function score(data: any) {
   scores.nutrition = avgCalories >= 1500 && avgCalories <= 2800 ? 10 : avgCalories < 1500 ? 5 : 7;
   total += 10;
 
-  // Supplements: days with supplements taken in last 7 days
+  // Supplements: entries taken in last 7 days / max possible entries
   const supplementList = data.supplements?.supplements || [];
   const supplementLog = data.supplements?.log || [];
   const now2 = new Date();
@@ -61,9 +61,10 @@ function score(data: any) {
     const d = new Date(e.date);
     return (now2.getTime() - d.getTime()) / 86400000 <= 7;
   });
-  const uniqueSuppDays = new Set(last7supps.map((e: any) => e.date)).size;
-  const totalSuppSlots = supplementList.length * 7;
-  scores.supplements = totalSuppSlots > 0 ? Math.round(Math.min((uniqueSuppDays * supplementList.length) / totalSuppSlots, 1) * 10) : 0;
+  // Count total supplement entries taken (each entry = one supplement taken on one day)
+  const totalEntriesTaken = last7supps.length;
+  const maxPossibleEntries = supplementList.length * 7;
+  scores.supplements = maxPossibleEntries > 0 ? Math.round(Math.min(totalEntriesTaken / maxPossibleEntries, 1) * 10) : 0;
   total += 10;
 
   return { scores, total: Object.values(scores).reduce((a, b) => a + b, 0) };
