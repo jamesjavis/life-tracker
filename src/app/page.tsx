@@ -4998,6 +4998,55 @@ export default function MissionControl() {
                     );
                   })()}
 
+                  {/* Next Gym Session Countdown */}
+                  {(() => {
+                    const now = new Date();
+                    const todayDow = now.getDay();
+                    const SCHEDULED_DOWS = [1, 3, 5]; // Mon=1, Wed=3, Fri=5
+                    const DOW_LABELS: Record<number,string> = { 1: 'Montag', 3: 'Mittwoch', 5: 'Freitag' };
+                    const DOW_SHORT: Record<number,string> = { 1: 'Mo', 3: 'Mi', 5: 'Fr' };
+                    // Find next scheduled day
+                    const nextDow = SCHEDULED_DOWS.find(d => d > todayDow) ?? SCHEDULED_DOWS[0];
+                    const nextDate = new Date(now);
+                    const daysUntil = (nextDow - todayDow + 7) % 7 || 7;
+                    nextDate.setDate(now.getDate() + daysUntil);
+                    const nextDateStr = nextDate.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'short' });
+                    const isTodayGym = SCHEDULED_DOWS.includes(todayDow);
+                    // Find last gym
+                    const gymLogs = trendsData.days.filter((d: any) => d.gym).map((d: any) => d.date).sort();
+                    const lastGym = gymLogs[gymLogs.length - 1];
+                    const gapDays = lastGym ? Math.floor((now.getTime() - new Date(lastGym + 'T12:00:00').getTime()) / 86400000) : null;
+                    // This week's sessions
+                    const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay() + 1);
+                    const thisWeekSess = gymLogs.filter((d: string) => d >= weekStart.toISOString().split('T')[0]).length;
+                    const cardBg = isTodayGym ? 'from-orange-500/20 to-red-500/20 border-orange-500/40' : daysUntil <= 1 ? 'from-yellow-500/20 to-orange-500/20 border-yellow-500/40' : 'from-white/5 to-white/5 border-white/10';
+                    const urgencyColor = isTodayGym ? 'text-orange-400' : daysUntil === 1 ? 'text-yellow-400' : 'text-white/60';
+                    const countdown = isTodayGym ? '🔥 HEUTE' : `${daysUntil}d`;
+                    const countdownSize = isTodayGym ? 'text-3xl' : daysUntil === 1 ? 'text-3xl' : 'text-4xl';
+                    return (
+                      <div className={cn('p-5 bg-gradient-to-br rounded-2xl border', cardBg)}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-white/50 text-xs">Next Gym</span>
+                          <Dumbbell className={cn('w-4 h-4', isTodayGym ? 'text-orange-400' : 'text-white/30')} />
+                        </div>
+                        <p className={cn('font-bold mb-1', countdownSize, urgencyColor)}>{countdown}</p>
+                        <p className="text-xs text-white/50">{isTodayGym ? 'Gym-Tag!' : nextDateStr}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {isTodayGym ? (
+                            <span className="text-xs text-orange-400 font-medium">⚠️ Nicht verpasst!</span>
+                          ) : (
+                            <>
+                              <span className="text-xs text-white/40">Woche: {thisWeekSess}/3</span>
+                              {gapDays !== null && gapDays >= 3 && (
+                                <span className="text-xs text-red-400">· {gapDays}Tage-Pause</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Habits */}
                   <div className="p-5 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
                     <div className="flex items-center justify-between mb-2">
