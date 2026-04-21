@@ -20,7 +20,7 @@ function score(data: any) {
   let total = 0;
   const sleepEntries = data.sleep?.entries || [];
   const last7sleep = sleepEntries.slice(0, 7);
-  const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((a: number, b: any) => a + (b.duration || 0), 0) / last7sleep.length : 0;
+  const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((a: number, b: any) => a + (b.duration || b.hours || 0), 0) / last7sleep.length : 0;
   const sleepQuality = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.quality || 0), 0) / last7sleep.length : 0;
   scores.sleep = Math.round(Math.min(avgSleep / 8, 1) * 12.5 + Math.min(sleepQuality / 10, 1) * 12.5);
   total += 25;
@@ -81,7 +81,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   const sleepEntries = data.sleep?.entries || [];
   const last7sleep = sleepEntries.slice(0, 7);
-  const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.duration || 0), 0) / last7sleep.length : 0;
+  const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.duration || e.hours || 0), 0) / last7sleep.length : 0;
   const lastSleepEntry = sleepEntries[0];
   const daysSinceSleep = lastSleepEntry ? daysBetween(parseBerlinDate(lastSleepEntry.date), now) : null;
 
