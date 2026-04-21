@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "date": "2026-04-20",
+      "hours": 7.5,
+      "quality": 7,
+      "timestamp": "2026-04-20T23:00:00.000Z"
+    },
+    {
+      "date": "2026-04-19",
+      "hours": 7.5,
+      "quality": 7,
+      "timestamp": "2026-04-19T23:00:00.000Z"
+    },
+    {
       "date": "2026-04-18",
       "bedtime": null,
       "wakeup": null,

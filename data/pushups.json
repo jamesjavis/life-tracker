@@ -1,6 +1,12 @@
 {
   "entries": [
     {
+      "date": "2026-04-21",
+      "day": 79,
+      "reps": 79,
+      "timestamp": "2026-04-21T00:29:00.000Z"
+    },
+    {
       "date": "2026-02-01",
       "day": 1,
       "reps": 1,
@@ -470,7 +476,7 @@
     }
   ],
   "startDate": "2026-02-01",
-  "currentDay": 78,
+  "currentDay": 79,
   "note": "Backfilled 72 days \u2014 Feb 1 (1 rep) to Apr 12 (72 reps). Pattern: reps = day number.",
   "todayCompleted": true
 }

@@ -51,9 +51,10 @@
     "2026-03-25",
     "2026-03-30",
     "2026-04-03",
+    "2026-04-19",
     "2026-04-19"
   ],
-  "streak": 0,
+  "streak": 1,
   "workouts": {
     "2025-09-01": {
       "muscles": [
@@ -836,6 +837,21 @@
         "Schulterpresse"
       ],
       "notes": "Auto-imported from gym-stats.md (Fri)"
+    },
+    "2026-04-19": {
+      "muscles": [
+        "Brust",
+        "Schulter",
+        "Bizeps"
+      ],
+      "exercises": [
+        "Schr\u00e4gbankdr\u00fccken",
+        "Flachbankdr\u00fccken",
+        "Seitheben stehend",
+        "Schulterpresse",
+        "Bizeps curls"
+      ],
+      "notes": "Comeback session after 16-day gap (Apr 3 \u2192 Apr 19)"
     }
   }
 }
