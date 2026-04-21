@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
 async function getData() {
-  const [sleep, mood, gym, habits, water, meals, weight] = await Promise.all([
+  const [sleep, mood, gym, habits, water, meals, weight, supplements] = await Promise.all([
     storage.get("sleep"),
     storage.get("mood"),
     storage.get("gym"),
@@ -10,8 +10,9 @@ async function getData() {
     storage.get("water"),
     storage.get("meals"),
     storage.get("weight"),
+    storage.get("supplements"),
   ]);
-  return { sleep, mood, gym, habits, water, meals, weight };
+  return { sleep, mood, gym, habits, water, meals, weight, supplements };
 }
 
 function score(data: any) {
@@ -51,6 +52,20 @@ function score(data: any) {
   const avgCalories = last7meals.length > 0 ? last7meals.reduce((s: number, m: any) => s + (m.calories || 0), 0) / last7meals.length : 0;
   scores.nutrition = avgCalories >= 1500 && avgCalories <= 2800 ? 10 : avgCalories < 1500 ? 5 : 7;
   total += 10;
+
+  // Supplements: days with supplements taken in last 7 days
+  const supplementList = data.supplements?.supplements || [];
+  const supplementLog = data.supplements?.log || [];
+  const now2 = new Date();
+  const last7supps = supplementLog.filter((e: any) => {
+    const d = new Date(e.date);
+    return (now2.getTime() - d.getTime()) / 86400000 <= 7;
+  });
+  const uniqueSuppDays = new Set(last7supps.map((e: any) => e.date)).size;
+  const totalSuppSlots = supplementList.length * 7;
+  scores.supplements = totalSuppSlots > 0 ? Math.round(Math.min((uniqueSuppDays * supplementList.length) / totalSuppSlots, 1) * 10) : 0;
+  total += 10;
+
   return { scores, total: Object.values(scores).reduce((a, b) => a + b, 0) };
 }
 
@@ -159,6 +174,29 @@ function generateInsights(data: any, scores: Record<string, number>) {
     }
   }
 
+
+  // Supplements insight
+  const supplementList2 = data.supplements?.supplements || [];
+  const supplementLog2 = data.supplements?.log || [];
+  const now3 = getBerlinDate();
+  const today3 = now3.toISOString().split("T")[0];
+  const last7supps2 = supplementLog2.filter((e: any) => {
+    const d = new Date(e.date);
+    return (now3.getTime() - d.getTime()) / 86400000 <= 7;
+  });
+  const uniqueSuppDays2 = new Set(last7supps2.map((e: any) => e.date)).size;
+  const takenToday = supplementLog2.filter((e: any) => e.date === today3).length;
+  const lastSuppEntry: any = supplementLog2[0];
+  const daysSinceSupp = lastSuppEntry ? daysBetween(new Date(lastSuppEntry.date), now3) : null;
+
+  if (daysSinceSupp === null || daysSinceSupp >= 7) {
+    insights.push({ category: "supplements", icon: "💊", headline: "Supplements wieder tracken", detail: daysSinceSupp === null ? "Noch nie Supplements geloggt." : "Letzter Eintrag vor " + daysSinceSupp + " Tagen. " + supplementList2.length + " Supplements konfiguriert.", priority: "high" });
+  } else if (takenToday === 0 && supplementList2.length > 0) {
+    insights.push({ category: "supplements", icon: "⏰", headline: "Supplements heute noch nicht genommen", detail: takenToday + "/" + supplementList2.length + " heute. Nicht vergessen!", priority: "medium" });
+  } else if (uniqueSuppDays2 >= 6 && takenToday > 0) {
+    insights.push({ category: "supplements", icon: "✅", headline: "Supplements-Tracking aktiv", detail: uniqueSuppDays2 + " von 7 Tagen. " + takenToday + "/" + supplementList2.length + " heute eingenommen.", priority: "low" });
+  }
+
   const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
   insights.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
   return insights;
@@ -181,6 +219,7 @@ export async function GET() {
     { key: "water", entries: data.water?.entries || [], dateField: "date" },
     { key: "meals", entries: data.meals?.entries || [], dateField: "date" },
     { key: "weight", entries: data.weight?.entries || [], dateField: "date" },
+    { key: "supplements", entries: data.supplements?.log || [], dateField: "log" },
   ];
   for (const cat of categories) {
     let lastEntry: string | null = null;
