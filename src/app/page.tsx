@@ -4903,7 +4903,7 @@ export default function MissionControl() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {Object.entries(healthInsights.breakdown).map(([cat, score]) => {
-                        const icons: Record<string, string> = { sleep: '😴', mood: '😊', gym: '💪', habits: '✅', water: '💧', nutrition: '🍎' };
+                        const icons: Record<string, string> = { sleep: '😴', mood: '😊', gym: '💪', habits: '✅', water: '💧', nutrition: '🍎', supplements: '💊' };
                         const colors: Record<string, string> = {
                           sleep: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
                           mood: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
@@ -4911,6 +4911,7 @@ export default function MissionControl() {
                           habits: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
                           water: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
                           nutrition: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
+                          supplements: score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400',
                         };
                         const age = healthInsights.dataAge?.[cat];
                         const ageLabel = age !== null && age !== undefined
