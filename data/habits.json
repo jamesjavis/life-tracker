@@ -1,55 +1,97 @@
 {
   "habits": {
-    "2026-04-18": {
+    "2026-03-26": {
+      "lesen": true,
+      "creatin": true,
+      "atem": true,
       "gym": true,
       "meditation": true,
-      "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
+      "bauchworkout": true
     },
-    "2026-04-17": {
+    "2026-03-27": {
+      "smoothie": true,
+      "lesen": true,
       "gym": true,
+      "yoga": true,
+      "bauchworkout": true
+    },
+    "2026-03-28": {
+      "yoga": true,
       "meditation": true,
       "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
+      "smoothie": true,
+      "atem": true
     },
-    "2026-04-16": {
-      "gym": true,
+    "2026-03-29": {
+      "meditation": true,
+      "pushups": true,
+      "atem": true,
+      "lesen": true,
+      "yoga": true
+    },
+    "2026-03-30": {
+      "lesen": true,
+      "smoothie": true,
+      "meditation": true,
+      "creatin": true,
+      "yoga": true,
+      "atem": true
+    },
+    "2026-03-31": {
+      "smoothie": true,
+      "pushups": true,
       "meditation": true,
       "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
+      "creatin": true
     },
-    "2026-04-15": {
+    "2026-04-01": {
+      "pushups": true,
+      "atem": true,
+      "creatin": true,
+      "bauchworkout": true
+    },
+    "2026-04-02": {
+      "pushups": true,
       "gym": true,
-      "meditation": true,
-      "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
+      "atem": true,
+      "smoothie": true,
+      "meditation": true
     },
-    "2026-04-14": {
+    "2026-04-03": {
+      "lesen": true,
+      "creatin": true,
+      "meditation": true,
+      "bauchworkout": true
+    },
+    "2026-04-04": {
+      "atem": true,
+      "meditation": true,
       "gym": true,
-      "meditation": true,
-      "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
+      "pushups": true,
+      "bauchworkout": true
     },
-    "2026-04-13": {
+    "2026-04-05": {
+      "yoga": true,
+      "creatin": true,
+      "pushups": true,
+      "smoothie": true,
+      "meditation": true
+    },
+    "2026-04-06": {
+      "smoothie": true,
+      "meditation": true,
+      "yoga": true,
+      "atem": true,
+      "bauchworkout": true
+    },
+    "2026-04-07": {
       "gym": true,
+      "pushups": true,
       "meditation": true,
-      "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
+      "lesen": true
     },
-    "2026-04-12": {
-      "gym": true,
-      "meditation": true,
-      "lesen": true,
-      "bauchworkout": true,
-      "pushups": true
-    },
-    "2026-04-11": {
+    "2026-04-08": {},
+    "2026-04-09": {
       "gym": true,
       "meditation": true,
       "lesen": true,
@@ -63,103 +105,61 @@
       "bauchworkout": true,
       "pushups": true
     },
-    "2026-04-09": {
+    "2026-04-11": {
       "gym": true,
       "meditation": true,
       "lesen": true,
       "bauchworkout": true,
       "pushups": true
     },
-    "2026-04-08": {},
-    "2026-04-07": {
-      "gym": true,
-      "pushups": true,
-      "meditation": true,
-      "lesen": true
-    },
-    "2026-04-06": {
-      "smoothie": true,
-      "meditation": true,
-      "yoga": true,
-      "atem": true,
-      "bauchworkout": true
-    },
-    "2026-04-05": {
-      "yoga": true,
-      "creatin": true,
-      "pushups": true,
-      "smoothie": true,
-      "meditation": true
-    },
-    "2026-04-04": {
-      "atem": true,
-      "meditation": true,
-      "gym": true,
-      "pushups": true,
-      "bauchworkout": true
-    },
-    "2026-04-03": {
-      "lesen": true,
-      "creatin": true,
-      "meditation": true,
-      "bauchworkout": true
-    },
-    "2026-04-02": {
-      "pushups": true,
-      "gym": true,
-      "atem": true,
-      "smoothie": true,
-      "meditation": true
-    },
-    "2026-04-01": {
-      "pushups": true,
-      "atem": true,
-      "creatin": true,
-      "bauchworkout": true
-    },
-    "2026-03-31": {
-      "smoothie": true,
-      "pushups": true,
-      "meditation": true,
-      "lesen": true,
-      "creatin": true
-    },
-    "2026-03-30": {
-      "lesen": true,
-      "smoothie": true,
-      "meditation": true,
-      "creatin": true,
-      "yoga": true,
-      "atem": true
-    },
-    "2026-03-29": {
-      "meditation": true,
-      "pushups": true,
-      "atem": true,
-      "lesen": true,
-      "yoga": true
-    },
-    "2026-03-28": {
-      "yoga": true,
-      "meditation": true,
-      "lesen": true,
-      "smoothie": true,
-      "atem": true
-    },
-    "2026-03-27": {
-      "smoothie": true,
-      "lesen": true,
-      "gym": true,
-      "yoga": true,
-      "bauchworkout": true
-    },
-    "2026-03-26": {
-      "lesen": true,
-      "creatin": true,
-      "atem": true,
+    "2026-04-12": {
       "gym": true,
       "meditation": true,
-      "bauchworkout": true
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
+    },
+    "2026-04-13": {
+      "gym": true,
+      "meditation": true,
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
+    },
+    "2026-04-14": {
+      "gym": true,
+      "meditation": true,
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
+    },
+    "2026-04-15": {
+      "gym": true,
+      "meditation": true,
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
+    },
+    "2026-04-16": {
+      "gym": true,
+      "meditation": true,
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
+    },
+    "2026-04-17": {
+      "gym": true,
+      "meditation": true,
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
+    },
+    "2026-04-18": {
+      "gym": true,
+      "meditation": true,
+      "lesen": true,
+      "bauchworkout": true,
+      "pushups": true
     },
     "2026-04-19": {
       "gym": true,
@@ -176,7 +176,14 @@
       "lesen": true,
       "pushups": true
     },
-    "2026-04-21": {}
+    "2026-04-21": {},
+    "2026-04-22": {
+      "yoga": true,
+      "meditation": true,
+      "bauchworkout": true,
+      "lesen": true,
+      "pushups": true
+    }
   },
   "lastReset": "2026-04-08T00:00:00.000Z"
 }
