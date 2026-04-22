@@ -237,9 +237,9 @@ export async function GET() {
     } else {
       const entries = cat.entries as any[];
       if (entries.length > 0) {
-        // For files stored oldest-first (water, meals, weight, sleep, mood), use the last entry
-        // For files stored newest-first (supplements log), use index 0
-        if (cat.key === "water" || cat.key === "meals" || cat.key === "weight" || cat.key === "sleep" || cat.key === "mood") {
+        // Newest-first: sleep, mood, supplements log (use index 0)
+        // Oldest-first: water, meals, weight (use last index = entries.length - 1)
+        if (cat.key === "water" || cat.key === "meals" || cat.key === "weight") {
           lastEntry = entries[entries.length - 1]?.date || null;
         } else {
           lastEntry = entries[0]?.date || null;
