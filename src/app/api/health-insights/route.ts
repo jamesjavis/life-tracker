@@ -83,7 +83,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const sleepEntries = data.sleep?.entries || [];
   const last7sleep = sleepEntries.slice(0, 7);
   const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.duration || e.hours || 0), 0) / last7sleep.length : 0;
-  const lastSleepEntry = sleepEntries[sleepEntries.length - 1];
+  const lastSleepEntry = sleepEntries[0]; // entries are sorted newest-first by sleep API
   const daysSinceSleep = lastSleepEntry ? daysBetween(parseBerlinDate(lastSleepEntry.date), now) : null;
 
   if (daysSinceSleep === null || daysSinceSleep >= 7) {
@@ -112,7 +112,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const last7mood = moodEntries.slice(0, 7);
   const avgMood2 = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length : 0;
   const avgEnergy2 = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.energy || 0), 0) / last7mood.length : 0;
-  const lastMoodEntry = moodEntries[moodEntries.length - 1];
+  const lastMoodEntry = moodEntries[0]; // entries are sorted newest-first by mood API
   const daysSinceMood = lastMoodEntry ? daysBetween(parseBerlinDate(lastMoodEntry.date), now) : null;
 
   if (daysSinceMood === null || daysSinceMood >= 7) {
