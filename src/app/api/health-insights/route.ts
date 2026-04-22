@@ -231,9 +231,8 @@ export async function GET() {
       const habitsMap = data.habits?.habits || {};
       const dates = Object.keys(habitsMap).sort().reverse();
       if (dates.length > 0) {
-        const lastDate = dates[0];
-        const hasData = Object.values(habitsMap[lastDate] || {}).some(Boolean);
-        if (hasData) lastEntry = lastDate;
+        // Use the most recent date (even if empty) — today counts as "logged 0 habits"
+        lastEntry = dates[0];
       }
     } else {
       const entries = cat.entries as any[];

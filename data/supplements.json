@@ -193,7 +193,44 @@
       "supplementId": "multivitamin",
       "taken": true,
       "timestamp": "2026-04-20T08:00:00.000Z"
+    },
+    {
+      "date": "2026-04-21",
+      "supplementId": "creatin",
+      "taken": false,
+      "timestamp": "2026-04-21T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-21",
+      "supplementId": "vitamin_d",
+      "taken": false,
+      "timestamp": "2026-04-21T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-21",
+      "supplementId": "omega3",
+      "taken": false,
+      "timestamp": "2026-04-21T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-21",
+      "supplementId": "magnesium",
+      "taken": false,
+      "timestamp": "2026-04-21T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-21",
+      "supplementId": "zink",
+      "taken": false,
+      "timestamp": "2026-04-21T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-21",
+      "supplementId": "multivitamin",
+      "taken": false,
+      "timestamp": "2026-04-21T10:00:00.000Z"
     }
   ],
-  "lastUpdated": "2026-04-20T08:00:00.000Z"
+  "lastUpdated": "2026-04-21T10:00:00.000Z",
+  "entries": []
 }
