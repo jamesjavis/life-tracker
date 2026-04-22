@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
-const DEFAULT_DATA = { meals: [], dailyGoals: { protein: 150, carbs: 250, calories: 2200 }, lastReset: null };
+const DEFAULT_DATA = { entries: [], dailyGoals: { protein: 150, carbs: 250, calories: 2200 }, lastReset: null };
 
 export async function GET() {
   const data = (await storage.get("meals")) ?? DEFAULT_DATA;
   const today = new Date().toISOString().split("T")[0];
-  const todayMeals = data.meals.filter((m: any) => m.date === today);
+  const todayMeals = data.entries.filter((m: any) => m.date === today);
   const dailyNutrition = todayMeals.reduce((acc: any, m: any) => {
     acc.protein += m.protein || 0;
     acc.carbs += m.carbs || 0;
@@ -15,7 +15,7 @@ export async function GET() {
     return acc;
   }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
 
-  const weeklyMeals = data.meals.filter((m: any) => {
+  const weeklyMeals = data.entries.filter((m: any) => {
     const d = new Date(m.date);
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -32,7 +32,7 @@ export async function GET() {
     todayMeals,
     dailyNutrition,
     weeklyAvg,
-    recent: data.meals.slice(-20).reverse(),
+    recent: data.entries.slice(-20).reverse(),
   });
 }
 
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   const data = (await storage.get("meals")) ?? DEFAULT_DATA;
 
   if (action === "add") {
-    data.meals.push({
+    data.entries.push({
       id: Date.now().toString(),
       date: new Date().toISOString().split("T")[0],
       time: new Date().toISOString(),
