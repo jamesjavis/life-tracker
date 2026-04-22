@@ -190,6 +190,11 @@
       "date": "2026-04-21",
       "duration": 7,
       "quality": 6
+    },
+    {
+      "date": "2026-04-22",
+      "duration": 7.5,
+      "quality": 7
     }
   ],
   "goals": {
