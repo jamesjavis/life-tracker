@@ -160,6 +160,7 @@ export default function MissionControl() {
   const [financeData, setFinanceData] = useState<{savings: number; crypto: number; monthlyCosts: number; netWorth: number; runwayMonths: number | null; funding: any; computed: any} | null>(null);
   const [wellnessScore, setWellnessScore] = useState<number | null>(null);
   const [healthInsights, setHealthInsights] = useState<{score: number; breakdown: Record<string,number>; insights: any[]; dataAge?: Record<string,number|null>; generatedAt: string} | null>(null);
+  const [readiness, setReadiness] = useState<{score: number; max: number; percentage: number; label: string; breakdown: any; mood: any} | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
   const [workoutDuration, setWorkoutDuration] = useState(60);
@@ -821,6 +822,17 @@ export default function MissionControl() {
         }
       } catch (e) {
         console.error("Failed to load health insights", e);
+      }
+
+      // Fetch readiness score
+      try {
+        const readRes = await fetch("/api/readiness");
+        if (readRes.ok) {
+          const rd = await readRes.json();
+          setReadiness(rd);
+        }
+      } catch (e) {
+        console.error("Failed to load readiness", e);
       }
 
       // Fetch mentor tips
@@ -4849,6 +4861,69 @@ export default function MissionControl() {
                   </div>
                   <p className="text-xs text-white/50">Composite: habits (30%) + gym (20%) + sleep (25%) + mood (15%) + water (10%)</p>
                 </div>
+
+                {/* Readiness Score — today's daily readiness */}
+                {readiness && (
+                  <div className={cn(
+                    "p-5 backdrop-blur-xl rounded-2xl border",
+                    readiness.label === 'green' ? "bg-green-500/15 border-green-500/25" :
+                    readiness.label === 'yellow' ? "bg-yellow-500/15 border-yellow-500/25" :
+                    readiness.label === 'orange' ? "bg-orange-500/15 border-orange-500/25" :
+                    "bg-red-500/15 border-red-500/25"
+                  )}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <span className="text-white/50 text-xs">Today's Readiness</span>
+                        <p className="text-4xl font-bold">
+                          <span className={cn(
+                            readiness.label === 'green' ? "text-green-400" :
+                            readiness.label === 'yellow' ? "text-yellow-400" :
+                            readiness.label === 'orange' ? "text-orange-400" :
+                            "text-red-400"
+                          )}>{readiness.score}</span>
+                          <span className="text-xl text-white/40">/{readiness.max}</span>
+                        </p>
+                        <p className={cn("text-xs font-medium mt-1",
+                          readiness.label === 'green' ? "text-green-400" :
+                          readiness.label === 'yellow' ? "text-yellow-400" :
+                          readiness.label === 'orange' ? "text-orange-400" :
+                          "text-red-400"
+                        )}>
+                          {readiness.label === 'green' ? "✅ Startklar" :
+                           readiness.label === 'yellow' ? "🟡 Ganz okay" :
+                           readiness.label === 'orange' ? "🟠 Braucht Aufbau" :
+                           "🔴 Erholung nötig"}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="text-center">
+                          <p className="text-white/40">Gewohnheiten</p>
+                          <p className={readiness.breakdown?.habits?.done >= 5 ? "text-green-400 font-bold" : "text-red-400"}>
+                            {readiness.breakdown?.habits?.done ?? 0}/{readiness.breakdown?.habits?.total ?? 9}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-white/40">Wasser</p>
+                          <p className={readiness.breakdown?.water?.glasses >= 4 ? "text-green-400 font-bold" : "text-red-400"}>
+                            {readiness.breakdown?.water?.glasses ?? 0}/{readiness.breakdown?.water?.goal ?? 8}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-white/40">Schlaf</p>
+                          <p className={readiness.breakdown?.sleep?.duration >= 6 ? "text-green-400 font-bold" : "text-red-400"}>
+                            {readiness.breakdown?.sleep?.duration ?? 0}h
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-white/40">Ernährung</p>
+                          <p className={readiness.breakdown?.nutrition?.calories > 0 ? "text-green-400 font-bold" : "text-red-400"}>
+                            {readiness.breakdown?.nutrition?.calories > 0 ? readiness.breakdown.nutrition.calories + " kcal" : "Leer"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Health Insights — category breakdown */}
                 {healthInsights && (() => {
