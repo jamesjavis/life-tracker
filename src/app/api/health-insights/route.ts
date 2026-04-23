@@ -20,13 +20,13 @@ function score(data: any) {
   const scores: Record<string, number> = {};
   let total = 0;
   const sleepEntries = data.sleep?.entries || [];
-  const last7sleep = sleepEntries.slice(0, 7); // newest-first array: index 0 = most recent
+  const last7sleep = sleepEntries.slice(-7); // oldest-first: newest are at end
   const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((a: number, b: any) => a + (b.duration || b.hours || 0), 0) / last7sleep.length : 0;
   const sleepQuality = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.quality || 0), 0) / last7sleep.length : 0;
   scores.sleep = Math.round(Math.min(avgSleep / 8, 1) * 12.5 + Math.min(sleepQuality / 10, 1) * 12.5);
   total += 25;
   const moodEntries = data.mood?.entries || [];
-  const last7mood = moodEntries.slice(0, 7); // newest-first array: index 0 = most recent
+  const last7mood = moodEntries.slice(-7); // oldest-first: newest are at end
   const avgMood = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length : 0;
   const avgEnergy = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.energy || 0), 0) / last7mood.length : 0;
   scores.mood = Math.round(Math.min(avgMood / 8, 1) * 10 + Math.min(avgEnergy / 8, 1) * 10);
@@ -94,9 +94,9 @@ function generateInsights(data: any, scores: Record<string, number>) {
   const todayStr = now.toISOString().split("T")[0];
 
   const sleepEntries = data.sleep?.entries || [];
-  const last7sleep = sleepEntries.slice(0, 7); // newest-first
+  const last7sleep = sleepEntries.slice(-7); // oldest-first: newest are at end
   const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.duration || e.hours || 0), 0) / last7sleep.length : 0;
-  const lastSleepEntry = sleepEntries[sleepEntries.length - 1]; // newest entry
+  const lastSleepEntry = sleepEntries[sleepEntries.length - 1]; // newest entry = last
   const daysSinceSleep = lastSleepEntry ? daysBetween(parseBerlinDate(lastSleepEntry.date), now) : null;
 
   if (daysSinceSleep === null || daysSinceSleep >= 7) {
@@ -122,7 +122,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   }
 
   const moodEntries = data.mood?.entries || [];
-  const last7mood = moodEntries.slice(0, 7); // newest-first
+  const last7mood = moodEntries.slice(-7); // oldest-first: newest are at end
   const avgMood2 = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length : 0;
   const avgEnergy2 = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.energy || 0), 0) / last7mood.length : 0;
   const lastMoodEntry = moodEntries[moodEntries.length - 1]; // newest entry
