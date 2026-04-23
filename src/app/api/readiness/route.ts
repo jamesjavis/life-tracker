@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
 const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
+const HABIT_WITHOUT_HABITS_FILE = ["pushups"]; // tracked in their own JSON files, not habits.json
 const WATER_GOAL = 8;
 const SLEEP_GOAL_H = 7;
 const SLEEP_GOAL_Q = 7;
@@ -10,18 +11,26 @@ const CALORIE_GOAL = 2100;
 export async function GET() {
   const today = new Date().toISOString().split("T")[0];
 
-  const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw] = await Promise.all([
+  const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw, pushupsRaw] = await Promise.all([
     storage.get("habits"),
     storage.get("water"),
     storage.get("sleep"),
     storage.get("mood"),
     storage.get("meals"),
     storage.get("gym"),
+    storage.get("pushups"),
   ]);
 
   // ── Habits (30 pts) ──────────────────────────────────────────────
   const todayHabits = (habitsRaw?.habits?.[today]) || {};
-  const completedHabits = HABIT_IDS.filter(id => todayHabits[id]).length;
+  const pushupsEntries = pushupsRaw?.entries || [];
+  const pushupsDoneToday = pushupsEntries.some((e: any) => e.date === today);
+  const completedHabits = HABIT_IDS.filter(id => {
+    if (HABIT_WITHOUT_HABITS_FILE.includes(id)) {
+      if (id === "pushups") return pushupsDoneToday;
+    }
+    return todayHabits[id];
+  }).length;
   const habitsScore = Math.round((completedHabits / HABIT_IDS.length) * 30);
 
   // ── Water (20 pts) ───────────────────────────────────────────────
