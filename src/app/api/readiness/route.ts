@@ -40,9 +40,9 @@ export async function GET() {
 
   // ── Sleep (30 pts) ───────────────────────────────────────────────
   const sleepEntries = sleepRaw?.entries || [];
-  // sleep: newest-first [0]=most-recent
+  // sleep: oldest-first [0]=oldest, [length-1]=newest
   const todaySleep = sleepEntries.find((e: any) => e.date === today);
-  const lastSleep = sleepEntries[0];
+  const lastSleep = sleepEntries[sleepEntries.length - 1];
   const sleepDuration = todaySleep?.duration ?? lastSleep?.duration ?? 0;
   const sleepQuality = todaySleep?.quality ?? lastSleep?.quality ?? 0;
   const sleepDurationScore = sleepDuration >= SLEEP_GOAL_H ? 15 : Math.round((sleepDuration / SLEEP_GOAL_H) * 15);
@@ -65,9 +65,10 @@ export async function GET() {
   const max = 110; // 100 base + 10 gym bonus
 
   // ── Mood / Energy ───────────────────────────────────────────────
+  // mood: oldest-first [0]=oldest, [length-1]=newest
   const moodEntries = moodRaw?.entries || [];
   const todayMood = moodEntries.find((e: any) => e.date === today);
-  const lastMood = moodEntries[0];
+  const lastMood = moodEntries[moodEntries.length - 1];
   const energy = todayMood?.energy ?? lastMood?.energy ?? 0;
   const mood = todayMood?.mood ?? lastMood?.mood ?? 0;
 
