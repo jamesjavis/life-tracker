@@ -182,8 +182,17 @@
       "lesen": true,
       "pushups": true
     },
-    "2026-04-21": {},
-    "2026-04-23": {}
+    "2026-04-21": {
+      "yoga": true,
+      "meditation": true,
+      "bauchworkout": true,
+      "lesen": true,
+      "pushups": true
+    },
+    "2026-04-23": {
+      "gym": true,
+      "pushups": true
+    }
   },
   "lastReset": "2026-04-08T00:00:00.000Z"
 }
