@@ -1,12 +1,6 @@
 {
   "entries": [
     {
-      "date": "2026-04-21",
-      "day": 79,
-      "reps": 79,
-      "timestamp": "2026-04-21T00:29:00.000Z"
-    },
-    {
       "date": "2026-02-01",
       "day": 1,
       "reps": 1,
@@ -473,10 +467,28 @@
       "day": 78,
       "reps": 78,
       "timestamp": "2026-04-19T23:44:29.100003"
+    },
+    {
+      "date": "2026-04-21",
+      "day": 79,
+      "reps": 79,
+      "timestamp": "2026-04-21T00:29:00.000Z"
+    },
+    {
+      "date": "2026-04-22",
+      "day": 80,
+      "reps": 80,
+      "timestamp": "2026-04-22T08:00:00.000Z"
+    },
+    {
+      "date": "2026-04-23",
+      "day": 81,
+      "reps": 81,
+      "timestamp": "2026-04-23T05:30:00.000Z"
     }
   ],
   "startDate": "2026-02-01",
-  "currentDay": 79,
+  "currentDay": 81,
   "note": "Backfilled 72 days \u2014 Feb 1 (1 rep) to Apr 12 (72 reps). Pattern: reps = day number.",
   "todayCompleted": true
 }

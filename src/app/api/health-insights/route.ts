@@ -187,7 +187,7 @@ function generateInsights(data: any, scores: Record<string, number>) {
   });
   const uniqueSuppDays2 = new Set(last7supps2.map((e: any) => e.date)).size;
   const takenToday = supplementLog2.filter((e: any) => e.date === today3).length;
-  const lastSuppEntry: any = supplementLog2[0];
+  const lastSuppEntry: any = supplementLog2.length > 0 ? supplementLog2[supplementLog2.length - 1] : null;
   const daysSinceSupp = lastSuppEntry ? daysBetween(new Date(lastSuppEntry.date), now3) : null;
 
   if (daysSinceSupp === null || daysSinceSupp >= 7) {
@@ -240,9 +240,12 @@ export async function GET() {
         // Newest-first: sleep, mood, supplements log (use index 0)
         // Oldest-first: water, meals, weight (use last index = entries.length - 1)
         if (cat.key === "water" || cat.key === "meals" || cat.key === "weight") {
+          // oldest-first array: newest entry is at index length-1
           lastEntry = entries[entries.length - 1]?.date || null;
         } else {
-          lastEntry = entries[0]?.date || null;
+          // sleep, mood, supplements: oldest-first (chronological order)
+          // Use length-1 to get the newest entry for dataAge
+          lastEntry = entries.length > 0 ? entries[entries.length - 1]?.date || null : null;
         }
       }
     }
