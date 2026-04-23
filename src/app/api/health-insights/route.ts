@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
 async function getData() {
-  const [sleep, mood, gym, habits, water, meals, weight, supplements] = await Promise.all([
+  const [sleep, mood, gym, habits, water, meals, weight, supplements, pushups] = await Promise.all([
     storage.get("sleep"),
     storage.get("mood"),
     storage.get("gym"),
@@ -11,8 +11,9 @@ async function getData() {
     storage.get("meals"),
     storage.get("weight"),
     storage.get("supplements"),
+    storage.get("pushups"),
   ]);
-  return { sleep, mood, gym, habits, water, meals, weight, supplements };
+  return { sleep, mood, gym, habits, water, meals, weight, supplements, pushups };
 }
 
 function score(data: any) {
@@ -36,10 +37,22 @@ function score(data: any) {
   for (let i = 0; i < 14; i++) { const d = new Date(now); d.setDate(d.getDate() - i); if (gymLogs.includes(d.toISOString().split("T")[0])) gymDaysLast14.push(d.toISOString().split("T")[0]); }
   scores.gym = Math.round(Math.min(gymDaysLast14.length / 6, 1) * 25);
   total += 25;
+  // Habits: 9 total (pushups tracked in pushups.json, rest in habits.json)
+  const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
+  const HABIT_WITHOUT_HABITS_FILE = ["pushups"];
   const habitsMap = data.habits?.habits || {};
+  const pushupsEntries = (data as any).pushups?.entries || [];
   const today = new Date().toISOString().split("T")[0];
+  const pushupsDoneToday = pushupsEntries.some((e: any) => e.date === today);
+  const todayHabits = habitsMap[today] || {};
   let habitScore = 0;
-  if (habitsMap[today]) { const done = Object.values(habitsMap[today]).filter(Boolean).length; habitScore = Math.min(done / 9, 1) * 15; }
+  if (todayHabits) {
+    const done = HABIT_IDS.filter(id => {
+      if (HABIT_WITHOUT_HABITS_FILE.includes(id)) return id === "pushups" && pushupsDoneToday;
+      return todayHabits[id];
+    }).length;
+    habitScore = Math.min(done / 9, 1) * 15;
+  }
   scores.habits = Math.round(habitScore);
   total += 15;
   const waterEntries = data.water?.entries || [];
@@ -125,10 +138,13 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
   const habitsMap = data.habits?.habits || {};
   const todayHabits = habitsMap[todayStr] || {};
-  const doneToday = Object.values(todayHabits).filter(Boolean).length;
+  const pushupsEntries = data.pushups?.entries || [];
+  const pushupsDoneToday = pushupsEntries.some((e: any) => e.date === todayStr);
+  const doneToday = Object.values(todayHabits).filter(Boolean).length + (pushupsDoneToday ? 1 : 0);
   const yesterday = new Date(now.getTime() - 86400000);
   const yesterdayStr = formatBerlinDate(yesterday);
-  const doneYesterday = Object.values(habitsMap[yesterdayStr] || {}).filter(Boolean).length;
+  const pushupsDoneYesterday = pushupsEntries.some((e: any) => e.date === yesterdayStr);
+  const doneYesterday = Object.values(habitsMap[yesterdayStr] || {}).filter(Boolean).length + (pushupsDoneYesterday ? 1 : 0);
 
   if (doneToday === 0 && doneYesterday === 0) {
     insights.push({ category: "habits", icon: "📋", headline: "Habits wieder starten", detail: "Zwei Tage hintereinander keine Habits. Klein anfangen: nur 3 heute.", priority: "high" });
@@ -229,10 +245,16 @@ export async function GET() {
       if (logs.length > 0) lastEntry = [...logs].sort().pop()!;
     } else if (cat.key === "habits") {
       const habitsMap = data.habits?.habits || {};
-      const dates = Object.keys(habitsMap).sort().reverse();
-      if (dates.length > 0) {
-        // Use the most recent date (even if empty) — today counts as "logged 0 habits"
-        lastEntry = dates[0];
+      const habitsDates = Object.keys(habitsMap).sort().reverse();
+      const pushupsEntries = data.pushups?.entries || [];
+      const pushupsDates = pushupsEntries.map((e: any) => e.date).sort().reverse();
+      // Take the most recent date from either source
+      const latestFromHabits = habitsDates[0] || null;
+      const latestFromPushups = pushupsDates[0] || null;
+      if (latestFromHabits && latestFromPushups) {
+        lastEntry = latestFromHabits >= latestFromPushups ? latestFromHabits : latestFromPushups;
+      } else {
+        lastEntry = latestFromHabits || latestFromPushups;
       }
     } else {
       const entries = cat.entries as any[];
