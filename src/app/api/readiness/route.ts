@@ -11,7 +11,7 @@ const CALORIE_GOAL = 2100;
 export async function GET() {
   const today = new Date().toISOString().split("T")[0];
 
-  const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw, pushupsRaw] = await Promise.all([
+  const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw, pushupsRaw, supplementsRaw] = await Promise.all([
     storage.get("habits"),
     storage.get("water"),
     storage.get("sleep"),
@@ -19,6 +19,7 @@ export async function GET() {
     storage.get("meals"),
     storage.get("gym"),
     storage.get("pushups"),
+    storage.get("supplements"),
   ]);
 
   // ── Habits (30 pts) ──────────────────────────────────────────────
@@ -61,8 +62,15 @@ export async function GET() {
   const gymToday = gymLogs.includes(today);
   const gymScore = gymToday ? 10 : 0;
 
-  const total = habitsScore + waterScore + sleepScore + nutritionScore + gymScore;
-  const max = 110; // 100 base + 10 gym bonus
+  // ── Supplements (12 pts: 6 supplements × 2 pts each) ─────────────
+  const supplementsList = supplementsRaw?.supplements || [];
+  const supplementsLog = supplementsRaw?.log || [];
+  const supplementIds = new Set(supplementsLog.filter((e: any) => e.date === today).map((e: any) => e.supplementId));
+  const supplementsTakenToday = supplementsList.filter((s: any) => supplementIds.has(s.id)).length;
+  const supplementsScore = Math.round((supplementsTakenToday / Math.max(supplementsList.length, 1)) * 12);
+
+  const total = habitsScore + waterScore + sleepScore + nutritionScore + gymScore + supplementsScore;
+  const max = 122; // 100 base + 10 gym bonus + 12 supplements
 
   // ── Mood / Energy ───────────────────────────────────────────────
   // mood: oldest-first [0]=oldest, [length-1]=newest
@@ -87,6 +95,7 @@ export async function GET() {
       sleep: { score: sleepScore, max: 30, duration: sleepDuration, quality: sleepQuality },
       nutrition: { score: nutritionScore, max: 20, calories: todayCalories, protein: todayProtein },
       gym: { score: gymScore, max: 10, done: gymToday },
+      supplements: { score: supplementsScore, max: 12, taken: supplementsTakenToday, total: supplementsList.length },
     },
     mood: { energy, mood },
     today,
