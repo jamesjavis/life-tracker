@@ -488,13 +488,13 @@
     },
     {
       "date": "2026-04-24",
-      "day": 81,
-      "reps": 81,
+      "day": 82,
+      "reps": 82,
       "timestamp": "2026-04-24T14:00:00.000Z"
     }
   ],
   "startDate": "2026-02-01",
-  "currentDay": 81,
+  "currentDay": 82,
   "note": "Backfilled 72 days \u2014 Feb 1 (1 rep) to Apr 12 (72 reps). Pattern: reps = day number.",
   "todayCompleted": true
 }
