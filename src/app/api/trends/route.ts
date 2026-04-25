@@ -55,7 +55,8 @@ export async function GET() {
       mood: moodEntry ? { energy: moodEntry.energy, mood: moodEntry.mood } : null,
       nutrition: { calories: mealsDay.reduce((s: number, m: any) => s + (m.calories || 0), 0), protein: mealsDay.reduce((s: number, m: any) => s + (m.protein || 0), 0) },
       weight: weightEntry?.weight || null,
-      breathing: breathingDay.length > 0 ? breathingDay.reduce((s: number, b: any) => s + (b.minutes || 0), 0) : 0,
+      // FIX: breathing stores duration in SECONDS (from breathing route), convert to minutes
+      breathing: breathingDay.length > 0 ? Math.round(breathingDay.reduce((s: number, b: any) => s + ((b.duration || 0) / 60), 0)) : 0,
       pushups: pushupSet.has(day) ? 1 : 0,
     };
   });
@@ -118,6 +119,7 @@ export async function GET() {
       weight: { value: last7.filter(d => d.weight !== null).pop()?.weight || null, change: (() => { const lw = last7.filter(d => d.weight !== null).pop(); const pw = prev7.filter(d => d.weight !== null).pop(); if (!lw || !pw) return null; return Math.round((lw.weight! - pw.weight!) * 10) / 10; })() },
       water: { value: Math.round(last7.reduce((s, d) => s + d.water, 0) / 7), change: trend(Math.round(last7.reduce((s, d) => s + d.water, 0) / 7), Math.round(prev7.reduce((s, d) => s + d.water, 0) / 7)) },
       protein: { value: Math.round(last7.reduce((s, d) => s + d.nutrition.protein, 0) / 7), change: trend(Math.round(last7.reduce((s, d) => s + d.nutrition.protein, 0) / 7), Math.round(prev7.reduce((s, d) => s + d.nutrition.protein, 0) / 7)) },
+      // FIX: trends.breathing now correctly shows minutes (avg/day) from converted seconds data
       breathing: { value: Math.round(last7.reduce((s, d) => s + d.breathing, 0) / 7), change: trend(Math.round(last7.reduce((s, d) => s + d.breathing, 0) / 7), Math.round(prev7.reduce((s, d) => s + d.breathing, 0) / 7)) },
       pushups: { value: last7.reduce((s, d) => s + d.pushups, 0), change: trend(last7.reduce((s, d) => s + d.pushups, 0), prev7.reduce((s, d) => s + d.pushups, 0)) },
       energy: { value: Math.round(last7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (last7.filter(d => d.mood).length || 1)), change: trend(Math.round(last7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (last7.filter(d => d.mood).length || 1)), Math.round(prev7.filter(d => d.mood).reduce((s, d) => s + (d.mood?.energy || 0), 0) / (prev7.filter(d => d.mood).length || 1))) },
