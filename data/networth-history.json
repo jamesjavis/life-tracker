@@ -25,5 +25,14 @@
     "crypto": 10000,
     "netWorth": 12000,
     "note": "Weekly snapshot \u2014 James 2026-04-19"
+  },
+  {
+    "month": "2026-04",
+    "label": "Apr 2026",
+    "date": "2026-04-25",
+    "savings": 2000,
+    "crypto": 10000,
+    "netWorth": 12000,
+    "note": "Weekly snapshot \u2014 James 2026-04-25"
   }
 ]
