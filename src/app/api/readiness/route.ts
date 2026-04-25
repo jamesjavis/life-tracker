@@ -8,8 +8,12 @@ const SLEEP_GOAL_H = 7;
 const SLEEP_GOAL_Q = 7;
 const CALORIE_GOAL = 2100;
 
+function berlinDate(): Date {
+  return new Date(Date.now() + 2 * 60 * 60 * 1000);
+}
+
 export async function GET() {
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDate().toISOString().split("T")[0];
 
   const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw, pushupsRaw, supplementsRaw] = await Promise.all([
     storage.get("habits"),
@@ -59,7 +63,7 @@ export async function GET() {
 
   // ── Gym bonus (0 or bonus pts) ──────────────────────────────────
   const gymDays = [1, 3, 5]; // Mon=1, Wed=3, Fri=5 (JavaScript getDay)
-  const todayDay = new Date(today + "T00:00:00").getDay();
+  const todayDay = berlinDate().getDay();
   const isGymDay = gymDays.includes(todayDay);
   const gymLogs = gymRaw?.logs || [];
   const gymToday = gymLogs.includes(today);
