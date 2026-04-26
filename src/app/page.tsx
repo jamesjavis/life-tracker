@@ -2180,7 +2180,7 @@ export default function MissionControl() {
                       : "Keine heute"}
                   </p>
                   {breathingData.stats.avgDuration > 0 && (
-                    <p className="text-xs text-white/30">Ø {breathingData.stats.avgDuration}s/session</p>
+                    <p className="text-xs text-white/30">Ø {Math.round(breathingData.stats.avgDuration / 60)} min/session</p>
                   )}
                 </div>
               </div>
