@@ -4841,6 +4841,85 @@ export default function MissionControl() {
               <div className="text-center py-20 text-white/40">Loading trends...</div>
             ) : (
               <>
+                {/* This Week Snapshot — quick week-over-week comparison */}
+                {(() => {
+                  const allDays = trendsData.days;
+                  const today = new Date();
+                  const dayOfWeek = today.getDay();
+                  // Sunday = 0, Mon = 1 ... Sat = 6
+                  // This week: last 7 days that have passed (not including today if not midnight yet)
+                  const daysToInclude = dayOfWeek === 0 ? 6 : dayOfWeek === 0 ? 6 : dayOfWeek; // past days this week
+                  const thisWeekDays = allDays.slice(-(daysToInclude || 7));
+                  const lastWeekDays = allDays.slice(-(daysToInclude + 7), -(daysToInclude || 7));
+                  const thisWeekGym = thisWeekDays.filter((d: any) => d.gym).length;
+                  const lastWeekGym = lastWeekDays.filter((d: any) => d.gym).length;
+                  const thisWeekHabitPct = thisWeekDays.length > 0
+                    ? Math.round(thisWeekDays.reduce((s: number, d: any) => s + (d.habits?.pct || 0), 0) / thisWeekDays.length)
+                    : 0;
+                  const lastWeekHabitPct = lastWeekDays.length > 0
+                    ? Math.round(lastWeekDays.reduce((s: number, d: any) => s + (d.habits?.pct || 0), 0) / lastWeekDays.length)
+                    : 0;
+                  const gymDelta = thisWeekGym - lastWeekGym;
+                  const habitDelta = thisWeekHabitPct - lastWeekHabitPct;
+                  const gymStatus = gymDelta > 0 ? 'ahead' : gymDelta < 0 ? 'behind' : 'same';
+                  const habitStatus = habitDelta > 0 ? 'ahead' : habitDelta < 0 ? 'behind' : 'same';
+                  const gymAhead = gymDelta > 0;
+                  const habitAhead = habitDelta > 0;
+                  if (thisWeekDays.length === 0 && lastWeekDays.length === 0) return null;
+                  return (
+                    <div className="p-4 bg-gradient-to-r from-violet-900/40 to-purple-900/30 backdrop-blur-xl rounded-2xl border border-violet-500/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-white/50 text-xs uppercase tracking-wider">📅 Diese Woche</p>
+                          <p className="text-sm text-white/60 mt-0.5">
+                            {thisWeekDays.length < 7 ? `Bisher ${thisWeekDays.length}/7 Tage erfasst` : 'Alle 7 Tage erfasst'}
+                          </p>
+                        </div>
+                        <div className="flex gap-3 text-xs">
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold">🏋️ {thisWeekGym}x</p>
+                            <p className={gymAhead ? 'text-green-400' : gymDelta < 0 ? 'text-red-400' : 'text-white/30'}>
+                              {gymDelta > 0 ? `+${gymDelta} vs Letzte` : gymDelta < 0 ? `${gymDelta} vs Letzte` : '= wie Letzte'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className={thisWeekHabitPct >= 60 ? 'text-green-400 font-bold' : thisWeekHabitPct >= 30 ? 'text-yellow-400 font-bold' : 'text-red-400 font-bold'}>
+                              ✅ {thisWeekHabitPct}%
+                            </p>
+                            <p className={habitAhead ? 'text-green-400' : habitDelta < 0 ? 'text-red-400' : 'text-white/30'}>
+                              {habitDelta > 0 ? `+${habitDelta}% vs Letzte` : habitDelta < 0 ? `${habitDelta}% vs Letzte` : '= wie Letzte'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Simple week bar — gym days as dots */}
+                      <div className="flex gap-1 items-center">
+                        <span className="text-xs text-white/30 mr-1">Mo</span>
+                        {[1,2,3,4,5,6,0].map((dow, i) => {
+                          const dayDate = new Date(today);
+                          const daysBack = (today.getDay() === 0 ? 6 : today.getDay()) - i;
+                          dayDate.setDate(today.getDate() - daysBack);
+                          const dateStr = dayDate.toISOString().split('T')[0];
+                          const dayData = allDays.find((dd: any) => dd.date === dateStr);
+                          const gymmed = dayData?.gym;
+                          const isFuture = dayDate > today;
+                          const dayLabels: Record<number, string> = { 0:'So',1:'Mo',2:'Di',3:'Mi',4:'Do',5:'Fr',6:'Sa' };
+                          return (
+                            <div key={i} className="flex flex-col items-center gap-0.5">
+                              <div className={cn(
+                                "w-6 h-6 rounded flex items-center justify-center text-[9px] font-bold",
+                                isFuture ? "bg-white/5 text-white/20" : gymmed ? "bg-orange-500 text-white" : "bg-white/10 text-white/40"
+                              )}>
+                                {gymmed ? '🏋️' : dayLabels[dow]}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* KPI Cards */}
                 {/* Wellness Score — hero card */}
                 <div className="md:col-span-3 p-5 bg-gradient-to-br from-green-500/15 to-emerald-500/10 backdrop-blur-xl rounded-2xl border border-green-500/25">
