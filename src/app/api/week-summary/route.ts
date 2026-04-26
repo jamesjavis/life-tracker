@@ -9,7 +9,7 @@ export async function GET() {
     return d.toISOString().split("T")[0];
   }).reverse();
 
-  const [habitsRaw, gymRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, weightRaw] =
+  const [habitsRaw, gymRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, weightRaw, breathingRaw, pushupsRaw] =
     await Promise.all([
       storage.get("habits"),
       storage.get("gym"),
@@ -18,6 +18,8 @@ export async function GET() {
       storage.get("mood"),
       storage.get("meals"),
       storage.get("weight"),
+      storage.get("breathing"),
+      storage.get("pushups"),
     ]);
 
   const habitsMap = habitsRaw?.habits || {};
@@ -27,6 +29,9 @@ export async function GET() {
   const moodEntries = moodRaw?.entries || [];
   const mealEntries = mealsRaw?.entries || [];
   const weightEntries = weightRaw?.entries || [];
+  const breathingSessions = breathingRaw?.sessions || [];
+  const pushupEntries = pushupsRaw?.entries || [];
+  const pushupSet = new Set(pushupEntries.map((e: any) => e.date));
   const TOTAL_HABITS = 9;
 
   const summary = days.map((day) => {
@@ -37,6 +42,7 @@ export async function GET() {
     const moodEntry = (moodEntries as any[]).find((e: any) => e.date === day);
     const mealsDay = (mealEntries as any[]).filter((e: any) => e.date === day);
     const weightEntry = (weightEntries as any[]).find((e: any) => e.date === day);
+    const breathingDay = (breathingSessions as any[]).filter((s: any) => s.date === day);
     return {
       date: day,
       dayName: new Date(day + "T12:00:00").toLocaleDateString("de-DE", { weekday: "short" }),
@@ -47,6 +53,8 @@ export async function GET() {
       mood: moodEntry ? { energy: moodEntry.energy, mood: moodEntry.mood, note: moodEntry.note } : null,
       nutrition: { calories: mealsDay.reduce((s: number, m: any) => s + (m.calories || 0), 0), protein: mealsDay.reduce((s: number, m: any) => s + (m.protein || 0), 0) },
       weight: weightEntry?.weight || null,
+      breathing: breathingDay.length > 0 ? Math.round(breathingDay.reduce((s: number, b: any) => s + ((b.duration || 0) / 60), 0)) : 0,
+      pushups: pushupSet.has(day) ? 1 : 0,
     };
   });
 
