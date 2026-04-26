@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
 
 async function getData() {
-  const [sleep, mood, gym, habits, water, meals, weight, supplements, pushups] = await Promise.all([
+  const [sleep, mood, gym, habits, water, meals, weight, supplements, pushups, breathing] = await Promise.all([
     storage.get("sleep"),
     storage.get("mood"),
     storage.get("gym"),
@@ -12,8 +12,9 @@ async function getData() {
     storage.get("weight"),
     storage.get("supplements"),
     storage.get("pushups"),
+    storage.get("breathing"),
   ]);
-  return { sleep, mood, gym, habits, water, meals, weight, supplements, pushups };
+  return { sleep, mood, gym, habits, water, meals, weight, supplements, pushups, breathing };
 }
 
 function score(data: any) {
@@ -177,6 +178,21 @@ function generateInsights(data: any, scores: Record<string, number>) {
     insights.push({ category: "nutrition", icon: "💪", headline: "Mehr Protein nötig", detail: `Ø ${avgProtein.toFixed(0)}g Protein/Tag. Für Muscle Recovery sind 150g+ nötig.`, priority: "medium" });
   }
 
+  // Breathing insight
+  const breathingSessions = data.breathing?.sessions || [];
+  const lastBreathing = breathingSessions.length > 0 ? breathingSessions[0] : null;
+  const daysSinceBreathing = lastBreathing ? daysBetween(parseBerlinDate(lastBreathing.date), now) : null;
+  const last7daysBreathing = breathingSessions.filter((s: any) => {
+    const d = parseBerlinDate(s.date);
+    return (now.getTime() - d.getTime()) / 86400000 <= 7;
+  });
+
+  if (daysSinceBreathing === null || daysSinceBreathing >= 7) {
+    insights.push({ category: "breathing", icon: "🌬️", headline: "Atemübungen wieder aufnehmen", detail: `${daysSinceBreathing === null ? "Noch nie getrackt" : `Letzte Sitzung vor ${daysSinceBreathing} Tagen`}. 5 Min/Tag senken Cortisol messbar.`, priority: "medium" });
+  } else if (last7daysBreathing.length >= 5) {
+    insights.push({ category: "breathing", icon: "✅", headline: "Atem-Tracking aktiv", detail: `${last7daysBreathing.length} Sitzungen in 7 Tagen.`, priority: "low" });
+  }
+
   const weightEntries = data.weight?.entries || [];
   const lastWeight = weightEntries[weightEntries.length - 1];
   const prevWeight = weightEntries.length >= 2 ? weightEntries[weightEntries.length - 2] : null;
@@ -237,6 +253,7 @@ export async function GET() {
     { key: "meals", entries: data.meals?.entries || [], dateField: "date" },
     { key: "weight", entries: data.weight?.entries || [], dateField: "date" },
     { key: "supplements", entries: data.supplements?.log || [], dateField: "log" },
+    { key: "breathing", entries: data.breathing?.sessions || [], dateField: "sessions" },
   ];
   for (const cat of categories) {
     let lastEntry: string | null = null;
