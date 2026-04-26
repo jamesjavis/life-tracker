@@ -1,80 +1,207 @@
 {
   "entries": [
     {
-      "date": "2026-03-26",
-      "energy": 5,
-      "mood": 6,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-27",
-      "energy": 6,
-      "mood": 8,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-28",
-      "energy": 8,
-      "mood": 8,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-29",
-      "energy": 9,
-      "mood": 6,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-30",
-      "energy": 7,
-      "mood": 5,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-31",
-      "energy": 8,
-      "mood": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-01",
-      "energy": 8,
-      "mood": 8,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-02",
-      "energy": 9,
-      "mood": 9,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-03",
-      "energy": 7,
-      "mood": 8,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-04",
-      "energy": 8,
-      "mood": 8,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-05",
-      "energy": 8,
-      "mood": 9,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-06",
+      "date": "2026-04-26",
       "energy": 6,
       "mood": 6,
       "notes": ""
     },
     {
-      "date": "2026-04-07",
+      "date": "2026-04-25",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-24",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-23",
+      "energy": 6,
+      "mood": 6
+    },
+    {
+      "date": "2026-04-23",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-22",
+      "energy": 6,
+      "mood": 6
+    },
+    {
+      "date": "2026-04-22",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-21",
       "energy": 5,
+      "mood": 6
+    },
+    {
+      "date": "2026-04-21",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-20",
+      "energy": 6,
+      "mood": 6,
+      "timestamp": "2026-04-20T20:00:00.000Z"
+    },
+    {
+      "date": "2026-04-20",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-19",
+      "energy": 6,
+      "mood": 6,
+      "timestamp": "2026-04-19T20:00:00.000Z"
+    },
+    {
+      "date": "2026-04-19",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-18",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-18",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-17",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-17",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-16",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-16",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-15",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-15",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-14",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-14",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-13",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-13",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-12",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-12",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-11",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-11",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-10",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-10",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-09",
+      "energy": 6,
+      "mood": 6,
+      "notes": "Retro-Log",
+      "createdAt": "2026-04-18T19:11:28.330Z"
+    },
+    {
+      "date": "2026-04-09",
+      "energy": 6,
       "mood": 6,
       "notes": ""
     },
@@ -86,101 +213,160 @@
       "createdAt": "2026-04-18T19:11:28.330Z"
     },
     {
-      "date": "2026-04-09",
+      "date": "2026-04-08",
       "energy": 6,
       "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
+      "notes": ""
     },
     {
-      "date": "2026-04-10",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-11",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-12",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-13",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-14",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-15",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-16",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-17",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-18",
-      "energy": 6,
-      "mood": 6,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:11:28.330Z"
-    },
-    {
-      "date": "2026-04-19",
-      "energy": 6,
-      "mood": 6,
-      "timestamp": "2026-04-19T20:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "energy": 6,
-      "mood": 6,
-      "timestamp": "2026-04-20T20:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
+      "date": "2026-04-07",
       "energy": 5,
-      "mood": 6
+      "mood": 6,
+      "notes": ""
     },
     {
-      "date": "2026-04-22",
+      "date": "2026-04-07",
       "energy": 6,
-      "mood": 6
+      "mood": 6,
+      "notes": ""
     },
     {
-      "date": "2026-04-23",
+      "date": "2026-04-06",
       "energy": 6,
-      "mood": 6
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-06",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-05",
+      "energy": 8,
+      "mood": 9,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-05",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-04",
+      "energy": 8,
+      "mood": 8,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-04",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-03",
+      "energy": 7,
+      "mood": 8,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-03",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-02",
+      "energy": 9,
+      "mood": 9,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-02",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-01",
+      "energy": 8,
+      "mood": 8,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-01",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-31",
+      "energy": 8,
+      "mood": 7,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-31",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-30",
+      "energy": 7,
+      "mood": 5,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-30",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-29",
+      "energy": 9,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-29",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-28",
+      "energy": 8,
+      "mood": 8,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-28",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-27",
+      "energy": 6,
+      "mood": 8,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-27",
+      "energy": 6,
+      "mood": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-03-26",
+      "energy": 5,
+      "mood": 6,
+      "notes": ""
     }
   ],
   "goals": {
