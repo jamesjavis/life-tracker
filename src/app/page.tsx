@@ -5000,6 +5000,28 @@ export default function MissionControl() {
                           </p>
                         </div>
                       </div>
+                      {/* Mood / Energy row */}
+                      {readiness.mood && (readiness.mood.energy > 0 || readiness.mood.mood > 0) && (
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-white/40">Stimmung</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-white/30">⚡</span>
+                              <span className={`text-sm font-bold ${readiness.mood.energy >= 5 ? "text-green-400" : readiness.mood.energy >= 3 ? "text-yellow-400" : "text-red-400"}`}>
+                                {readiness.mood.energy}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-white/30">😊</span>
+                              <span className={`text-sm font-bold ${readiness.mood.mood >= 5 ? "text-green-400" : readiness.mood.mood >= 3 ? "text-yellow-400" : "text-red-400"}`}>
+                                {readiness.mood.mood}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
