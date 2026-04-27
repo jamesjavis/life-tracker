@@ -2124,6 +2124,14 @@ export default function MissionControl() {
                   <p className="text-sm font-bold text-orange-400">{nutritionData.dailyNutrition.calories}</p>
                   <p className="text-xs text-white/40">kcal</p>
                   <p className="text-xs text-white/30 mt-0.5">{nutritionData.dailyNutrition.protein}g P</p>
+                  {nutritionData.dailyNutrition.calories === 0 && (
+                    <button
+                      onClick={() => setActiveTab("tracker")}
+                      className="mt-2 w-full py-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 rounded-lg text-orange-400 text-xs"
+                    >
+                      + Mahlzeit
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -5021,6 +5029,15 @@ export default function MissionControl() {
                             </div>
                           </div>
                         </div>
+                      )}
+                      {/* Quick Log Meal button — show when no meals today */}
+                      {readiness.breakdown?.nutrition?.calories === 0 && (
+                        <button
+                          onClick={() => setActiveTab("tracker")}
+                          className="mt-3 w-full py-2 bg-gradient-to-r from-orange-500/20 to-amber-500/10 hover:from-orange-500/30 hover:to-amber-500/20 border border-orange-500/30 rounded-xl text-orange-400 text-xs font-medium transition-all flex items-center justify-center gap-1"
+                        >
+                          🍽️ Mahlzeit loggen
+                        </button>
                       )}
                     </div>
                   </div>
