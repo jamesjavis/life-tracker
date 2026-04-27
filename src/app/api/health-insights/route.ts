@@ -278,7 +278,7 @@ export async function GET() {
       if (entries.length > 0) {
         // Newest-first: sleep, mood, supplements log (use index 0)
         // Oldest-first: water, meals, weight (use last index = entries.length - 1)
-        if (cat.key === "water" || cat.key === "meals" || cat.key === "weight") {
+        if (cat.key === "water" || cat.key === "meals" || cat.key === "weight" || cat.key === "supplements") {
           // oldest-first array: newest entry is at index length-1
           lastEntry = entries[entries.length - 1]?.date || null;
         } else {
