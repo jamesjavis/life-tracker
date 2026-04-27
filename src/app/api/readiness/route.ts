@@ -95,6 +95,59 @@ export async function GET() {
   const pct = Math.round((total / max) * 100);
   const label = pct >= 85 ? "green" : pct >= 65 ? "yellow" : pct >= 40 ? "orange" : "red";
 
+  // ── Weekly Adherence (last 7 days) ───────────────────────────────
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(berlinDate());
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
+
+  const gymDaysSet = new Set(gymLogs);
+  const habitDates = Object.keys(habitsRaw?.habits || {});
+  const waterDates = new Set((waterRaw?.entries || []).map((e: any) => e.date));
+  const sleepDates = new Set((sleepRaw?.entries || []).map((e: any) => e.date));
+  const moodDates = new Set((moodRaw?.entries || []).map((e: any) => e.date));
+  const supplementDates = new Set((supplementsRaw?.log || []).map((e: any) => e.date));
+  const pushupDates = new Set((pushupsRaw?.entries || []).map((e: any) => e.date));
+
+  const weeklyAdherence = last7.map((day) => {
+    const dayOfWeek = new Date(day + 'T12:00:00').getDay();
+    const isGymDay = gymDays.includes(dayOfWeek);
+    const gymRequired = isGymDay;
+    return {
+      date: day,
+      dayName: new Date(day + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' }),
+      habits: habitDates.includes(day),
+      gym: gymRequired ? (gymDaysSet.has(day) ? true : null) : undefined, // true=done, null=skipped, undefined=not required
+      water: waterDates.has(day),
+      sleep: sleepDates.has(day),
+      mood: moodDates.has(day),
+      supplements: supplementDates.has(day),
+      pushups: pushupDates.has(day),
+    };
+  });
+
+  // Per-metric 7-day adherence percentages
+  const adherencePct = (metric: string, required: (d: any) => boolean, logged: (d: any) => boolean | null | undefined) => {
+    const days = weeklyAdherence.map(d => ({ ...d, required: required(d), logged: logged(d) }));
+    const requiredDays = days.filter(d => d.required !== undefined);
+    const loggedRequired = requiredDays.filter(d => d.logged === true || d.logged === undefined).length;
+    const nonRequired = days.filter(d => d.required === undefined || d.required === false);
+    const loggedNonRequired = nonRequired.filter(d => d.logged === true).length;
+    const total = requiredDays.length + nonRequired.length;
+    return total > 0 ? Math.round(((loggedRequired + loggedNonRequired) / 7) * 100) : 0;
+  };
+
+  const adherence = {
+    habits: Math.round((weeklyAdherence.filter(d => d.habits).length / 7) * 100),
+    gym: weeklyAdherence.filter(d => d.gym === true).length, // count gym days done
+    water: Math.round((weeklyAdherence.filter(d => d.water).length / 7) * 100),
+    sleep: Math.round((weeklyAdherence.filter(d => d.sleep).length / 7) * 100),
+    mood: Math.round((weeklyAdherence.filter(d => d.mood).length / 7) * 100),
+    supplements: Math.round((weeklyAdherence.filter(d => d.supplements).length / 7) * 100),
+    pushups: Math.round((weeklyAdherence.filter(d => d.pushups).length / 7) * 100),
+  };
+
   return NextResponse.json({
     score: total,
     max,
@@ -110,5 +163,7 @@ export async function GET() {
     },
     mood: { energy, mood },
     today,
+    weeklyAdherence,
+    adherence,
   });
 }
