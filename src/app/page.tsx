@@ -160,7 +160,7 @@ export default function MissionControl() {
   const [financeData, setFinanceData] = useState<{savings: number; crypto: number; monthlyCosts: number; netWorth: number; runwayMonths: number | null; funding: any; computed: any} | null>(null);
   const [wellnessScore, setWellnessScore] = useState<number | null>(null);
   const [healthInsights, setHealthInsights] = useState<{score: number; breakdown: Record<string,number>; insights: any[]; dataAge?: Record<string,number|null>; generatedAt: string} | null>(null);
-  const [readiness, setReadiness] = useState<{score: number; max: number; percentage: number; label: string; breakdown: any; mood: any} | null>(null);
+  const [readiness, setReadiness] = useState<{score: number; max: number; percentage: number; label: string; breakdown: any; mood: any; weeklyAdherence?: any[]; adherence?: any} | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [workoutType, setWorkoutType] = useState("strength");
   const [workoutDuration, setWorkoutDuration] = useState(60);
@@ -5003,6 +5003,63 @@ export default function MissionControl() {
                     </div>
                   </div>
                 )}
+
+                {/* Weekly Adherence Grid — 7-day per-metric view */}
+                {(() => {
+                  const wa = readiness?.weeklyAdherence;
+                  if (!wa || wa.length === 0) return null;
+                  const rev = wa.slice().reverse();
+                  const icons: Record<string, string> = { habits: '✅', gym: '🏋️', water: '💧', sleep: '😴', mood: '😊', supplements: '💊', pushups: '💨' };
+                  const labels: Record<string, string> = { habits: 'Habits', gym: 'Gym', water: 'Wasser', sleep: 'Schlaf', mood: 'Stimmung', supplements: 'Supps', pushups: 'Push' };
+                  const metrics = ['habits','gym','water','sleep','mood','supplements','pushups'] as const;
+                  const adherence = readiness.adherence;
+                  return (
+                    <div className="p-4 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-white/50 text-xs uppercase tracking-wider">7-Tage Adherence</span>
+                        <div className="flex gap-3 text-xs">
+                          {adherence && Object.entries(adherence).map(([key, val]) => (
+                            <div key={key} className="flex items-center gap-1">
+                              <span className="text-white/40">{icons[key] || key[0]}</span>
+                              <span className={(val as number) >= 75 ? 'text-green-400 font-bold' : (val as number) >= 50 ? 'text-yellow-400' : 'text-red-400'}>{(val as number)}%</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-white/30">
+                              <th className="pb-2 text-left">Metric</th>
+                              {rev.map((day: any) => (
+                                <th key={day.date} className="pb-2 text-center w-9">{day.dayName}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {metrics.map((metric) => (
+                              <tr key={metric}>
+                                <td className="py-1 pr-2 text-white/50 whitespace-nowrap">{icons[metric]} {labels[metric]}</td>
+                                {rev.map((day: any) => {
+                                  const val = (day as any)[metric];
+                                  const isToday = day.date === new Date().toISOString().split('T')[0];
+                                  const bg = val === true ? 'bg-green-500/30' : val === false ? 'bg-red-500/30' : val === null ? 'bg-white/5' : 'bg-yellow-500/30';
+                                  const border = isToday ? 'ring-1 ring-orange-400/60' : '';
+                                  return (
+                                    <td key={day.date} className={`py-1 text-center ${bg} rounded ${border}`}>
+                                      {val === true ? '✓' : val === false ? '✗' : val === null ? '—' : val}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <p className="text-xs text-white/20 mt-2">🟢 = done | 🔴 = missed | ⬜ = rest day (gym) | Today highlighted</p>
+                    </div>
+                  );
+                })()}
 
                 {/* Health Insights — category breakdown */}
                 {healthInsights && (() => {
