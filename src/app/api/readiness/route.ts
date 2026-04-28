@@ -86,10 +86,22 @@ export async function GET() {
     : 0;
 
   // ── Supplements (12 pts: 6 supplements × 2 pts each) ─────────────
+  // Handle two formats: newer "entries" [{date, taken:[ids]}] and legacy "log" [{date, supplementId}]
   const supplementsList = supplementsRaw?.supplements || [];
   const supplementsLog = supplementsRaw?.log || [];
-  const supplementIds = new Set(supplementsLog.filter((e: any) => e.date === today).map((e: any) => e.supplementId));
-  const supplementsTakenToday = supplementsList.filter((s: any) => supplementIds.has(s.id)).length;
+  const supplementsEntries = supplementsRaw?.entries || [];
+
+  // Prefer entries array (newer format), fallback to log array (legacy per-supplement format)
+  let supplementIdsToday: Set<string>;
+  if (supplementsEntries.length > 0) {
+    // entries: [{date, taken:[supplementId, ...]}, ...] — find today's entry
+    const todayEntry = supplementsEntries.find((e: any) => e.date === today);
+    supplementIdsToday = new Set(todayEntry?.taken || []);
+  } else {
+    // log: [{date, supplementId}, ...] — filter by today
+    supplementIdsToday = new Set(supplementsLog.filter((e: any) => e.date === today).map((e: any) => e.supplementId));
+  }
+  const supplementsTakenToday = supplementsList.filter((s: any) => supplementIdsToday.has(s.id)).length;
   const supplementsScore = Math.round((supplementsTakenToday / Math.max(supplementsList.length, 1)) * 12);
 
   const baseMax = 112; // 30 habits + 20 water + 30 sleep + 20 nutrition + 12 supplements
@@ -120,7 +132,10 @@ export async function GET() {
   const waterDates = new Set((waterRaw?.entries || []).map((e: any) => e.date));
   const sleepDates = new Set((sleepRaw?.entries || []).map((e: any) => e.date));
   const moodDates = new Set((moodRaw?.entries || []).map((e: any) => e.date));
-  const supplementDates = new Set((supplementsRaw?.log || []).map((e: any) => e.date));
+  // supplements: union of log[] and entries[] dates
+  const supplementDatesFromLog = new Set((supplementsRaw?.log || []).map((e: any) => e.date));
+  const supplementDatesFromEntries = new Set((supplementsRaw?.entries || []).map((e: any) => e.date));
+  const supplementDates = new Set([...supplementDatesFromLog, ...supplementDatesFromEntries]);
   const pushupDates = new Set((pushupsRaw?.entries || []).map((e: any) => e.date));
 
   const weeklyAdherence = last7.map((day) => {
