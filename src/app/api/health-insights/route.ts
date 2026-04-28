@@ -68,15 +68,28 @@ function score(data: any) {
   total += 10;
 
   // Supplements: entries taken in last 7 days / max possible entries
+  // Handle two formats: newer "entries" [{date, taken:[ids]}] and legacy "log" [{date, supplementId}]
   const supplementList = data.supplements?.supplements || [];
   const supplementLog = data.supplements?.log || [];
+  const supplementEntries = data.supplements?.entries || [];
   const now2 = new Date();
-  const last7supps = supplementLog.filter((e: any) => {
-    const d = new Date(e.date);
-    return (now2.getTime() - d.getTime()) / 86400000 <= 7;
-  });
-  // Count total supplement entries taken (each entry = one supplement taken on one day)
-  const totalEntriesTaken = last7supps.length;
+  let totalEntriesTaken = 0;
+  if (supplementEntries.length > 0) {
+    // entries: [{date, taken:[ids]}, ...] — filter last 7 days by date
+    const last7entries = supplementEntries.filter((e: any) => {
+      const d = new Date(e.date);
+      return (now2.getTime() - d.getTime()) / 86400000 <= 7;
+    });
+    // each entry has multiple supplement IDs
+    totalEntriesTaken = last7entries.reduce((s: number, e: any) => s + (e.taken?.length || 0), 0);
+  } else {
+    // log: [{date, supplementId}, ...] — each entry = one supplement taken
+    const last7supps = supplementLog.filter((e: any) => {
+      const d = new Date(e.date);
+      return (now2.getTime() - d.getTime()) / 86400000 <= 7;
+    });
+    totalEntriesTaken = last7supps.length;
+  }
   const maxPossibleEntries = supplementList.length * 7;
   scores.supplements = maxPossibleEntries > 0 ? Math.round(Math.min(totalEntriesTaken / maxPossibleEntries, 1) * 10) : 0;
   total += 10;
@@ -209,17 +222,36 @@ function generateInsights(data: any, scores: Record<string, number>) {
 
 
   // Supplements insight
+  // Handle two formats: newer "entries" [{date, taken:[ids]}] and legacy "log" [{date, supplementId}]
   const supplementList2 = data.supplements?.supplements || [];
   const supplementLog2 = data.supplements?.log || [];
+  const supplementEntries2 = data.supplements?.entries || [];
   const now3 = getBerlinDate();
   const today3 = now3.toISOString().split("T")[0];
-  const last7supps2 = supplementLog2.filter((e: any) => {
-    const d = new Date(e.date);
-    return (now3.getTime() - d.getTime()) / 86400000 <= 7;
-  });
-  const uniqueSuppDays2 = new Set(last7supps2.map((e: any) => e.date)).size;
-  const takenToday = supplementLog2.filter((e: any) => e.date === today3).length;
-  const lastSuppEntry: any = supplementLog2.length > 0 ? supplementLog2[supplementLog2.length - 1] : null;
+
+  // takenToday: check both formats
+  let takenToday: number, lastSuppEntry: any, uniqueSuppDays2: number, last7supps2: any[];
+  if (supplementEntries2.length > 0) {
+    // entries format
+    const todayEntry = supplementEntries2.find((e: any) => e.date === today3);
+    takenToday = todayEntry?.taken?.length || 0;
+    const lastEntry = supplementEntries2[supplementEntries2.length - 1];
+    lastSuppEntry = lastEntry ? { date: lastEntry.date } : null;
+    last7supps2 = supplementEntries2.filter((e: any) => {
+      const d = new Date(e.date);
+      return (now3.getTime() - d.getTime()) / 86400000 <= 7;
+    });
+    uniqueSuppDays2 = new Set(last7supps2.map((e: any) => e.date)).size;
+  } else {
+    // log format
+    last7supps2 = supplementLog2.filter((e: any) => {
+      const d = new Date(e.date);
+      return (now3.getTime() - d.getTime()) / 86400000 <= 7;
+    });
+    uniqueSuppDays2 = new Set(last7supps2.map((e: any) => e.date)).size;
+    takenToday = supplementLog2.filter((e: any) => e.date === today3).length;
+    lastSuppEntry = supplementLog2.length > 0 ? supplementLog2[supplementLog2.length - 1] : null;
+  }
   const daysSinceSupp = lastSuppEntry ? daysBetween(new Date(lastSuppEntry.date), now3) : null;
 
   if (daysSinceSupp === null || daysSinceSupp >= 7) {
