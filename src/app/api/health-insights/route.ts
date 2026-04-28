@@ -284,7 +284,7 @@ export async function GET() {
     { key: "water", entries: data.water?.entries || [], dateField: "date" },
     { key: "meals", entries: data.meals?.entries || [], dateField: "date" },
     { key: "weight", entries: data.weight?.entries || [], dateField: "date" },
-    { key: "supplements", entries: data.supplements?.log || [], dateField: "log" },
+    { key: "supplements", entries: data.supplements?.entries || data.supplements?.log || [], dateField: "date" },
     { key: "breathing", entries: data.breathing?.sessions || [], dateField: "sessions" },
   ];
   for (const cat of categories) {

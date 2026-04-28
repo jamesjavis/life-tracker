@@ -57,11 +57,12 @@ export async function POST(req: Request) {
 
   if (action === "retro") {
     // Backfill a past date with a meal entry
-    if (!meal?.name || !date) return NextResponse.json({ error: "meal.name and date required for retro" }, { status: 400 });
+    const retroDate = meal?.date;
+    if (!meal?.name || !retroDate) return NextResponse.json({ error: "meal.name and meal.date required for retro" }, { status: 400 });
     data.entries.push({
       id: Date.now().toString(),
-      date,
-      time: new Date(date).toISOString(),
+      date: retroDate,
+      time: new Date(retroDate).toISOString(),
       name: meal.name,
       calories: Number(meal.calories) || 0,
       protein: Number(meal.protein) || 0,
@@ -71,12 +72,4 @@ export async function POST(req: Request) {
     await storage.set("meals", data);
     return NextResponse.json({ success: true, entry: data.entries[data.entries.length - 1] });
   }
-
-  if (action === "updateGoals") {
-    data.dailyGoals = { ...data.dailyGoals, ...meal };
-    await storage.set("meals", data);
-    return NextResponse.json({ success: true });
-  }
-
-  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
