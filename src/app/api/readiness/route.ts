@@ -27,14 +27,15 @@ export async function GET() {
   ]);
 
   // ── Habits (30 pts) ──────────────────────────────────────────────
-  const todayHabits = (habitsRaw?.habits?.[today]) || {};
+  // habits.json: { habits: [{id, name, emoji}], entries: [{date, completed:[ids], total}] }
+  const habitsEntries = (habitsRaw?.entries || []);
+  const todayEntry = habitsEntries.find((e: any) => e.date === today);
+  const completedIds = new Set(todayEntry?.completed || []);
   const pushupsEntries = pushupsRaw?.entries || [];
   const pushupsDoneToday = pushupsEntries.some((e: any) => e.date === today);
   const completedHabits = HABIT_IDS.filter(id => {
-    if (HABIT_WITHOUT_HABITS_FILE.includes(id)) {
-      if (id === "pushups") return pushupsDoneToday;
-    }
-    return todayHabits[id];
+    if (id === "pushups") return pushupsDoneToday;
+    return completedIds.has(id);
   }).length;
   const habitsScore = Math.round((completedHabits / HABIT_IDS.length) * 30);
 
@@ -128,7 +129,7 @@ export async function GET() {
   });
 
   const gymDaysSet = new Set(gymLogs);
-  const habitDates = Object.keys(habitsRaw?.habits || {});
+  const habitDates = new Set(habitsEntries.map((e: any) => e.date));
   const waterDates = new Set((waterRaw?.entries || []).map((e: any) => e.date));
   const sleepDates = new Set((sleepRaw?.entries || []).map((e: any) => e.date));
   const moodDates = new Set((moodRaw?.entries || []).map((e: any) => e.date));
@@ -145,7 +146,7 @@ export async function GET() {
     return {
       date: day,
       dayName: new Date(day + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' }),
-      habits: habitDates.includes(day),
+      habits: habitDates.has(day),
       gym: gymRequired ? (gymDaysSet.has(day) ? true : null) : undefined, // true=done, null=skipped, undefined=not required
       water: waterDates.has(day),
       sleep: sleepDates.has(day),
