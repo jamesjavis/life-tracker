@@ -23,7 +23,11 @@ export async function GET() {
       storage.get("pushups"),
     ]);
 
-  const habitsMap = habitsRaw?.habits || {};
+  const habitsEntries = habitsRaw?.entries || [];
+  const habitsMap: Record<string, Set<string>> = {};
+  for (const e of habitsEntries) {
+    habitsMap[e.date] = new Set(e.completed || []);
+  }
   const gymLogs: string[] = gymRaw?.logs || [];
   const waterEntries = waterRaw?.entries || [];
   const sleepEntries = sleepRaw?.entries || [];
@@ -36,7 +40,7 @@ export async function GET() {
   const TOTAL_HABITS = 9;
 
   const dailyData = days.map((day) => {
-    const dayHabits = habitsMap[day] || {};
+    const dayHabits = habitsMap[day] ? Object.fromEntries([...habitsMap[day]].map(id => [id, true])) : {};
     const habitCount = Object.keys(dayHabits).filter(k => dayHabits[k]).length;
     const gymDone = gymLogs.includes(day);
     const waterEntry = (waterEntries as any[]).find((e: any) => e.date === day);
@@ -79,7 +83,7 @@ export async function GET() {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
       const dayStr = d.toISOString().split("T")[0];
-      const dayHabits = habitsMap[dayStr] || {};
+      const dayHabits = habitsMap[dayStr] ? Object.fromEntries([...habitsMap[dayStr]].map(id => [id, true])) : {};
       const done = Object.keys(dayHabits).filter(k => dayHabits[k]).length;
       if (done >= 5) streak++;
       else if (i > 0) break;

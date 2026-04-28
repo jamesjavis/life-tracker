@@ -22,7 +22,11 @@ export async function GET() {
       storage.get("pushups"),
     ]);
 
-  const habitsMap = habitsRaw?.habits || {};
+  const habitsEntries = habitsRaw?.entries || [];
+  const habitsMap: Record<string, Set<string>> = {};
+  for (const e of habitsEntries) {
+    habitsMap[e.date] = new Set(e.completed || []);
+  }
   const gymLogs: string[] = gymRaw?.logs || [];
   const waterEntries = waterRaw?.entries || [];
   const sleepEntries = sleepRaw?.entries || [];
@@ -35,7 +39,7 @@ export async function GET() {
   const TOTAL_HABITS = 9;
 
   const summary = days.map((day) => {
-    const dayHabits = habitsMap[day] || {};
+    const dayHabits = habitsMap[day] ? Object.fromEntries([...habitsMap[day]].map(id => [id, true])) : {};
     const habitCount = Object.keys(dayHabits).filter(k => dayHabits[k]).length;
     const waterEntry = (waterEntries as any[]).find((e: any) => e.date === day);
     const sleepEntry = (sleepEntries as any[]).find((e: any) => e.date === day);
