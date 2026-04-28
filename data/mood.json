@@ -204,13 +204,5 @@
       "mood": 6,
       "notes": ""
     }
-  ],
-  "goals": {
-    "energy": 7,
-    "mood": 7
-  },
-  "streaks": {
-    "energy": 5,
-    "mood": 3
-  }
+  ]
 }

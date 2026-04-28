@@ -204,9 +204,5 @@
       "quality": 4,
       "notes": ""
     }
-  ],
-  "goals": {
-    "minDuration": 7,
-    "maxScreen": 30
-  }
+  ]
 }
