@@ -1,668 +1,82 @@
 {
   "supplements": [
     {
-      "id": "creatin",
-      "name": "Creatin",
-      "emoji": "\ud83d\udcaa",
-      "dose": "5g",
-      "frequency": "daily",
-      "notes": "Mon-Thu + Sat"
-    },
-    {
       "id": "vitamin_d",
       "name": "Vitamin D",
-      "emoji": "\u2600\ufe0f",
-      "dose": "2000 IE",
-      "frequency": "daily",
-      "notes": "With fatty meal"
+      "emoji": "\u2600\ufe0f"
+    },
+    {
+      "id": "vitamin_b",
+      "name": "Vitamin B Complex",
+      "emoji": "\ud83d\udc8a"
     },
     {
       "id": "omega3",
-      "name": "Omega-3",
-      "emoji": "\ud83d\udc1f",
-      "dose": "2g",
-      "frequency": "daily",
-      "notes": ""
+      "name": "Omega 3",
+      "emoji": "\ud83d\udc1f"
     },
     {
       "id": "magnesium",
       "name": "Magnesium",
-      "emoji": "\u26a1",
-      "dose": "400mg",
-      "frequency": "daily",
-      "notes": "Evening"
+      "emoji": "\ud83c\udfc0"
     },
     {
       "id": "zink",
       "name": "Zink",
-      "emoji": "\ud83d\udee1\ufe0f",
-      "dose": "25mg",
-      "frequency": "daily",
-      "notes": ""
+      "emoji": "\u26a1"
     },
     {
-      "id": "multivitamin",
-      "name": "Multivitamin",
-      "emoji": "\ud83d\udc8a",
-      "dose": "1",
-      "frequency": "daily",
-      "notes": "Morning"
+      "id": "eisen",
+      "name": "Eisen",
+      "emoji": "\u2699\ufe0f"
     }
   ],
-  "log": [
-    {
-      "date": "2026-04-18",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-18T19:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-16T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-16T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-16T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-16T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-16T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-16T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-19T23:44:32.017665"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-19T23:44:32.017673"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-19T23:44:32.017674"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-19T23:44:32.017675"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-19T23:44:32.017676"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-19T23:44:32.017677"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-23T12:54:35.515974+00:00"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-23T12:54:35.515974+00:00"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-23T12:54:35.515974+00:00"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-23T12:54:35.515974+00:00"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-23T12:54:35.515974+00:00"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-23T12:54:35.515974+00:00"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-17",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-17T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-17",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-17T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-17",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-17T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-17",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-17T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-17",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-17T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-17",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-17T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-18",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-18T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-19T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-19T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-19T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-19T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-19T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-19T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-20",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-20T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-21T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-21T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-21T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-21T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-21T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-21",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-21T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-22T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-23T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-23T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-23T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-23T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-23T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-23",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-23T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-24",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-24T08:00:00.000Z"
-    },
+  "log": [],
+  "lastUpdated": "2026-04-25T10:00:00.000Z",
+  "entries": [
     {
       "date": "2026-04-25",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-25T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-25T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-25T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-25T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-25T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-25T08:00:00.000Z"
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
     },
     {
       "date": "2026-04-26",
-      "supplementId": "creatin",
-      "taken": true,
-      "timestamp": "2026-04-26T08:00:00.000Z"
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
     },
     {
-      "date": "2026-04-26",
-      "supplementId": "vitamin_d",
-      "taken": true,
-      "timestamp": "2026-04-26T08:00:00.000Z"
+      "date": "2026-04-27",
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
     },
     {
-      "date": "2026-04-26",
-      "supplementId": "omega3",
-      "taken": true,
-      "timestamp": "2026-04-26T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-26",
-      "supplementId": "magnesium",
-      "taken": true,
-      "timestamp": "2026-04-26T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-26",
-      "supplementId": "zink",
-      "taken": true,
-      "timestamp": "2026-04-26T08:00:00.000Z"
-    },
-    {
-      "date": "2026-04-26",
-      "supplementId": "multivitamin",
-      "taken": true,
-      "timestamp": "2026-04-26T08:00:00.000Z"
+      "date": "2026-04-28",
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
     }
-  ],
-  "lastUpdated": "2026-04-26",
-  "entries": []
+  ]
 }

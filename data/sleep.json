@@ -1,15 +1,27 @@
 {
   "entries": [
     {
+      "date": "2026-04-28",
+      "duration": 7,
+      "quality": 6,
+      "notes": ""
+    },
+    {
+      "date": "2026-04-27",
+      "duration": 7,
+      "quality": 5,
+      "notes": ""
+    },
+    {
       "date": "2026-04-26",
-      "duration": 7.5,
+      "duration": 8,
       "quality": 7,
       "notes": ""
     },
     {
       "date": "2026-04-25",
-      "duration": 7.5,
-      "quality": 7,
+      "duration": 7,
+      "quality": 6,
       "notes": ""
     },
     {
@@ -21,18 +33,8 @@
     {
       "date": "2026-04-23",
       "duration": 7.5,
-      "quality": 7
-    },
-    {
-      "date": "2026-04-23",
-      "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-22",
-      "duration": 7.5,
-      "quality": 7
     },
     {
       "date": "2026-04-22",
@@ -42,20 +44,9 @@
     },
     {
       "date": "2026-04-21",
-      "duration": 7,
-      "quality": 6
-    },
-    {
-      "date": "2026-04-21",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-20",
-      "hours": 7.5,
-      "quality": 7,
-      "timestamp": "2026-04-20T23:00:00.000Z"
     },
     {
       "date": "2026-04-20",
@@ -65,24 +56,9 @@
     },
     {
       "date": "2026-04-19",
-      "hours": 7.5,
-      "quality": 7,
-      "timestamp": "2026-04-19T23:00:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-18",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
     },
     {
       "date": "2026-04-18",
@@ -92,27 +68,9 @@
     },
     {
       "date": "2026-04-17",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
-    },
-    {
-      "date": "2026-04-17",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-16",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
     },
     {
       "date": "2026-04-16",
@@ -122,27 +80,9 @@
     },
     {
       "date": "2026-04-15",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
-    },
-    {
-      "date": "2026-04-15",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-14",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
     },
     {
       "date": "2026-04-14",
@@ -152,27 +92,9 @@
     },
     {
       "date": "2026-04-13",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
-    },
-    {
-      "date": "2026-04-13",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-12",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
     },
     {
       "date": "2026-04-12",
@@ -182,27 +104,9 @@
     },
     {
       "date": "2026-04-11",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
-    },
-    {
-      "date": "2026-04-11",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
-    },
-    {
-      "date": "2026-04-10",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.159Z"
     },
     {
       "date": "2026-04-10",
@@ -212,23 +116,8 @@
     },
     {
       "date": "2026-04-09",
-      "bedtime": null,
-      "wakeup": null,
-      "duration": 7.5,
-      "quality": 4,
-      "notes": "Retro-Log",
-      "createdAt": "2026-04-18T19:10:55.156Z"
-    },
-    {
-      "date": "2026-04-09",
       "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-08",
-      "duration": 6,
-      "quality": 4,
       "notes": ""
     },
     {
@@ -240,19 +129,7 @@
     {
       "date": "2026-04-07",
       "duration": 7.5,
-      "quality": 3,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-07",
-      "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-06",
-      "duration": 8.5,
-      "quality": 3,
       "notes": ""
     },
     {
@@ -263,20 +140,8 @@
     },
     {
       "date": "2026-04-05",
-      "duration": 7,
-      "quality": 3,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-05",
       "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-04",
-      "duration": 8.5,
-      "quality": 5,
       "notes": ""
     },
     {
@@ -288,31 +153,13 @@
     {
       "date": "2026-04-03",
       "duration": 7.5,
-      "quality": 4,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-03",
-      "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-02",
-      "duration": 7,
-      "quality": 3,
       "notes": ""
     },
     {
       "date": "2026-04-02",
       "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-04-01",
-      "duration": 7,
-      "quality": 4,
       "notes": ""
     },
     {
@@ -324,19 +171,7 @@
     {
       "date": "2026-03-31",
       "duration": 7.5,
-      "quality": 5,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-31",
-      "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-30",
-      "duration": 7,
-      "quality": 5,
       "notes": ""
     },
     {
@@ -347,32 +182,14 @@
     },
     {
       "date": "2026-03-29",
-      "duration": 8,
-      "quality": 3,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-29",
       "duration": 7.5,
       "quality": 7,
       "notes": ""
     },
     {
       "date": "2026-03-28",
-      "duration": 8.5,
-      "quality": 3,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-28",
       "duration": 7.5,
       "quality": 7,
-      "notes": ""
-    },
-    {
-      "date": "2026-03-27",
-      "duration": 8,
-      "quality": 5,
       "notes": ""
     },
     {
