@@ -61,16 +61,29 @@ export async function GET() {
   const todayProtein = todayMeals.reduce((s: number, e: any) => s + (e.protein ?? 0), 0);
   const nutritionScore = Math.round(Math.min(todayCalories / CALORIE_GOAL, 1) * 20);
 
-  // ── Gym bonus (0 or bonus pts) ──────────────────────────────────
-  const gymDays = [1, 3, 5]; // Mon=1, Wed=3, Fri=5 (JavaScript getDay)
+  // ── Gym (10 pts, 7-day rolling) ──────────────────────────────────
+  // Score based on sessions in the last 7 gym-scheduled days (Mon/Wed/Fri), not just today.
+  // This prevents wild readiness swings on non-gym days vs gym days.
+  const gymDaysJS = [1, 3, 5]; // Mon=1, Wed=3, Fri=5 (JavaScript getDay)
   const todayDay = berlinDate().getDay();
-  const isGymDay = gymDays.includes(todayDay);
+  const isGymDay = gymDaysJS.includes(todayDay);
   const gymLogs = gymRaw?.logs || [];
+  const gymLogsSet = new Set(gymLogs);
   const gymToday = gymLogs.includes(today);
-  // Only penalize for missed gym on gym days (Mon/Wed/Fri).
-  // On rest days (Tue/Thu/Sat/Sun), skip gym check — neutral score.
-  const gymScore = !isGymDay ? 0 : (gymToday ? 10 : 0);
-  const gymMax = isGymDay ? 10 : 0;
+
+  // Rolling 7 calendar days
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(berlinDate());
+    d.setDate(d.getDate() - i);
+    return d.toISOString().split('T')[0];
+  });
+  const gymScheduledDaysInLast7 = last7Days.filter(d => gymDaysJS.includes(new Date(d + 'T12:00:00').getDay()));
+  const gymSessionsInLast7 = gymScheduledDaysInLast7.filter(d => gymLogsSet.has(d)).length;
+  const gymDaysScheduledInLast7 = gymScheduledDaysInLast7.length;
+  // Proportional score: 3 gym days in last week = 10pts, 2 = 7pts, 1 = 3pts, 0 = 0pts
+  const gymWeeklyScore = gymSessionsInLast7 > 0
+    ? Math.round((gymSessionsInLast7 / Math.max(gymDaysScheduledInLast7, 1)) * 10)
+    : 0;
 
   // ── Supplements (12 pts: 6 supplements × 2 pts each) ─────────────
   const supplementsList = supplementsRaw?.supplements || [];
@@ -79,9 +92,9 @@ export async function GET() {
   const supplementsTakenToday = supplementsList.filter((s: any) => supplementIds.has(s.id)).length;
   const supplementsScore = Math.round((supplementsTakenToday / Math.max(supplementsList.length, 1)) * 12);
 
-  const baseMax = 112; // 30 habits + 20 water + 30 sleep + 20 nutrition + 12 supplements (gym added conditionally)
-  const max = baseMax + (isGymDay ? 10 : 0); // Only include gym bonus on gym days
-  const total = habitsScore + waterScore + sleepScore + nutritionScore + gymScore + supplementsScore;
+  const baseMax = 112; // 30 habits + 20 water + 30 sleep + 20 nutrition + 12 supplements
+  const max = baseMax + 10; // gym always included (10 pts rolling)
+  const total = habitsScore + waterScore + sleepScore + nutritionScore + gymWeeklyScore + supplementsScore;
 
   // ── Mood / Energy ───────────────────────────────────────────────
   // mood: oldest-first [0]=oldest, [length-1]=newest
@@ -112,7 +125,7 @@ export async function GET() {
 
   const weeklyAdherence = last7.map((day) => {
     const dayOfWeek = new Date(day + 'T12:00:00').getDay();
-    const isGymDay = gymDays.includes(dayOfWeek);
+    const isGymDay = gymDaysJS.includes(dayOfWeek);
     const gymRequired = isGymDay;
     return {
       date: day,
@@ -158,7 +171,7 @@ export async function GET() {
       water: { score: waterScore, max: 20, glasses: waterGlasses, goal: WATER_GOAL },
       sleep: { score: sleepScore, max: 30, duration: sleepDuration, quality: sleepQuality },
       nutrition: { score: nutritionScore, max: 20, calories: todayCalories, protein: todayProtein },
-      gym: { score: gymScore, max: gymMax, done: gymToday, isGymDay },
+      gym: { score: gymWeeklyScore, max: 10, done: gymToday, isGymDay, sessionsLast7: gymSessionsInLast7, scheduledLast7: gymDaysScheduledInLast7 },
       supplements: { score: supplementsScore, max: 12, taken: supplementsTakenToday, total: supplementsList.length },
     },
     mood: { energy, mood },
