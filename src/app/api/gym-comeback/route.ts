@@ -10,7 +10,7 @@ function averageGap(logs: string[]): number {
 }
 
 export async function GET() {
-  const [gym, habits] = await Promise.all([storage.get("gym"), storage.get("habits")]);
+  const [gym, habitsRaw] = await Promise.all([storage.get("gym"), storage.get("habits")]);
   const logs: string[] = gym?.logs || [];
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split("T")[0];
@@ -19,8 +19,10 @@ export async function GET() {
   const gapDays = lastSession ? Math.round((today.getTime() - new Date(lastSession).getTime()) / 86400000) : null;
   const avgGap = averageGap(logs);
   const totalSessions = logs.length;
-  const thisWeekHabits = habits?.habits?.[todayStr] || {};
-  const gymDoneToday = Boolean(thisWeekHabits.gym);
+  // habits.json new format: entries[] not habits{}. Use entries[] to find today's completed habits
+  const todayHabitsEntry = (habitsRaw?.entries || []).find((e: any) => e.date === todayStr);
+  const todayCompletedIds = new Set(todayHabitsEntry?.completed || []);
+  const gymDoneToday = todayCompletedIds.has("gym");
 
   let streak = 0;
   let check = new Date(today);
