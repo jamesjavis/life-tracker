@@ -68,11 +68,51 @@ export async function GET() {
   });
 }
 
-// POST /api/pushups — log today's pushups
+// POST /api/pushups — log today's pushups OR retro-log past dates
 export async function POST(req: Request) {
   const body = await req.json();
-  const { reps, day } = body;
   const data = (await storage.get("pushups")) ?? DEFAULT_DATA;
+
+  // Retro-log: accept { action: "retro", date: "YYYY-MM-DD", day?: number, reps?: number }
+  if (body.action === "retro") {
+    const retroDate = body.date;
+    if (!retroDate) return NextResponse.json({ error: "Missing date for retro" }, { status: 400 });
+
+    let entryDay: number;
+    if (typeof body.day === "number") {
+      entryDay = body.day;
+    } else if (data.entries.length > 0) {
+      const lastEntry = data.entries[data.entries.length - 1];
+      const lastDate = new Date(lastEntry.date + "T00:00:00");
+      const retroDateObj = new Date(retroDate + "T00:00:00");
+      const gap = daysBetween(lastDate, retroDateObj);
+      entryDay = lastEntry.day + gap;
+    } else {
+      entryDay = 1;
+    }
+
+    const entry = {
+      date: retroDate,
+      day: entryDay,
+      reps: typeof body.reps === "number" ? body.reps : entryDay,
+      timestamp: new Date().toISOString(),
+    };
+
+    const existingIdx = data.entries.findIndex((e: any) => e.date === retroDate);
+    if (existingIdx >= 0) data.entries[existingIdx] = entry;
+    else { data.entries.push(entry); }
+    data.entries.sort((a: any, b: any) => a.date.localeCompare(b.date));
+
+    if (data.entries.length > 0) {
+      const lastEntry = data.entries[data.entries.length - 1];
+      data.currentDay = lastEntry.day;
+    }
+    await storage.set("pushups", data);
+    return NextResponse.json({ success: true, entry });
+  }
+
+  // Normal log: today's pushups
+  const { reps, day } = body;
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
 
