@@ -36,14 +36,14 @@
       "emoji": "💨"
     },
     {
-      "id": "journal",
-      "name": "Journal schreiben",
-      "emoji": "📝"
-    },
-    {
       "id": "gym",
       "name": "Gym",
       "emoji": "🏋️"
+    },
+    {
+      "id": "smoothie",
+      "name": "Smoothie",
+      "emoji": "🥤"
     }
   ],
   "entries": [

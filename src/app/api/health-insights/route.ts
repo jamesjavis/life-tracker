@@ -38,8 +38,8 @@ function score(data: any) {
   for (let i = 0; i < 14; i++) { const d = new Date(now); d.setDate(d.getDate() - i); if (gymLogs.includes(d.toISOString().split("T")[0])) gymDaysLast14.push(d.toISOString().split("T")[0]); }
   scores.gym = Math.round(Math.min(gymDaysLast14.length / 6, 1) * 25);
   total += 25;
-  // Habits: 9 total (pushups tracked in pushups.json, rest in habits.json)
   const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
+  // Habits: 9 total (pushups tracked in pushups.json, gym in gym logs, rest in habits.json)
   const HABIT_WITHOUT_HABITS_FILE = ["pushups"];
   const habitsEntries = data.habits?.entries || [];
   const pushupsEntries = (data as any).pushups?.entries || [];
