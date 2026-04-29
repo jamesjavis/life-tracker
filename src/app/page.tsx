@@ -264,6 +264,7 @@ export default function MissionControl() {
     weeklyAvg: { calories: number; protein: number };
   }>({ dailyGoals: { protein: 150, carbs: 250, calories: 2200, fat: 80 }, todayMeals: [], dailyNutrition: { protein: 0, carbs: 0, fat: 0, calories: 0 }, weeklyAvg: { calories: 0, protein: 0 } });
   const [newMeal, setNewMeal] = useState({ name: "", calories: "", protein: "", carbs: "" });
+  const [mealsRetro, setMealsRetro] = useState<{retroFilling: boolean; lastMealDate: string | null; mealsGap: number; avgCalories: number; avgProtein: number}>({ retroFilling: false, lastMealDate: null, mealsGap: 0, avgCalories: 0, avgProtein: 0 });
 
   // Sleep tracking
   const [sleepEntries, setSleepEntries] = useState<any[]>([]);
@@ -870,6 +871,20 @@ export default function MissionControl() {
         if (refreshed.ok) setNutritionData(await refreshed.json());
       }
     } catch (e) { console.error("Failed to add meal", e); }
+  }
+
+  async function quickRetroLogMeal(name: string, calories: number, protein: number, carbs: number = 0) {
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      await fetch("/api/meals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "retro", meal: { name, calories, protein, carbs, date: today } })
+      });
+      const refreshed = await fetch("/api/meals");
+      if (refreshed.ok) setNutritionData(await refreshed.json());
+      setMealsRetro(prev => ({ ...prev, retroFilling: true }));
+    } catch (e) { console.error("Failed to retro log meal", e); }
   }
 
   async function toggleHabit(habitId: string) {
@@ -5409,7 +5424,7 @@ export default function MissionControl() {
                           {daysSince !== null && daysSince >= 5 && (
                             <p className="text-xs text-red-400 mt-2">⚠️ {daysSince}T Lücke — nicht geloggt</p>
                           )}
-                          {!hasMeals && (
+                          {!hasMeals && !mealsRetro.retroFilling && daysSince !== null && daysSince < 7 && (
                             <button
                               onClick={() => setActiveTab("tracker")}
                               className="mt-3 w-full py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/10 hover:from-green-500/30 hover:to-emerald-500/20 border border-green-500/30 rounded-xl text-green-400 text-xs font-medium transition-all"
@@ -5417,8 +5432,29 @@ export default function MissionControl() {
                               🍽️ Mahlzeiten loggen
                             </button>
                           )}
+                          {!hasMeals && !mealsRetro.retroFilling && daysSince !== null && daysSince >= 7 && (
+                            <div className="mt-3 space-y-2">
+                              <p className="text-xs text-amber-400 font-medium">📝 Retro-Log (heute)</p>
+                              <div className="grid grid-cols-3 gap-1">
+                                {[
+                                  { name: "Haferflocken", cal: 350, pro: 12, carbs: 55 },
+                                  { name: "Eier & Toast", cal: 360, pro: 20, carbs: 40 },
+                                  { name: "Reis & Gemüse", cal: 400, pro: 12, carbs: 70 },
+                                ].map((m: any) => (
+                                  <button key={m.name} onClick={() => quickRetroLogMeal(m.name, m.cal, m.pro, m.carbs)}
+                                    className="py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white text-xs transition-all">
+                                    <p className="font-medium truncate">{m.name}</p>
+                                    <p className="text-white/40">{m.cal}kcal · {m.pro}gP</p>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           {hasMeals && (
                             <p className="text-xs text-green-400 mt-2">✅ {nutritionData.todayMeals.length} Mahlzeit(n) heute</p>
+                          )}
+                          {mealsRetro.retroFilling && (
+                            <p className="text-xs text-green-400 mt-2">✅ Retro-Log gesendet!</p>
                           )}
                         </>
                       );
