@@ -6,7 +6,7 @@
     "savings": 2000,
     "crypto": 10000,
     "netWorth": 12000,
-    "note": "Initial snapshot \u2014 James 2026-04-16"
+    "note": "Initial snapshot — James 2026-04-16"
   },
   {
     "month": "2026-04",
@@ -15,7 +15,7 @@
     "savings": 2000,
     "crypto": 10000,
     "netWorth": 12000,
-    "note": "Weekly snapshot \u2014 James 2026-04-17"
+    "note": "Weekly snapshot — James 2026-04-17"
   },
   {
     "month": "2026-04",
@@ -24,7 +24,7 @@
     "savings": 2000,
     "crypto": 10000,
     "netWorth": 12000,
-    "note": "Weekly snapshot \u2014 James 2026-04-19"
+    "note": "Weekly snapshot — James 2026-04-19"
   },
   {
     "month": "2026-04",
@@ -33,6 +33,15 @@
     "savings": 2000,
     "crypto": 10000,
     "netWorth": 12000,
-    "note": "Weekly snapshot \u2014 James 2026-04-25"
+    "note": "Weekly snapshot — James 2026-04-25"
+  },
+  {
+    "month": "2026-04",
+    "label": "Apr 2026",
+    "date": "2026-04-29",
+    "savings": 2000,
+    "crypto": 10000,
+    "netWorth": 12000,
+    "note": "Weekly snapshot — James 2026-04-29"
   }
 ]
