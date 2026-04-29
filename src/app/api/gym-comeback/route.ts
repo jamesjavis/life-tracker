@@ -1,22 +1,23 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinNow, berlinDateStr, berlinDateFromStr } from "@/lib/date";
 
 function averageGap(logs: string[]): number {
   if (logs.length < 2) return 5;
   const sorted = [...logs].sort();
   let total = 0;
-  for (let i = 1; i < sorted.length; i++) total += (new Date(sorted[i]).getTime() - new Date(sorted[i-1]).getTime()) / 86400000;
+  for (let i = 1; i < sorted.length; i++) total += (berlinDateFromStr(sorted[i]).getTime() - berlinDateFromStr(sorted[i-1]).getTime()) / 86400000;
   return Math.round(total / (sorted.length - 1));
 }
 
 export async function GET() {
   const [gym, habitsRaw] = await Promise.all([storage.get("gym"), storage.get("habits")]);
   const logs: string[] = gym?.logs || [];
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split("T")[0];
+  const today = berlinNow(); today.setHours(0, 0, 0, 0);
+  const todayStr = berlinDateStr();
 
   const lastSession = logs.length > 0 ? [...logs].sort().pop()! : null;
-  const gapDays = lastSession ? Math.round((today.getTime() - new Date(lastSession).getTime()) / 86400000) : null;
+  const gapDays = lastSession ? Math.round((today.getTime() - berlinDateFromStr(lastSession).getTime()) / 86400000) : null;
   const avgGap = averageGap(logs);
   const totalSessions = logs.length;
   // habits.json new format: entries[] not habits{}. Use entries[] to find today's completed habits
@@ -29,7 +30,7 @@ export async function GET() {
   while (logs.includes(check.toISOString().split("T")[0])) { streak++; check.setDate(check.getDate() - 1); }
   if (streak === 0) { const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1); check = new Date(yesterday); while (logs.includes(check.toISOString().split("T")[0])) { streak++; check.setDate(check.getDate() - 1); } }
 
-  const longestStreak = (() => { if (logs.length === 0) return 0; const sorted = [...logs].sort(); let best = 1, current = 1; for (let i = 1; i < sorted.length; i++) { const diff = (new Date(sorted[i]).getTime() - new Date(sorted[i-1]).getTime()) / 86400000; if (Math.round(diff) === 1) { current++; best = Math.max(best, current); } else current = 1; } return best; })();
+  const longestStreak = (() => { if (logs.length === 0) return 0; const sorted = [...logs].sort(); let best = 1, current = 1; for (let i = 1; i < sorted.length; i++) { const diff = (berlinDateFromStr(sorted[i]).getTime() - berlinDateFromStr(sorted[i-1]).getTime()) / 86400000; if (Math.round(diff) === 1) { current++; best = Math.max(best, current); } else current = 1; } return best; })();
 
   const thisMonth = today.toISOString().slice(0, 7);
   const monthLogs = logs.filter(l => l.startsWith(thisMonth));

@@ -1,22 +1,20 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinNow, berlinDateStr, berlinDateFromStr } from "@/lib/date";
 
 const DEFAULT_DATA = { logs: [], streak: 0, workouts: {} };
 
 function calculateStreak(logs: string[]): number {
   if (!logs.length) return 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split("T")[0];
-  const yesterday = new Date(today);
+  const todayStr = berlinDateStr();
+  const yesterday = new Date(berlinNow());
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
   const sorted = [...logs].sort();
   const lastLog = sorted[sorted.length - 1];
   if (lastLog !== todayStr && lastLog !== yesterdayStr) return 0;
   let streak = 0;
-  let currentDate = new Date(lastLog);
-  currentDate.setHours(0, 0, 0, 0);
+  let currentDate = berlinDateFromStr(lastLog);
   while (logs.includes(currentDate.toISOString().split("T")[0])) {
     streak++;
     currentDate.setDate(currentDate.getDate() - 1);
@@ -31,7 +29,7 @@ export async function GET(req: Request) {
   const data = (await storage.get("gym")) ?? DEFAULT_DATA;
   data.streak = calculateStreak(data.logs);
 
-  const now = new Date();
+  const now = berlinNow();
   const thisWeekStart = new Date(now);
   thisWeekStart.setDate(now.getDate() - now.getDay());
   thisWeekStart.setHours(0, 0, 0, 0);
@@ -94,7 +92,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { date, completed, workout } = body;
   const data = (await storage.get("gym")) ?? DEFAULT_DATA;
-  const dateStr = date || new Date().toISOString().split("T")[0];
+  const dateStr = date || berlinDateStr();
 
   if (completed === false) {
     data.logs = data.logs.filter((l: string) => l !== dateStr);
