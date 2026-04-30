@@ -8,6 +8,7 @@ const WATER_GOAL = 8;
 const SLEEP_GOAL_H = 7;
 const SLEEP_GOAL_Q = 7;
 const CALORIE_GOAL = 2100;
+const PROTEIN_GOAL = 150;
 
 export async function GET() {
   const today = berlinDateStr();
@@ -57,7 +58,10 @@ export async function GET() {
   const todayMeals = mealEntries.filter((e: any) => e.date === today);
   const todayCalories = todayMeals.reduce((s: number, e: any) => s + (e.calories ?? 0), 0);
   const todayProtein = todayMeals.reduce((s: number, e: any) => s + (e.protein ?? 0), 0);
-  const nutritionScore = Math.round(Math.min(todayCalories / CALORIE_GOAL, 1) * 20);
+  // 70% calories (14 pts) + 30% protein (6 pts)
+  const calorieScore = Math.round(Math.min(todayCalories / CALORIE_GOAL, 1) * 14);
+  const proteinScore = Math.round(Math.min(todayProtein / PROTEIN_GOAL, 1) * 6);
+  const nutritionScore = calorieScore + proteinScore;
 
   // ── Gym (10 pts, 7-day rolling) ──────────────────────────────────
   // Score based on sessions in the last 7 gym-scheduled days (Mon/Wed/Fri), not just today.
