@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = {
   savings: 2000,
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
   if (body.action === "addTransaction") {
     const transaction = {
       id: Date.now().toString(),
-      date: body.date || new Date().toISOString().split("T")[0],
+      date: body.date || berlinDateStr(),
       type: body.type || "expense",
       category: body.category || "other",
       amount: body.amount || 0,
@@ -117,7 +118,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, data });
   }
 
-  // Default: update finance values
   if (body.savings !== undefined) data.savings = body.savings;
   if (body.crypto !== undefined) data.crypto = body.crypto;
   if (body.monthlyCosts !== undefined) data.monthlyCosts = body.monthlyCosts;

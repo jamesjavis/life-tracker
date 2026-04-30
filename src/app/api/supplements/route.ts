@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
-const DEFAULT_DATA = { supplements: [], log: [], lastUpdated: null };
+const DEFAULT_DATA = { supplements: [], log: [], entries: [], lastUpdated: null };
 
 function getStreak(entries: any[], supplementId: string) {
-  // Support both formats: legacy log [{date, supplementId}] and new entries [{date, taken:[ids]}]  
   const dates = entries
     .filter(e => {
-      if (e.supplementId) return e.supplementId === supplementId; // legacy log format
-      if (e.taken) return e.taken.includes(supplementId);          // new entries format
+      if (e.supplementId) return e.supplementId === supplementId;
+      if (e.taken) return e.taken.includes(supplementId);
       return false;
     })
     .map(e => e.date)
@@ -16,8 +16,8 @@ function getStreak(entries: any[], supplementId: string) {
   const uniqueDates = [...new Set(dates)].sort().reverse();
   if (uniqueDates.length === 0) return 0;
   let streak = 0;
-  const today = new Date().toISOString().split("T")[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const today = berlinDateStr();
+  const yesterday = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })();
   let checkDate = uniqueDates.includes(today) ? today : (uniqueDates.includes(yesterday) ? yesterday : null);
   if (!checkDate) return 0;
   for (const d of uniqueDates) {
@@ -33,26 +33,18 @@ function getStreak(entries: any[], supplementId: string) {
 // GET /api/supplements
 export async function GET() {
   const data = (await storage.get("supplements")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
 
-  // Support both formats: legacy log [{date, supplementId}] and new entries [{date, taken:[ids]}]
   const legacyLog: any[] = data.log || [];
   const newEntries: any[] = data.entries || [];
 
-  // todayTaken from legacy log
   const todayLog = legacyLog.filter((e: any) => e.date === today);
   const todayTakenFromLog = new Set(todayLog.map((e: any) => e.supplementId));
-  // todayTaken from new entries
   const todayEntry = newEntries.find((e: any) => e.date === today);
   const todayTakenFromEntries = new Set(todayEntry?.taken || []);
-  // Merge both
   const todayTaken = new Set([...todayTakenFromLog, ...todayTakenFromEntries]);
 
-  // All entries merged for streak calculation
-  const allEntries = [
-    ...legacyLog,
-    ...newEntries,
-  ];
+  const allEntries = [...legacyLog, ...newEntries];
 
   const supplementsWithStats = data.supplements.map((s: any) => {
     const sLog = legacyLog.filter((e: any) => e.supplementId === s.id);
@@ -62,7 +54,6 @@ export async function GET() {
       const diff = (now.getTime() - d.getTime()) / 86400000;
       return diff <= 7;
     });
-    // last7 from new entries format
     const last7FromEntries = newEntries.filter((e: any) => {
       const d = new Date(e.date);
       return (d.getTime() - Date.now()) >= -7 * 86400000 && e.taken?.includes(s.id);
@@ -89,27 +80,23 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const data = (await storage.get("supplements")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
 
   if (body.action === "take") {
     const { supplementId } = body;
-    // Update legacy log format
     const existingIdx = data.log.findIndex((e: any) => e.date === today && e.supplementId === supplementId);
     if (existingIdx >= 0) {
       data.log.splice(existingIdx, 1);
     } else {
       data.log.push({ date: today, supplementId, timestamp: new Date().toISOString() });
     }
-    // Also update new entries format if it exists
     if (data.entries) {
       const entryIdx = data.entries.findIndex((e: any) => e.date === today);
       if (existingIdx >= 0) {
-        // untoggle: remove from today's entry
         if (entryIdx >= 0) {
           data.entries[entryIdx].taken = data.entries[entryIdx].taken.filter((id: string) => id !== supplementId);
         }
       } else {
-        // toggle on: add to today's entry
         if (entryIdx >= 0) {
           if (!data.entries[entryIdx].taken.includes(supplementId)) {
             data.entries[entryIdx].taken.push(supplementId);

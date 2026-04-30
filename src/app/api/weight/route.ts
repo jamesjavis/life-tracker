@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { entries: [], goal: 75.0, lastUpdated: null };
 
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
   const data = (await storage.get("weight")) ?? DEFAULT_DATA;
 
   if (body.action === "log") {
-    const dateStr = body.date || new Date().toISOString().split("T")[0];
+    const dateStr = body.date || berlinDateStr();
     data.entries = data.entries.filter((e: any) => e.date !== dateStr);
     data.entries.push({ date: dateStr, weight: body.weight, notes: body.notes || "", createdAt: new Date().toISOString() });
     if (data.entries.length > 365) data.entries = data.entries.slice(-365);

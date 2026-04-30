@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 // GET /api/sleep - Get sleep entries
 export async function GET() {
@@ -30,7 +31,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const { action, date, bedtime, wakeup, duration, quality, notes } = await req.json();
   const data = (await storage.get("sleep")) ?? { entries: [] };
-  const dateStr = date || new Date().toISOString().split("T")[0];
+  const dateStr = date || berlinDateStr();
 
   if (action === "log") {
     const entry = { date: dateStr, bedtime: bedtime || null, wakeup: wakeup || null, duration: duration || 0, quality: quality || 7, notes: notes || "", createdAt: new Date().toISOString() };

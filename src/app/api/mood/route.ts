@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { entries: [], goals: { energy: 7, mood: 7 }, streaks: { energy: 0, mood: 0 } };
 
@@ -25,11 +26,12 @@ export async function GET() {
     else break;
   }
 
+  const today = berlinDateStr();
   return NextResponse.json({
     entries,
     stats: { avgEnergy, avgMood, last7: last7.length, energyStreak, moodStreak },
     goals: data.goals || { energy: 7, mood: 7 },
-    today: entries[entries.length - 1]?.date === new Date().toISOString().split("T")[0] ? entries[entries.length - 1] : null
+    today: entries[entries.length - 1]?.date === today ? entries[entries.length - 1] : null
   });
 }
 
@@ -37,7 +39,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const { action, energy, mood, note, date } = await req.json();
   const data = (await storage.get("mood")) ?? DEFAULT_DATA;
-  const dateStr = date || new Date().toISOString().split("T")[0];
+  const dateStr = date || berlinDateStr();
 
   if (action === "log") {
     const entry = {

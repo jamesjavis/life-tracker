@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { meditation: { entries: [], goals: { minutes: 15, sessions: 1 } }, screenTime: { entries: [], dailyLimit: 120 }, lastUpdated: null };
 
 export async function GET() {
   const data = (await storage.get("wellness")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const medEntries = data.meditation?.entries || [];
   const last7Med = medEntries.slice(-7);
   const avgMinutes = last7Med.length > 0 ? Math.round(last7Med.reduce((s: number, e: any) => s + (e.minutes || 0), 0) / last7Med.length) : 0;
@@ -29,7 +30,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const data = (await storage.get("wellness")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   if (body.action === "logMeditation") {
     if (!data.meditation) data.meditation = { entries: [], goals: { minutes: 15, sessions: 1 } };
     const entry = { date: today, minutes: Number(body.minutes) || body.duration || 10, sessions: Number(body.sessions) || 1, type: body.type || "mindfulness", note: body.note || "", createdAt: new Date().toISOString() };

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinNow, berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { entries: [], startDate: null, currentDay: 0, todayCompleted: false };
 
@@ -34,7 +35,8 @@ function calculateStreak(entries: any[], todayStr: string) {
 // GET /api/pushups — get pushup data
 export async function GET() {
   const data = (await storage.get("pushups")) ?? DEFAULT_DATA;
-  const today = new Date();
+  const today = berlinNow();
+  const todayStr = berlinDateStr();
 
   let currentDay = data.currentDay;
   if (data.entries.length > 0) {
@@ -46,7 +48,6 @@ export async function GET() {
     }
   }
 
-  const todayStr = today.toISOString().split("T")[0];
   const todayEntry = data.entries.find((e: any) => e.date === todayStr);
   const last30 = data.entries.slice(-30);
   const totalReps = data.entries.reduce((sum: number, e: any) => sum + (e.reps || 0), 0);
@@ -72,6 +73,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const data = (await storage.get("pushups")) ?? DEFAULT_DATA;
+  const todayStr = berlinDateStr();
 
   // Retro-log: accept { action: "retro", date: "YYYY-MM-DD", day?: number, reps?: number }
   if (body.action === "retro") {
@@ -113,13 +115,11 @@ export async function POST(req: Request) {
 
   // Normal log: today's pushups
   const { reps, day } = body;
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-
   let currentDay = day || 1;
   if (data.entries.length > 0) {
     const lastEntry = data.entries[data.entries.length - 1];
     const lastDate = new Date(lastEntry.date + "T00:00:00");
+    const today = berlinNow();
     const daysSinceLast = daysBetween(lastDate, today);
     currentDay = lastEntry.day + daysSinceLast;
   }

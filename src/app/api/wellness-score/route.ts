@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 export async function GET() {
   const [wellness, meditation, breathing] = await Promise.all([storage.get("wellness"), storage.get("meditation"), storage.get("breathing")]);
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const medEntries = meditation?.entries || [];
   const todayMed = medEntries.find((e: any) => e.date === today);
   const last7Med = medEntries.slice(-7);

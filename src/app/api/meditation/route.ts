@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { entries: [], goals: { minutes: 15, sessions: 1 }, lastUpdated: null };
 
 // GET /api/meditation - Get all meditation data
 export async function GET() {
   const data = (await storage.get("meditation")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const entries = data.entries || [];
   const last7 = entries.slice(-7);
   const avgMinutes = last7.length > 0 ? Math.round(last7.reduce((s: number, e: any) => s + (e.minutes || 0), 0) / last7.length) : 0;
@@ -40,7 +41,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const data = (await storage.get("meditation")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
 
   if (body.action === "log") {
     const dateStr = body.date || today;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr, berlinNow } from "@/lib/date";
 
 async function getData() {
   const [sleep, mood, gym, habits, water, meals, weight, supplements, pushups, breathing] = await Promise.all([
@@ -21,29 +22,28 @@ function score(data: any) {
   const scores: Record<string, number> = {};
   let total = 0;
   const sleepEntries = data.sleep?.entries || [];
-  const last7sleep = sleepEntries.slice(0, 7); // newest-first: index 0 = most recent
+  const last7sleep = sleepEntries.slice(0, 7);
   const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((a: number, b: any) => a + (b.duration || b.hours || 0), 0) / last7sleep.length : 0;
   const sleepQuality = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.quality || 0), 0) / last7sleep.length : 0;
   scores.sleep = Math.round(Math.min(avgSleep / 8, 1) * 12.5 + Math.min(sleepQuality / 10, 1) * 12.5);
   total += 25;
   const moodEntries = data.mood?.entries || [];
-  const last7mood = moodEntries.slice(0, 7); // newest-first: index 0 = most recent
+  const last7mood = moodEntries.slice(0, 7);
   const avgMood = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length : 0;
   const avgEnergy = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.energy || 0), 0) / last7mood.length : 0;
   scores.mood = Math.round(Math.min(avgMood / 8, 1) * 10 + Math.min(avgEnergy / 8, 1) * 10);
   total += 20;
   const gymLogs: string[] = data.gym?.logs || [];
-  const now = new Date();
+  const now = berlinNow();
   let gymDaysLast14: string[] = [];
   for (let i = 0; i < 14; i++) { const d = new Date(now); d.setDate(d.getDate() - i); if (gymLogs.includes(d.toISOString().split("T")[0])) gymDaysLast14.push(d.toISOString().split("T")[0]); }
   scores.gym = Math.round(Math.min(gymDaysLast14.length / 6, 1) * 25);
   total += 25;
   const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
-  // Habits: 9 total (pushups tracked in pushups.json, gym in gym logs, rest in habits.json)
   const HABIT_WITHOUT_HABITS_FILE = ["pushups"];
   const habitsEntries = data.habits?.entries || [];
   const pushupsEntries = (data as any).pushups?.entries || [];
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const todayHabitEntry = habitsEntries.find((e: any) => e.date === today);
   const completedIds = new Set(todayHabitEntry?.completed || []);
   const pushupsDoneToday = pushupsEntries.some((e: any) => e.date === today);
@@ -65,24 +65,18 @@ function score(data: any) {
   const avgCalories = last7meals.length > 0 ? last7meals.reduce((s: number, m: any) => s + (m.calories || 0), 0) / last7meals.length : 0;
   scores.nutrition = avgCalories >= 1500 && avgCalories <= 2800 ? 10 : avgCalories < 1500 ? 5 : 7;
   total += 10;
-
-  // Supplements: entries taken in last 7 days / max possible entries
-  // Handle two formats: newer "entries" [{date, taken:[ids]}] and legacy "log" [{date, supplementId}]
   const supplementList = data.supplements?.supplements || [];
   const supplementLog = data.supplements?.log || [];
   const supplementEntries = data.supplements?.entries || [];
-  const now2 = new Date();
+  const now2 = berlinNow();
   let totalEntriesTaken = 0;
   if (supplementEntries.length > 0) {
-    // entries: [{date, taken:[ids]}, ...] — filter last 7 days by date
     const last7entries = supplementEntries.filter((e: any) => {
       const d = new Date(e.date);
       return (now2.getTime() - d.getTime()) / 86400000 <= 7;
     });
-    // each entry has multiple supplement IDs
     totalEntriesTaken = last7entries.reduce((s: number, e: any) => s + (e.taken?.length || 0), 0);
   } else {
-    // log: [{date, supplementId}, ...] — each entry = one supplement taken
     const last7supps = supplementLog.filter((e: any) => {
       const d = new Date(e.date);
       return (now2.getTime() - d.getTime()) / 86400000 <= 7;
@@ -92,11 +86,10 @@ function score(data: any) {
   const maxPossibleEntries = supplementList.length * 7;
   scores.supplements = maxPossibleEntries > 0 ? Math.round(Math.min(totalEntriesTaken / maxPossibleEntries, 1) * 10) : 0;
   total += 10;
-
   return { scores, total: Object.values(scores).reduce((a, b) => a + b, 0) };
 }
 
-function getBerlinDate() { const offset = 2 * 60; const d = new Date(); return new Date(d.getTime() + offset * 60 * 1000 - d.getTimezoneOffset() * 60 * 1000); }
+function getBerlinDate() { return berlinNow(); }
 function parseBerlinDate(dateStr: string) { const [y, m, d] = dateStr.split("-").map(Number); return new Date(y, m - 1, d, 0, 0, 0, 0); }
 function formatBerlinDate(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function daysBetween(date: Date, now: Date) { return Math.floor((now.getTime() - date.getTime()) / 86400000); }
@@ -104,12 +97,12 @@ function daysBetween(date: Date, now: Date) { return Math.floor((now.getTime() -
 function generateInsights(data: any, scores: Record<string, number>) {
   const insights: any[] = [];
   const now = getBerlinDate();
-  const todayStr = now.toISOString().split("T")[0];
+  const todayStr = berlinDateStr();
 
   const sleepEntries = data.sleep?.entries || [];
-  const last7sleep = sleepEntries.slice(0, 7); // newest-first: index 0 = most recent
+  const last7sleep = sleepEntries.slice(0, 7);
   const avgSleep = last7sleep.length > 0 ? last7sleep.reduce((s: number, e: any) => s + (e.duration || e.hours || 0), 0) / last7sleep.length : 0;
-  const lastSleepEntry = sleepEntries[0]; // newest entry = index 0 (newest-first)
+  const lastSleepEntry = sleepEntries[0];
   const daysSinceSleep = lastSleepEntry ? daysBetween(parseBerlinDate(lastSleepEntry.date), now) : null;
 
   if (daysSinceSleep === null || daysSinceSleep >= 7) {
@@ -135,10 +128,10 @@ function generateInsights(data: any, scores: Record<string, number>) {
   }
 
   const moodEntries = data.mood?.entries || [];
-  const last7mood = moodEntries.slice(0, 7); // newest-first: index 0 = most recent
+  const last7mood = moodEntries.slice(0, 7);
   const avgMood2 = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.mood || 0), 0) / last7mood.length : 0;
   const avgEnergy2 = last7mood.length > 0 ? last7mood.reduce((s: number, e: any) => s + (e.energy || 0), 0) / last7mood.length : 0;
-  const lastMoodEntry = moodEntries[0]; // newest entry = index 0 (newest-first)
+  const lastMoodEntry = moodEntries[0];
   const daysSinceMood = lastMoodEntry ? daysBetween(parseBerlinDate(lastMoodEntry.date), now) : null;
 
   if (daysSinceMood === null || daysSinceMood >= 7) {
@@ -193,7 +186,6 @@ function generateInsights(data: any, scores: Record<string, number>) {
     insights.push({ category: "nutrition", icon: "💪", headline: "Mehr Protein nötig", detail: `Ø ${avgProtein.toFixed(0)}g Protein/Tag. Für Muscle Recovery sind 150g+ nötig.`, priority: "medium" });
   }
 
-  // Breathing insight
   const breathingSessions = data.breathing?.sessions || [];
   const lastBreathing = breathingSessions.length > 0 ? breathingSessions[0] : null;
   const daysSinceBreathing = lastBreathing ? daysBetween(parseBerlinDate(lastBreathing.date), now) : null;
@@ -222,19 +214,13 @@ function generateInsights(data: any, scores: Record<string, number>) {
     }
   }
 
-
-  // Supplements insight
-  // Handle two formats: newer "entries" [{date, taken:[ids]}] and legacy "log" [{date, supplementId}]
   const supplementList2 = data.supplements?.supplements || [];
   const supplementLog2 = data.supplements?.log || [];
   const supplementEntries2 = data.supplements?.entries || [];
   const now3 = getBerlinDate();
-  const today3 = now3.toISOString().split("T")[0];
-
-  // takenToday: check both formats
+  const today3 = berlinDateStr();
   let takenToday: number, lastSuppEntry: any, uniqueSuppDays2: number, last7supps2: any[];
   if (supplementEntries2.length > 0) {
-    // entries format
     const todayEntry = supplementEntries2.find((e: any) => e.date === today3);
     takenToday = todayEntry?.taken?.length || 0;
     const lastEntry = supplementEntries2[supplementEntries2.length - 1];
@@ -245,7 +231,6 @@ function generateInsights(data: any, scores: Record<string, number>) {
     });
     uniqueSuppDays2 = new Set(last7supps2.map((e: any) => e.date)).size;
   } else {
-    // log format
     last7supps2 = supplementLog2.filter((e: any) => {
       const d = new Date(e.date);
       return (now3.getTime() - d.getTime()) / 86400000 <= 7;
@@ -273,51 +258,41 @@ export async function GET() {
   const data = await getData();
   const { scores, total } = score(data);
   const insights = generateInsights(data, scores);
-
-  // Data freshness — how old is the most recent entry per category?
   const now = getBerlinDate();
-  const todayStr = now.toISOString().split("T")[0];
+  const todayStr = berlinDateStr();
   const dataAge: Record<string, number | null> = {};
   const categories = [
-    { key: "sleep", entries: data.sleep?.entries || [], dateField: "date" },
-    { key: "mood", entries: data.mood?.entries || [], dateField: "date" },
-    { key: "gym", entries: data.gym?.logs || [], dateField: "logs" },
-    { key: "habits", entries: Object.keys(data.habits?.habits || {}), dateField: "habits" },
-    { key: "water", entries: data.water?.entries || [], dateField: "date" },
-    { key: "meals", entries: data.meals?.entries || [], dateField: "date" },
-    { key: "weight", entries: data.weight?.entries || [], dateField: "date" },
-    { key: "supplements", entries: data.supplements?.entries || data.supplements?.log || [], dateField: "date" },
-    { key: "breathing", entries: data.breathing?.sessions || [], dateField: "sessions" },
+    { key: "sleep", entries: data.sleep?.entries || [] },
+    { key: "mood", entries: data.mood?.entries || [] },
+    { key: "gym", entries: data.gym?.logs || [] },
+    { key: "habits", entries: data.habits?.entries || [] },
+    { key: "water", entries: data.water?.entries || [] },
+    { key: "meals", entries: data.meals?.entries || [] },
+    { key: "weight", entries: data.weight?.entries || [] },
+    { key: "supplements", entries: data.supplements?.entries || data.supplements?.log || [] },
+    { key: "breathing", entries: data.breathing?.sessions || [] },
   ];
   for (const cat of categories) {
     let lastEntry: string | null = null;
     if (cat.key === "gym") {
-      const logs = data.gym?.logs || [];
+      const logs = cat.entries as string[];
       if (logs.length > 0) lastEntry = [...logs].sort().pop()!;
     } else if (cat.key === "habits") {
-      const habitsEntries4age = data.habits?.entries || [];
+      const habitsEntries4age = cat.entries as any[];
       const habitsDates = new Set(habitsEntries4age.map((e: any) => e.date));
       const pushupsEntries = data.pushups?.entries || [];
       const pushupsDates = pushupsEntries.map((e: any) => e.date).sort().reverse();
-      // Take the most recent date from either source
       const latestFromHabits = [...habitsDates].sort().pop() || null;
       const latestFromPushups = pushupsDates[0] || null;
-      if (latestFromHabits && latestFromPushups) {
-        lastEntry = latestFromHabits >= latestFromPushups ? latestFromHabits : latestFromPushups;
-      } else {
-        lastEntry = latestFromHabits || latestFromPushups;
-      }
+      if (latestFromHabits && latestFromPushups) lastEntry = latestFromHabits >= latestFromPushups ? latestFromHabits : latestFromPushups;
+      else lastEntry = latestFromHabits || latestFromPushups;
     } else {
       const entries = cat.entries as any[];
       if (entries.length > 0) {
-        // Newest-first: sleep, mood, supplements log (use index 0)
-        // Oldest-first: water, meals, weight (use last index = entries.length - 1)
         if (cat.key === "water" || cat.key === "meals" || cat.key === "weight" || cat.key === "supplements") {
-          // oldest-first array: newest entry is at index length-1
           lastEntry = entries[entries.length - 1]?.date || null;
         } else {
-          // sleep, mood, supplements: newest-first (index 0 = most recent)
-          lastEntry = entries.length > 0 ? entries[0]?.date || null : null;
+          lastEntry = entries[0]?.date || null;
         }
       }
     }
@@ -328,6 +303,5 @@ export async function GET() {
       dataAge[cat.key] = null;
     }
   }
-
   return NextResponse.json({ score: total, breakdown: scores, insights, dataAge, generatedAt: new Date().toISOString() });
 }

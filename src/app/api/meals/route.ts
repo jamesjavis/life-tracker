@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { entries: [], dailyGoals: { protein: 150, carbs: 250, calories: 2200 }, lastReset: null };
 
 export async function GET() {
   const data = (await storage.get("meals")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const todayMeals = data.entries.filter((m: any) => m.date === today);
   const dailyNutrition = todayMeals.reduce((acc: any, m: any) => {
     acc.protein += m.protein || 0;
@@ -39,11 +40,12 @@ export async function GET() {
 export async function POST(req: Request) {
   const { action, meal } = await req.json();
   const data = (await storage.get("meals")) ?? DEFAULT_DATA;
+  const today = berlinDateStr();
 
   if (action === "add") {
     data.entries.push({
       id: Date.now().toString(),
-      date: new Date().toISOString().split("T")[0],
+      date: today,
       time: new Date().toISOString(),
       name: meal.name,
       calories: Number(meal.calories) || 0,
@@ -56,7 +58,6 @@ export async function POST(req: Request) {
   }
 
   if (action === "retro") {
-    // Backfill a past date with a meal entry
     const retroDate = meal?.date;
     if (!meal?.name || !retroDate) return NextResponse.json({ error: "meal.name and meal.date required for retro" }, { status: 400 });
     data.entries.push({

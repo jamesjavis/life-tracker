@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { dailyGoal: 8, entries: [], lastUpdated: null };
 
 export async function GET() {
   const data = (await storage.get("water")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const todayEntry = data.entries.find((e: any) => e.date === today);
   const currentGlasses = todayEntry ? todayEntry.glasses : 0;
   const last7 = data.entries.slice(-7);
@@ -22,7 +23,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const data = (await storage.get("water")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   if (body.action === "add") {
     const entryIndex = data.entries.findIndex((e: any) => e.date === today);
     if (entryIndex >= 0) data.entries[entryIndex].glasses += 1;

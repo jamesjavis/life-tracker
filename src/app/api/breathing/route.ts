@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { sessions: [], lastUpdated: null };
 
 export async function GET() {
   const data = (await storage.get("breathing")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
   const sessions = data.sessions || [];
   const last7 = sessions.slice(-7);
   const todaySessions = sessions.filter((s: any) => s.date === today);
@@ -16,9 +17,8 @@ export async function GET() {
   let streak = 0;
   const sorted = [...sessions].sort((a: any, b: any) => b.date.localeCompare(a.date));
   const uniqueDates = [...new Set(sorted.map((s: any) => s.date))];
-  const todayDate = new Date().toISOString().split("T")[0];
   for (let i = 0; i < uniqueDates.length; i++) {
-    const d = new Date(todayDate);
+    const d = new Date(today);
     d.setDate(d.getDate() - i);
     const check = d.toISOString().split("T")[0];
     if (uniqueDates.includes(check)) streak++;
@@ -35,7 +35,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const data = (await storage.get("breathing")) ?? DEFAULT_DATA;
-  const today = new Date().toISOString().split("T")[0];
+  const today = berlinDateStr();
 
   if (body.action === "log") {
     const entry = {

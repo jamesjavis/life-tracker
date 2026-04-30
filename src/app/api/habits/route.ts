@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const DEFAULT_DATA = { habits: {}, lastReset: null };
 const HABIT_DEFAULTS = [
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, completedCount, total: HABIT_DEFAULTS.length });
   }
 
-  const dateStr = date || new Date().toISOString().split("T")[0];
+  const dateStr = date || berlinDateStr();
   if (!data.habits[dateStr]) data.habits[dateStr] = {};
   if (completed !== undefined) {
     data.habits[dateStr][habitId] = completed;
