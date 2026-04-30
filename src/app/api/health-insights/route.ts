@@ -288,7 +288,10 @@ export async function GET() {
       else lastEntry = latestFromHabits || latestFromPushups;
     } else {
       const entries = cat.entries as any[];
-      if (entries.length > 0) lastEntry = entries[entries.length - 1]?.date || null;
+      if (entries.length > 0) {
+        const dates = entries.map((e: any) => e.date);
+        lastEntry = dates.sort().pop() || null;
+      }
     }
     if (lastEntry) {
       const parsed = parseBerlinDate(lastEntry);
