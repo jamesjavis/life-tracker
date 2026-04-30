@@ -288,13 +288,7 @@ export async function GET() {
       else lastEntry = latestFromHabits || latestFromPushups;
     } else {
       const entries = cat.entries as any[];
-      if (entries.length > 0) {
-        if (cat.key === "water" || cat.key === "meals" || cat.key === "weight" || cat.key === "supplements") {
-          lastEntry = entries[entries.length - 1]?.date || null;
-        } else {
-          lastEntry = entries[0]?.date || null;
-        }
-      }
+      if (entries.length > 0) lastEntry = entries[entries.length - 1]?.date || null;
     }
     if (lastEntry) {
       const parsed = parseBerlinDate(lastEntry);
