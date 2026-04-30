@@ -32,13 +32,22 @@ export async function GET() {
 
   const longestStreak = (() => { if (logs.length === 0) return 0; const sorted = [...logs].sort(); let best = 1, current = 1; for (let i = 1; i < sorted.length; i++) { const diff = (berlinDateFromStr(sorted[i]).getTime() - berlinDateFromStr(sorted[i-1]).getTime()) / 86400000; if (Math.round(diff) === 1) { current++; best = Math.max(best, current); } else current = 1; } return best; })();
 
+  // Compute next scheduled gym day (JS: Sun=0, Mon=1, Wed=3, Fri=5)
+  const gymDaysJS = [1, 3, 5]; // Mon, Wed, Fri
+  const todayDow = today.getDay(); // 0=Sun ... 6=Sat
+  const nextGymDow = gymDaysJS.find(d => d > todayDow) ?? gymDaysJS[0]; // find next or wrap to Mon
+  const daysUntilNextGym = nextGymDow > todayDow ? nextGymDow - todayDow : 7 - todayDow + nextGymDow;
+  const nextGymDate = new Date(today); nextGymDate.setDate(today.getDate() + daysUntilNextGym);
+  const nextGymDay = nextGymDate.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short" });
+  const nextScheduled = { daysUntil: daysUntilNextGym, label: nextGymDay, date: nextGymDate.toISOString().split("T")[0] };
+
   const thisMonth = today.toISOString().slice(0, 7);
   const monthLogs = logs.filter(l => l.startsWith(thisMonth));
   const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().slice(0, 7);
   const lastMonthLogs = logs.filter(l => l.startsWith(lastMonth));
 
-  const motivation = streak > 0 ? `🔥 ${streak}-day streak! Keep it going.` : gapDays !== null && gapDays >= 5 ? `🏋️ ${gapDays} days since last session. Comeback plan ready — let's go!` : `💪 Last session ${gapDays} days ago. You're due soon.`;
+  const motivation = streak > 0 ? `🔥 ${streak}-day streak! Keep it going.` : gapDays !== null && gapDays >= 5 ? `🏋️ ${gapDays} days since last session. NEXT: ${nextScheduled.label}. Let's go!` : `💪 Last session ${gapDays} days ago. You're due soon.`;
   const comebackPlan = gapDays !== null && gapDays >= 4 ? { phase: gapDays >= 14 ? "restart" : "rebuild", targetSessions: gapDays >= 14 ? 2 : 3, targetWeeks: gapDays >= 14 ? 3 : 2, focus: gapDays >= 14 ? "Light start — full body, lower weight, rebuild the habit first." : "Build momentum — aim for your usual ~5 day rhythm.", tip: `Your average is every ${avgGap} days across ${totalSessions} total sessions.` } : null;
 
-  return NextResponse.json({ lastSession, gapDays, avgGapDays: avgGap, totalSessions, currentStreak: streak, longestStreak, gymDoneToday, thisMonthSessions: monthLogs.length, lastMonthSessions: lastMonthLogs.length, motivation, comebackPlan, status: streak > 0 ? "active" : gapDays !== null && gapDays >= 5 ? "comeback_needed" : "on_track" });
+  return NextResponse.json({ lastSession, gapDays, avgGapDays: avgGap, totalSessions, currentStreak: streak, longestStreak, gymDoneToday, thisMonthSessions: monthLogs.length, lastMonthSessions: lastMonthLogs.length, motivation, comebackPlan, nextScheduled, status: streak > 0 ? "active" : gapDays !== null && gapDays >= 5 ? "comeback_needed" : "on_track" });
 }

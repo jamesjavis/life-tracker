@@ -1,3 +1,19 @@
 [2026-04-17 00:15] PROACTIVE SESSION - No tasks in Mission Control. Worked on: health-check API, net worth snapshot. Stale data detected across 6/10 tracker files.
 --- SESSION LOG 2026-04-29 19:59 ---
 [2026-04-29 19:59] James cron: MC empty. Fixed HABIT_IDS mismatch (journal→smoothie), committed 0e79264. Restarted Abstract monitor (bot-new, Block 58.2M, gas 0.05 gwei).
+
+--- SESSION LOG 2026-04-30 03:36 UTC (01:36 MESZ) ---
+[2026-04-30 01:36] James cron: MC empty (0 tasks). 
+Worked on: supplements API dual-format fix (entries + log compatibility)
+- Found data corruption: supplements.json has BOTH legacy log[] (0 entries) AND new entries[] (Apr 25-29)
+- Supplements API only read log[], not entries[] → streak/stats always 0
+- Fixed route.ts: GET/POST now handle both formats
+- Committed: 417b70a
+Abstract Monitor: RUNNING, Block 58.35M, 0.05 gwei (FREE), 0 ETH
+No human action needed — all blockers still open (ETH deposit, Firebase rules, WhatsApp outreach, eWorld Record direction, meals retro-log)
+[2026-04-30 06:22] James proactive: NO TASKS in Mission Control
+- Added Wellness KPI card to Life Tracker Trends tab (meditation + screen time + breathing in one card)
+- Screen Time: avg/day + vs limit status
+- Meditation: avg/day + trend %
+- Breathing: avg min/day (from breathingData.stats.avgDuration / 60)
+- Build: ✅ clean

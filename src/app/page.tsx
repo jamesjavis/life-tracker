@@ -1452,9 +1452,16 @@ export default function MissionControl() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-orange-300">Gym Comeback</h3>
-                      <span className="text-xs text-orange-400/60 font-mono">
-                        {gymComeback.gapDays} Tage Pause
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {gymComeback.nextScheduled && (
+                          <span className="text-xs bg-orange-500/30 border border-orange-500/40 text-orange-300 px-2 py-0.5 rounded-full font-bold">
+                            NÄCHSTER {gymComeback.nextScheduled.daysUntil === 1 ? "MORGEN" : `${gymComeback.nextScheduled.daysUntil}d`}: {gymComeback.nextScheduled.label}
+                          </span>
+                        )}
+                        <span className="text-xs text-orange-400/60 font-mono">
+                          {gymComeback.gapDays} Tage Pause
+                        </span>
+                      </div>
                     </div>
                     <p className="text-sm text-white/60 mt-0.5">{gymComeback.motivation}</p>
                   </div>
