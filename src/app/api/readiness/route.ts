@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { storage } from "@/lib/storage";
+import { berlinNow, berlinDateStr } from "@/lib/date";
 
 const HABIT_IDS = ["yoga", "meditation", "gym", "bauchworkout", "lesen", "creatin", "pushups", "atem", "smoothie"];
 const HABIT_WITHOUT_HABITS_FILE = ["pushups"]; // tracked in their own JSON files, not habits.json
@@ -8,12 +9,8 @@ const SLEEP_GOAL_H = 7;
 const SLEEP_GOAL_Q = 7;
 const CALORIE_GOAL = 2100;
 
-function berlinDate(): Date {
-  return new Date(Date.now() + 2 * 60 * 60 * 1000);
-}
-
 export async function GET() {
-  const today = berlinDate().toISOString().split("T")[0];
+  const today = berlinDateStr();
 
   const [habitsRaw, waterRaw, sleepRaw, moodRaw, mealsRaw, gymRaw, pushupsRaw, supplementsRaw] = await Promise.all([
     storage.get("habits"),
@@ -66,7 +63,7 @@ export async function GET() {
   // Score based on sessions in the last 7 gym-scheduled days (Mon/Wed/Fri), not just today.
   // This prevents wild readiness swings on non-gym days vs gym days.
   const gymDaysJS = [1, 3, 5]; // Mon=1, Wed=3, Fri=5 (JavaScript getDay)
-  const todayDay = berlinDate().getDay();
+  const todayDay = berlinNow().getDay();
   const isGymDay = gymDaysJS.includes(todayDay);
   const gymLogs = gymRaw?.logs || [];
   const gymLogsSet = new Set(gymLogs);
@@ -74,7 +71,7 @@ export async function GET() {
 
   // Rolling 7 calendar days
   const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(berlinDate());
+    const d = new Date(berlinNow());
     d.setDate(d.getDate() - i);
     return d.toISOString().split('T')[0];
   });
@@ -123,7 +120,7 @@ export async function GET() {
 
   // ── Weekly Adherence (last 7 days) ───────────────────────────────
   const last7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(berlinDate());
+    const d = new Date(berlinNow());
     d.setDate(d.getDate() - (6 - i));
     return d.toISOString().split('T')[0];
   });
