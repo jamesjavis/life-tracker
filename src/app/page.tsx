@@ -5646,6 +5646,60 @@ export default function MissionControl() {
                   );
                 })()}
 
+                {/* Wellness KPI — meditation streak + screen time avg */}
+                {(wellnessData.meditation.entries.length > 0 || wellnessData.screenTime.todayMinutes > 0) && (() => {
+                  const today = new Date().toISOString().split('T')[0];
+                  const medEntries = wellnessData.meditation.entries;
+                  const last7Med = medEntries.slice(0, 7);
+                  const avgLast = last7Med.length > 0 ? Math.round(last7Med.reduce((s: number, e: any) => s + (e.minutes || 0), 0) / last7Med.length) : 0;
+                  const prev7Med = medEntries.slice(7, 14);
+                  const avgPrev = prev7Med.length > 0 ? Math.round(prev7Med.reduce((s: number, e: any) => s + (e.minutes || 0), 0) / prev7Med.length) : 0;
+                  const medTrend = avgPrev > 0 ? Math.round(((avgLast - avgPrev) / avgPrev) * 100) : (avgLast > 0 ? 100 : 0);
+                  const screenAvg = wellnessData.screenTime.stats?.avgDaily || 0;
+                  const screenLimit = wellnessData.screenTime.dailyLimit || 120;
+                  const inLimit = screenAvg <= screenLimit;
+                  return (
+                    <div className="p-5 bg-gradient-to-br from-violet-500/10 to-indigo-500/5 backdrop-blur-xl rounded-2xl border border-violet-500/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-white/50 text-xs">🧘 Wellness</span>
+                        <span className="text-lg">✨</span>
+                      </div>
+                      <div className="space-y-2">
+                        {/* Meditation row */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm">🧘</span>
+                            <span className="text-xs text-white/50">Meditation</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-violet-400">{avgLast} min/d</span>
+                            <span className={cn("text-xs font-medium", medTrend >= 0 ? "text-green-400" : "text-red-400")}>{medTrend >= 0 ? "+" : ""}{medTrend}%</span>
+                          </div>
+                        </div>
+                        {/* Screen Time row */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm">📱</span>
+                            <span className="text-xs text-white/50">Screen Time</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("text-sm font-bold", inLimit ? "text-green-400" : "text-red-400")}>{screenAvg} min/d</span>
+                            <span className="text-xs text-white/30">limit {screenLimit}m</span>
+                          </div>
+                        </div>
+                        {/* Breathing row */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm">🌬️</span>
+                            <span className="text-xs text-white/50">Breathing</span>
+                          </div>
+                          <span className="text-sm font-bold text-cyan-400">{Math.round((breathingData.stats.avgDuration || 0) / 60)} min/d</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Supplements KPI Card — show when supplements exist */}
                 {supplementsData.supplements.length > 0 && (() => {
                   const today = new Date().toISOString().split('T')[0];
