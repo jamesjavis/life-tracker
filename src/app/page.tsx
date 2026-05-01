@@ -5700,7 +5700,7 @@ export default function MissionControl() {
                             <span className="text-sm">🌬️</span>
                             <span className="text-xs text-white/50">Breathing</span>
                           </div>
-                          <span className="text-sm font-bold text-cyan-400">{Math.round((breathingData.stats.avgDuration || 0) / 60)} min/d</span>
+                          <span className="text-sm font-bold text-cyan-400">{breathingData.stats.avgDuration || 0} min/d</span>
                         </div>
                       </div>
                     </div>
