@@ -479,7 +479,7 @@ export default function MissionControl() {
         const result = await res.json();
         setPushupData(prev => ({
           ...prev,
-          todayReps: repsToLog,
+          todayReps: result.entry?.reps ?? result.currentDay,
           todayCompleted: true,
           currentDay: result.currentDay,
         }));
