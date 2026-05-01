@@ -35,17 +35,6 @@
   "lastUpdated": "2026-04-25T10:00:00.000Z",
   "entries": [
     {
-      "date": "2026-04-29",
-      "taken": [
-        "vitamin_d",
-        "vitamin_b",
-        "omega3",
-        "magnesium",
-        "zink",
-        "eisen"
-      ]
-    },
-    {
       "date": "2026-04-25",
       "taken": [
         "vitamin_d",
@@ -80,6 +69,39 @@
     },
     {
       "date": "2026-04-28",
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
+    },
+    {
+      "date": "2026-04-29",
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
+    },
+    {
+      "date": "2026-04-30",
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
+    },
+    {
+      "date": "2026-05-01",
       "taken": [
         "vitamin_d",
         "vitamin_b",
