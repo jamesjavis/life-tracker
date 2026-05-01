@@ -3,58 +3,50 @@
     {
       "id": "meditation",
       "name": "Meditation",
-      "emoji": "\ud83e\uddd8"
+      "emoji": "🧘"
     },
     {
       "id": "lesen",
       "name": "Lesen (20min)",
-      "emoji": "\ud83d\udcda"
+      "emoji": "📚"
     },
     {
       "id": "creatin",
       "name": "Creatin",
-      "emoji": "\ud83d\udc8a"
+      "emoji": "💊"
     },
     {
       "id": "atem",
-      "name": "Atem\u00fcbung",
-      "emoji": "\ud83c\udf2c\ufe0f"
+      "name": "Atemübung",
+      "emoji": "🌬️"
     },
     {
       "id": "yoga",
       "name": "Yoga",
-      "emoji": "\ud83e\uddd8"
+      "emoji": "🧘"
     },
     {
       "id": "bauchworkout",
       "name": "Bauch workouts",
-      "emoji": "\ud83d\udcaa"
+      "emoji": "💪"
     },
     {
       "id": "pushups",
       "name": "Push-ups",
-      "emoji": "\ud83d\udca8"
+      "emoji": "💨"
     },
     {
       "id": "gym",
       "name": "Gym",
-      "emoji": "\ud83c\udfcb\ufe0f"
+      "emoji": "🏋️"
     },
     {
       "id": "smoothie",
       "name": "Smoothie",
-      "emoji": "\ud83e\udd64"
+      "emoji": "🥤"
     }
   ],
   "entries": [
-    {
-      "date": "2026-04-29",
-      "completed": [
-        "meditation",
-        "pushups"
-      ],
-      "total": 9
-    },
     {
       "date": "2026-04-25",
       "completed": [
@@ -89,6 +81,14 @@
       "total": 9
     },
     {
+      "date": "2026-04-29",
+      "completed": [
+        "meditation",
+        "pushups"
+      ],
+      "total": 9
+    },
+    {
       "date": "2026-04-30",
       "completed": [
         "meditation",
@@ -96,6 +96,16 @@
         "creatin",
         "atem"
       ]
+    },
+    {
+      "date": "2026-05-01",
+      "completed": [
+        "meditation",
+        "pushups",
+        "creatin",
+        "atem"
+      ],
+      "total": 9
     }
   ]
 }
