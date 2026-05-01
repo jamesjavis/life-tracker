@@ -170,7 +170,7 @@ export async function GET() {
 
   const adherence = {
     habits: Math.round((weeklyAdherence.filter(d => d.habits).length / 7) * 100),
-    gym: weeklyAdherence.filter(d => d.gym === true).length, // count gym days done
+    gym: Math.round((weeklyAdherence.filter(d => d.gym === true).length / 7) * 100), // % of gym days done
     water: Math.round((weeklyAdherence.filter(d => d.water).length / 7) * 100),
     sleep: Math.round((weeklyAdherence.filter(d => d.sleep).length / 7) * 100),
     mood: Math.round((weeklyAdherence.filter(d => d.mood).length / 7) * 100),
