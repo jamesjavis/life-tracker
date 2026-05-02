@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { storage } from "@/lib/storage";
+import { berlinDateStr } from "@/lib/date";
 
 const MENTOR_TIPS = [
   // Productivity
@@ -242,6 +244,17 @@ const MENTOR_TIPS = [
 ];
 
 export async function GET() {
+  // Load real weight from storage for personalized mentor tips
+  let weightKg = 75;
+  try {
+    const weightData = await storage.get("weight");
+    const entries = weightData?.entries || [];
+    if (entries.length > 0) {
+      const last = entries[entries.length - 1];
+      weightKg = last.weight ?? 75;
+    }
+  } catch { /* keep default */ }
+
   // Rotate tip based on day of year (0-365)
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
@@ -257,13 +270,22 @@ export async function GET() {
     pastTips.push({ ...MENTOR_TIPS[pastIndex], daysAgo: i });
   }
 
+  // Override personalized tips with real data
+  const proteinLow = Math.round(weightKg * 1.6);
+  const proteinHigh = Math.round(weightKg * 2.2);
+  const chickenBreasts = Math.round(proteinHigh / 30);
+  const personalizedTip = { ...todayTip, action: `At ${weightKg}kg, you need ${proteinLow}-${proteinHigh}g protein daily. That's ~${chickenBreasts} chicken breasts or 5 scoops of protein powder.` };
+  const personalizedPastTips = pastTips.map((t, i) =>
+    t.id === "f3" ? { ...t, action: `At ${weightKg}kg, you need ${proteinLow}-${proteinHigh}g protein daily.` } : t
+  );
+
   return NextResponse.json({
     today: {
-      ...todayTip,
+      ...personalizedTip,
       dayOfYear,
       date: now.toISOString().split("T")[0],
     },
-    pastTips,
+    pastTips: personalizedPastTips,
     totalTips: MENTOR_TIPS.length,
     categories: [...new Set(MENTOR_TIPS.map(t => t.category))],
   });
