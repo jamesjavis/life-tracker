@@ -210,6 +210,20 @@
       "quality": 7,
       "notes": "",
       "createdAt": "2026-04-29T10:00:00.000Z"
+    },
+    {
+      "date": "2026-04-30",
+      "duration": 7,
+      "quality": 7,
+      "notes": "",
+      "createdAt": "2026-04-30T10:00:00.000Z"
+    },
+    {
+      "date": "2026-05-01",
+      "duration": 7,
+      "quality": 7,
+      "notes": "",
+      "createdAt": "2026-05-01T10:00:00.000Z"
     }
   ]
 }
