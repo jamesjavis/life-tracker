@@ -3,32 +3,32 @@
     {
       "id": "vitamin_d",
       "name": "Vitamin D",
-      "emoji": "☀️"
+      "emoji": "\u2600\ufe0f"
     },
     {
       "id": "vitamin_b",
       "name": "Vitamin B Complex",
-      "emoji": "💊"
+      "emoji": "\ud83d\udc8a"
     },
     {
       "id": "omega3",
       "name": "Omega 3",
-      "emoji": "🐟"
+      "emoji": "\ud83d\udc1f"
     },
     {
       "id": "magnesium",
       "name": "Magnesium",
-      "emoji": "🏀"
+      "emoji": "\ud83c\udfc0"
     },
     {
       "id": "zink",
       "name": "Zink",
-      "emoji": "⚡"
+      "emoji": "\u26a1"
     },
     {
       "id": "eisen",
       "name": "Eisen",
-      "emoji": "⚙️"
+      "emoji": "\u2699\ufe0f"
     }
   ],
   "log": [],
@@ -102,6 +102,17 @@
     },
     {
       "date": "2026-05-01",
+      "taken": [
+        "vitamin_d",
+        "vitamin_b",
+        "omega3",
+        "magnesium",
+        "zink",
+        "eisen"
+      ]
+    },
+    {
+      "date": "2026-05-02",
       "taken": [
         "vitamin_d",
         "vitamin_b",
