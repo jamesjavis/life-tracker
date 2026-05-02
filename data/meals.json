@@ -1,12 +1,156 @@
 {
   "entries": [
     {
-      "date": "2026-04-07",
+      "date": "2026-04-01",
       "name": "Rice & Veggies",
-      "calories": 413,
+      "calories": 412,
       "protein": 12,
       "carbs": 75,
-      "time": "2026-04-07T14:41:00.000Z"
+      "time": "2026-04-01T08:54:00.000Z"
+    },
+    {
+      "date": "2026-04-01",
+      "name": "Greek Yogurt",
+      "calories": 216,
+      "protein": 15,
+      "carbs": 20,
+      "time": "2026-04-01T11:31:00.000Z"
+    },
+    {
+      "date": "2026-04-01",
+      "name": "Protein Shake",
+      "calories": 244,
+      "protein": 30,
+      "carbs": 15,
+      "time": "2026-04-01T15:35:00.000Z"
+    },
+    {
+      "date": "2026-04-01",
+      "name": "Chicken Salad",
+      "calories": 404,
+      "protein": 40,
+      "carbs": 20,
+      "time": "2026-04-01T20:35:00.000Z"
+    },
+    {
+      "date": "2026-04-02",
+      "name": "Chicken Salad",
+      "calories": 415,
+      "protein": 40,
+      "carbs": 20,
+      "time": "2026-04-02T08:00:00.000Z"
+    },
+    {
+      "date": "2026-04-02",
+      "name": "Rice & Veggies",
+      "calories": 470,
+      "protein": 12,
+      "carbs": 75,
+      "time": "2026-04-02T08:22:00.000Z"
+    },
+    {
+      "date": "2026-04-02",
+      "name": "Smoothie",
+      "calories": 328,
+      "protein": 10,
+      "carbs": 55,
+      "time": "2026-04-02T10:59:00.000Z"
+    },
+    {
+      "date": "2026-04-02",
+      "name": "Smoothie",
+      "calories": 301,
+      "protein": 10,
+      "carbs": 55,
+      "time": "2026-04-02T12:22:00.000Z"
+    },
+    {
+      "date": "2026-04-03",
+      "name": "Chicken Salad",
+      "calories": 437,
+      "protein": 40,
+      "carbs": 20,
+      "time": "2026-04-03T11:37:00.000Z"
+    },
+    {
+      "date": "2026-04-03",
+      "name": "Oatmeal",
+      "calories": 307,
+      "protein": 15,
+      "carbs": 60,
+      "time": "2026-04-03T12:31:00.000Z"
+    },
+    {
+      "date": "2026-04-03",
+      "name": "Greek Yogurt",
+      "calories": 142,
+      "protein": 15,
+      "carbs": 20,
+      "time": "2026-04-03T14:17:00.000Z"
+    },
+    {
+      "date": "2026-04-04",
+      "name": "Eggs & Toast",
+      "calories": 332,
+      "protein": 20,
+      "carbs": 40,
+      "time": "2026-04-04T09:23:00.000Z"
+    },
+    {
+      "date": "2026-04-04",
+      "name": "Oatmeal",
+      "calories": 345,
+      "protein": 15,
+      "carbs": 60,
+      "time": "2026-04-04T16:02:00.000Z"
+    },
+    {
+      "date": "2026-04-05",
+      "name": "Greek Yogurt",
+      "calories": 171,
+      "protein": 15,
+      "carbs": 20,
+      "time": "2026-04-05T10:44:00.000Z"
+    },
+    {
+      "date": "2026-04-05",
+      "name": "Smoothie",
+      "calories": 330,
+      "protein": 10,
+      "carbs": 55,
+      "time": "2026-04-05T12:20:00.000Z"
+    },
+    {
+      "date": "2026-04-05",
+      "name": "Chicken Salad",
+      "calories": 372,
+      "protein": 40,
+      "carbs": 20,
+      "time": "2026-04-05T15:08:00.000Z"
+    },
+    {
+      "date": "2026-04-05",
+      "name": "Smoothie",
+      "calories": 305,
+      "protein": 10,
+      "carbs": 55,
+      "time": "2026-04-05T15:17:00.000Z"
+    },
+    {
+      "date": "2026-04-06",
+      "name": "Eggs & Toast",
+      "calories": 332,
+      "protein": 20,
+      "carbs": 40,
+      "time": "2026-04-06T07:56:00.000Z"
+    },
+    {
+      "date": "2026-04-06",
+      "name": "Smoothie",
+      "calories": 267,
+      "protein": 10,
+      "carbs": 55,
+      "time": "2026-04-06T13:07:00.000Z"
     },
     {
       "date": "2026-04-07",
@@ -15,6 +159,14 @@
       "protein": 20,
       "carbs": 40,
       "time": "2026-04-07T14:03:00.000Z"
+    },
+    {
+      "date": "2026-04-07",
+      "name": "Rice & Veggies",
+      "calories": 413,
+      "protein": 12,
+      "carbs": 75,
+      "time": "2026-04-07T14:41:00.000Z"
     },
     {
       "date": "2026-04-08",
@@ -26,14 +178,6 @@
     },
     {
       "date": "2026-04-08",
-      "name": "Reis & H\u00e4hnchen",
-      "calories": 550,
-      "protein": 45,
-      "carbs": 60,
-      "time": "2026-04-08T17:47:00.000Z"
-    },
-    {
-      "date": "2026-04-08",
       "name": "Chicken Salad",
       "calories": 420,
       "protein": 40,
@@ -41,12 +185,20 @@
       "time": "2026-04-08T16:27:00.000Z"
     },
     {
+      "date": "2026-04-08",
+      "name": "Reis & H\u00e4hnchen",
+      "calories": 550,
+      "protein": 45,
+      "carbs": 60,
+      "time": "2026-04-08T17:47:00.000Z"
+    },
+    {
       "date": "2026-04-09",
-      "name": "Greek Yogurt mit Granola",
-      "calories": 320,
-      "protein": 18,
-      "carbs": 35,
-      "time": "2026-04-09T15:38:00.000Z"
+      "name": "Nudeln mit Hackfleisch",
+      "calories": 580,
+      "protein": 35,
+      "carbs": 65,
+      "time": "2026-04-09T10:28:00.000Z"
     },
     {
       "date": "2026-04-09",
@@ -58,11 +210,19 @@
     },
     {
       "date": "2026-04-09",
-      "name": "Nudeln mit Hackfleisch",
-      "calories": 580,
-      "protein": 35,
-      "carbs": 65,
-      "time": "2026-04-09T10:28:00.000Z"
+      "name": "Greek Yogurt mit Granola",
+      "calories": 320,
+      "protein": 18,
+      "carbs": 35,
+      "time": "2026-04-09T15:38:00.000Z"
+    },
+    {
+      "date": "2026-04-10",
+      "name": "Chicken Salad",
+      "calories": 420,
+      "protein": 40,
+      "carbs": 20,
+      "time": "2026-04-10T08:24:00.000Z"
     },
     {
       "date": "2026-04-10",
@@ -81,12 +241,12 @@
       "time": "2026-04-10T19:21:00.000Z"
     },
     {
-      "date": "2026-04-10",
+      "date": "2026-04-11",
       "name": "Chicken Salad",
       "calories": 420,
       "protein": 40,
       "carbs": 20,
-      "time": "2026-04-10T08:24:00.000Z"
+      "time": "2026-04-11T13:05:00.000Z"
     },
     {
       "date": "2026-04-11",
@@ -98,14 +258,6 @@
     },
     {
       "date": "2026-04-11",
-      "name": "Chicken Salad",
-      "calories": 420,
-      "protein": 40,
-      "carbs": 20,
-      "time": "2026-04-11T13:05:00.000Z"
-    },
-    {
-      "date": "2026-04-11",
       "name": "Joghurt",
       "calories": 140,
       "protein": 10,
@@ -114,19 +266,19 @@
     },
     {
       "date": "2026-04-12",
-      "name": "Chicken Salad",
-      "calories": 420,
-      "protein": 40,
-      "carbs": 20,
-      "time": "2026-04-12T17:14:00.000Z"
-    },
-    {
-      "date": "2026-04-12",
       "name": "Omelett mit K\u00e4se",
       "calories": 380,
       "protein": 28,
       "carbs": 8,
       "time": "2026-04-12T08:54:00.000Z"
+    },
+    {
+      "date": "2026-04-12",
+      "name": "Chicken Salad",
+      "calories": 420,
+      "protein": 40,
+      "carbs": 20,
+      "time": "2026-04-12T17:14:00.000Z"
     },
     {
       "date": "2026-04-12",
@@ -146,11 +298,11 @@
     },
     {
       "date": "2026-04-13",
-      "name": "Pasta mit Gem\u00fcse",
-      "calories": 520,
+      "name": "Greek Yogurt mit Granola",
+      "calories": 320,
       "protein": 18,
-      "carbs": 75,
-      "time": "2026-04-13T18:59:00.000Z"
+      "carbs": 35,
+      "time": "2026-04-13T15:46:00.000Z"
     },
     {
       "date": "2026-04-13",
@@ -162,19 +314,19 @@
     },
     {
       "date": "2026-04-13",
-      "name": "Greek Yogurt mit Granola",
-      "calories": 320,
-      "protein": 18,
-      "carbs": 35,
-      "time": "2026-04-13T15:46:00.000Z"
-    },
-    {
-      "date": "2026-04-14",
       "name": "Pasta mit Gem\u00fcse",
       "calories": 520,
       "protein": 18,
       "carbs": 75,
-      "time": "2026-04-14T17:44:00.000Z"
+      "time": "2026-04-13T18:59:00.000Z"
+    },
+    {
+      "date": "2026-04-14",
+      "name": "Reis & H\u00e4hnchen",
+      "calories": 550,
+      "protein": 45,
+      "carbs": 60,
+      "time": "2026-04-14T10:52:00.000Z"
     },
     {
       "date": "2026-04-14",
@@ -186,19 +338,11 @@
     },
     {
       "date": "2026-04-14",
-      "name": "Reis & H\u00e4hnchen",
-      "calories": 550,
-      "protein": 45,
-      "carbs": 60,
-      "time": "2026-04-14T10:52:00.000Z"
-    },
-    {
-      "date": "2026-04-15",
-      "name": "Reis & H\u00e4hnchen",
-      "calories": 550,
-      "protein": 45,
-      "carbs": 60,
-      "time": "2026-04-15T10:58:00.000Z"
+      "name": "Pasta mit Gem\u00fcse",
+      "calories": 520,
+      "protein": 18,
+      "carbs": 75,
+      "time": "2026-04-14T17:44:00.000Z"
     },
     {
       "date": "2026-04-15",
@@ -210,6 +354,14 @@
     },
     {
       "date": "2026-04-15",
+      "name": "Reis & H\u00e4hnchen",
+      "calories": 550,
+      "protein": 45,
+      "carbs": 60,
+      "time": "2026-04-15T10:58:00.000Z"
+    },
+    {
+      "date": "2026-04-15",
       "name": "Reiscracker",
       "calories": 130,
       "protein": 3,
@@ -218,19 +370,11 @@
     },
     {
       "date": "2026-04-16",
-      "name": "Pasta mit Gem\u00fcse",
-      "calories": 520,
-      "protein": 18,
-      "carbs": 75,
-      "time": "2026-04-16T18:37:00.000Z"
-    },
-    {
-      "date": "2026-04-16",
-      "name": "Reiscracker",
-      "calories": 130,
-      "protein": 3,
-      "carbs": 25,
-      "time": "2026-04-16T16:25:00.000Z"
+      "name": "Nudeln mit Hackfleisch",
+      "calories": 580,
+      "protein": 35,
+      "carbs": 65,
+      "time": "2026-04-16T08:48:00.000Z"
     },
     {
       "date": "2026-04-16",
@@ -242,19 +386,19 @@
     },
     {
       "date": "2026-04-16",
-      "name": "Nudeln mit Hackfleisch",
-      "calories": 580,
-      "protein": 35,
-      "carbs": 65,
-      "time": "2026-04-16T08:48:00.000Z"
+      "name": "Reiscracker",
+      "calories": 130,
+      "protein": 3,
+      "carbs": 25,
+      "time": "2026-04-16T16:25:00.000Z"
     },
     {
-      "date": "2026-04-17",
-      "name": "Smoothie (Banane/Spinat/Protein)",
-      "calories": 295,
-      "protein": 25,
-      "carbs": 30,
-      "time": "2026-04-17T16:04:00.000Z"
+      "date": "2026-04-16",
+      "name": "Pasta mit Gem\u00fcse",
+      "calories": 520,
+      "protein": 18,
+      "carbs": 75,
+      "time": "2026-04-16T18:37:00.000Z"
     },
     {
       "date": "2026-04-17",
@@ -271,6 +415,14 @@
       "protein": 35,
       "carbs": 65,
       "time": "2026-04-17T15:16:00.000Z"
+    },
+    {
+      "date": "2026-04-17",
+      "name": "Smoothie (Banane/Spinat/Protein)",
+      "calories": 295,
+      "protein": 25,
+      "carbs": 30,
+      "time": "2026-04-17T16:04:00.000Z"
     },
     {
       "date": "2026-04-18",
@@ -298,14 +450,6 @@
     },
     {
       "date": "2026-04-19",
-      "name": "Pasta mit Gem\u00fcse",
-      "calories": 520,
-      "protein": 18,
-      "carbs": 75,
-      "time": "2026-04-19T20:40:00.000Z"
-    },
-    {
-      "date": "2026-04-19",
       "name": "Fisch mit Kartoffeln",
       "calories": 480,
       "protein": 40,
@@ -321,12 +465,12 @@
       "time": "2026-04-19T15:49:00.000Z"
     },
     {
-      "date": "2026-04-20",
-      "name": "Reis & H\u00e4hnchen",
-      "calories": 550,
-      "protein": 45,
-      "carbs": 60,
-      "time": "2026-04-20T12:56:00.000Z"
+      "date": "2026-04-19",
+      "name": "Pasta mit Gem\u00fcse",
+      "calories": 520,
+      "protein": 18,
+      "carbs": 75,
+      "time": "2026-04-19T20:40:00.000Z"
     },
     {
       "date": "2026-04-20",
@@ -338,6 +482,14 @@
     },
     {
       "date": "2026-04-20",
+      "name": "Reis & H\u00e4hnchen",
+      "calories": 550,
+      "protein": 45,
+      "carbs": 60,
+      "time": "2026-04-20T12:56:00.000Z"
+    },
+    {
+      "date": "2026-04-20",
       "name": "Greek Yogurt mit Granola",
       "calories": 320,
       "protein": 18,
@@ -346,11 +498,11 @@
     },
     {
       "date": "2026-04-21",
-      "name": "Apfel & Mandeln",
-      "calories": 220,
-      "protein": 6,
-      "carbs": 30,
-      "time": "2026-04-21T17:30:00.000Z"
+      "name": "Nudeln mit Hackfleisch",
+      "calories": 580,
+      "protein": 35,
+      "carbs": 65,
+      "time": "2026-04-21T10:59:00.000Z"
     },
     {
       "date": "2026-04-21",
@@ -362,19 +514,11 @@
     },
     {
       "date": "2026-04-21",
-      "name": "Nudeln mit Hackfleisch",
-      "calories": 580,
-      "protein": 35,
-      "carbs": 65,
-      "time": "2026-04-21T10:59:00.000Z"
-    },
-    {
-      "date": "2026-04-22",
-      "name": "Nudeln mit Hackfleisch",
-      "calories": 580,
-      "protein": 35,
-      "carbs": 65,
-      "time": "2026-04-22T15:28:00.000Z"
+      "name": "Apfel & Mandeln",
+      "calories": 220,
+      "protein": 6,
+      "carbs": 30,
+      "time": "2026-04-21T17:30:00.000Z"
     },
     {
       "date": "2026-04-22",
@@ -393,12 +537,28 @@
       "time": "2026-04-22T12:01:00.000Z"
     },
     {
+      "date": "2026-04-22",
+      "name": "Nudeln mit Hackfleisch",
+      "calories": 580,
+      "protein": 35,
+      "carbs": 65,
+      "time": "2026-04-22T15:28:00.000Z"
+    },
+    {
       "date": "2026-04-23",
       "name": "Chicken Salad",
       "calories": 420,
       "protein": 40,
       "carbs": 20,
       "time": "2026-04-23T10:04:00.000Z"
+    },
+    {
+      "date": "2026-04-23",
+      "name": "Reis & H\u00e4hnchen",
+      "calories": 550,
+      "protein": 45,
+      "carbs": 60,
+      "time": "2026-04-23T15:15:00.000Z"
     },
     {
       "date": "2026-04-23",
@@ -409,12 +569,12 @@
       "time": "2026-04-23T20:21:00.000Z"
     },
     {
-      "date": "2026-04-23",
-      "name": "Reis & H\u00e4hnchen",
-      "calories": 550,
-      "protein": 45,
-      "carbs": 60,
-      "time": "2026-04-23T15:15:00.000Z"
+      "date": "2026-04-24",
+      "name": "Fisch mit Kartoffeln",
+      "calories": 480,
+      "protein": 40,
+      "carbs": 45,
+      "time": "2026-04-24T08:06:00.000Z"
     },
     {
       "date": "2026-04-24",
@@ -433,12 +593,20 @@
       "time": "2026-04-24T19:26:00.000Z"
     },
     {
-      "date": "2026-04-24",
-      "name": "Fisch mit Kartoffeln",
-      "calories": 480,
+      "date": "2026-04-25",
+      "name": "Chicken Salad",
+      "calories": 420,
       "protein": 40,
-      "carbs": 45,
-      "time": "2026-04-24T08:06:00.000Z"
+      "carbs": 20,
+      "time": "2026-04-25T07:25:00.000Z"
+    },
+    {
+      "date": "2026-04-25",
+      "name": "Haferflocken mit Banane",
+      "calories": 350,
+      "protein": 12,
+      "carbs": 60,
+      "time": "2026-04-25T10:12:00.000Z"
     },
     {
       "date": "2026-04-25",
@@ -450,27 +618,11 @@
     },
     {
       "date": "2026-04-25",
-      "name": "Chicken Salad",
-      "calories": 420,
-      "protein": 40,
-      "carbs": 20,
-      "time": "2026-04-25T07:25:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
       "name": "Joghurt",
       "calories": 140,
       "protein": 10,
       "carbs": 20,
       "time": "2026-04-25T19:55:00.000Z"
-    },
-    {
-      "date": "2026-04-25",
-      "name": "Haferflocken mit Banane",
-      "calories": 350,
-      "protein": 12,
-      "carbs": 60,
-      "time": "2026-04-25T10:12:00.000Z"
     },
     {
       "date": "2026-04-26",
@@ -482,14 +634,6 @@
     },
     {
       "date": "2026-04-26",
-      "name": "Greek Yogurt mit Granola",
-      "calories": 320,
-      "protein": 18,
-      "carbs": 35,
-      "time": "2026-04-26T20:59:00.000Z"
-    },
-    {
-      "date": "2026-04-26",
       "name": "Chicken Salad",
       "calories": 420,
       "protein": 40,
@@ -497,12 +641,12 @@
       "time": "2026-04-26T14:51:00.000Z"
     },
     {
-      "date": "2026-04-27",
-      "name": "Haferflocken mit Banane",
-      "calories": 350,
-      "protein": 12,
-      "carbs": 60,
-      "time": "2026-04-27T19:54:00.000Z"
+      "date": "2026-04-26",
+      "name": "Greek Yogurt mit Granola",
+      "calories": 320,
+      "protein": 18,
+      "carbs": 35,
+      "time": "2026-04-26T20:59:00.000Z"
     },
     {
       "date": "2026-04-27",
@@ -521,20 +665,12 @@
       "time": "2026-04-27T14:13:00.000Z"
     },
     {
-      "date": "2026-04-28",
-      "name": "Smoothie (Banane/Spinat/Protein)",
-      "calories": 295,
-      "protein": 25,
-      "carbs": 30,
-      "time": "2026-04-28T11:59:00.000Z"
-    },
-    {
-      "date": "2026-04-28",
-      "name": "Reiscracker",
-      "calories": 130,
-      "protein": 3,
-      "carbs": 25,
-      "time": "2026-04-28T11:27:00.000Z"
+      "date": "2026-04-27",
+      "name": "Haferflocken mit Banane",
+      "calories": 350,
+      "protein": 12,
+      "carbs": 60,
+      "time": "2026-04-27T19:54:00.000Z"
     },
     {
       "date": "2026-04-28",
@@ -553,156 +689,68 @@
       "time": "2026-04-28T10:03:00.000Z"
     },
     {
-      "date": "2026-04-06",
-      "name": "Eggs & Toast",
-      "calories": 332,
-      "protein": 20,
-      "carbs": 40,
-      "time": "2026-04-06T07:56:00.000Z"
+      "date": "2026-04-28",
+      "name": "Reiscracker",
+      "calories": 130,
+      "protein": 3,
+      "carbs": 25,
+      "time": "2026-04-28T11:27:00.000Z"
     },
     {
-      "date": "2026-04-06",
-      "name": "Smoothie",
-      "calories": 267,
-      "protein": 10,
-      "carbs": 55,
-      "time": "2026-04-06T13:07:00.000Z"
+      "date": "2026-04-28",
+      "name": "Smoothie (Banane/Spinat/Protein)",
+      "calories": 295,
+      "protein": 25,
+      "carbs": 30,
+      "time": "2026-04-28T11:59:00.000Z"
     },
     {
-      "date": "2026-04-05",
-      "name": "Smoothie",
-      "calories": 305,
-      "protein": 10,
-      "carbs": 55,
-      "time": "2026-04-05T15:17:00.000Z"
+      "date": "2026-04-29",
+      "name": "Greek Yogurt mit Granola",
+      "calories": 320,
+      "protein": 18,
+      "carbs": 35,
+      "time": "2026-04-29T10:00:00.000Z"
     },
     {
-      "date": "2026-04-05",
-      "name": "Chicken Salad",
-      "calories": 372,
-      "protein": 40,
-      "carbs": 20,
-      "time": "2026-04-05T15:08:00.000Z"
-    },
-    {
-      "date": "2026-04-05",
-      "name": "Greek Yogurt",
-      "calories": 171,
-      "protein": 15,
-      "carbs": 20,
-      "time": "2026-04-05T10:44:00.000Z"
-    },
-    {
-      "date": "2026-04-05",
-      "name": "Smoothie",
-      "calories": 330,
-      "protein": 10,
-      "carbs": 55,
-      "time": "2026-04-05T12:20:00.000Z"
-    },
-    {
-      "date": "2026-04-04",
-      "name": "Eggs & Toast",
-      "calories": 332,
-      "protein": 20,
-      "carbs": 40,
-      "time": "2026-04-04T09:23:00.000Z"
-    },
-    {
-      "date": "2026-04-04",
-      "name": "Oatmeal",
-      "calories": 345,
-      "protein": 15,
+      "date": "2026-04-29",
+      "name": "Reis & H\u00e4hnchen",
+      "calories": 550,
+      "protein": 45,
       "carbs": 60,
-      "time": "2026-04-04T16:02:00.000Z"
+      "time": "2026-04-29T17:30:00.000Z"
     },
     {
-      "date": "2026-04-03",
-      "name": "Chicken Salad",
-      "calories": 437,
-      "protein": 40,
-      "carbs": 20,
-      "time": "2026-04-03T11:37:00.000Z"
-    },
-    {
-      "date": "2026-04-03",
-      "name": "Greek Yogurt",
-      "calories": 142,
-      "protein": 15,
-      "carbs": 20,
-      "time": "2026-04-03T14:17:00.000Z"
-    },
-    {
-      "date": "2026-04-03",
-      "name": "Oatmeal",
-      "calories": 307,
-      "protein": 15,
+      "date": "2026-04-30",
+      "name": "Haferflocken mit Banane",
+      "calories": 350,
+      "protein": 12,
       "carbs": 60,
-      "time": "2026-04-03T12:31:00.000Z"
+      "time": "2026-04-30T08:00:00.000Z"
     },
     {
-      "date": "2026-04-02",
-      "name": "Rice & Veggies",
-      "calories": 470,
-      "protein": 12,
-      "carbs": 75,
-      "time": "2026-04-02T08:22:00.000Z"
-    },
-    {
-      "date": "2026-04-02",
-      "name": "Smoothie",
-      "calories": 328,
-      "protein": 10,
-      "carbs": 55,
-      "time": "2026-04-02T10:59:00.000Z"
-    },
-    {
-      "date": "2026-04-02",
+      "date": "2026-04-30",
       "name": "Chicken Salad",
-      "calories": 415,
+      "calories": 420,
       "protein": 40,
       "carbs": 20,
-      "time": "2026-04-02T08:00:00.000Z"
+      "time": "2026-04-30T12:00:00.000Z"
     },
     {
-      "date": "2026-04-02",
-      "name": "Smoothie",
-      "calories": 301,
-      "protein": 10,
-      "carbs": 55,
-      "time": "2026-04-02T12:22:00.000Z"
+      "date": "2026-05-01",
+      "name": "Smoothie (Banane/Spinat/Protein)",
+      "calories": 295,
+      "protein": 25,
+      "carbs": 30,
+      "time": "2026-05-01T09:00:00.000Z"
     },
     {
-      "date": "2026-04-01",
-      "name": "Protein Shake",
-      "calories": 244,
-      "protein": 30,
-      "carbs": 15,
-      "time": "2026-04-01T15:35:00.000Z"
-    },
-    {
-      "date": "2026-04-01",
-      "name": "Greek Yogurt",
-      "calories": 216,
-      "protein": 15,
-      "carbs": 20,
-      "time": "2026-04-01T11:31:00.000Z"
-    },
-    {
-      "date": "2026-04-01",
-      "name": "Chicken Salad",
-      "calories": 404,
+      "date": "2026-05-01",
+      "name": "Fisch mit Kartoffeln",
+      "calories": 480,
       "protein": 40,
-      "carbs": 20,
-      "time": "2026-04-01T20:35:00.000Z"
-    },
-    {
-      "date": "2026-04-01",
-      "name": "Rice & Veggies",
-      "calories": 412,
-      "protein": 12,
-      "carbs": 75,
-      "time": "2026-04-01T08:54:00.000Z"
+      "carbs": 45,
+      "time": "2026-05-01T19:00:00.000Z"
     }
   ],
   "dailyGoals": {
