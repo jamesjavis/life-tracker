@@ -808,7 +808,7 @@ export default function MissionControl() {
         const wsRes = await fetch("/api/wellness-score");
         if (wsRes.ok) {
           const ws = await wsRes.json();
-          setWellnessScore(ws.score);
+          setWellnessScore(ws.total);
         }
       } catch (e) {
         console.error("Failed to load wellness score", e);
